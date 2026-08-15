@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Dados brutos / cache do inventário (regenerados pelo pipeline)
+data/nvidia_models_raw.json
+
+# Imagens geradas do dashboard (regeneradas)
+preview.png
+preview_v2.png
+*.png
+Artificial Analysis Intelligence Index*.png
+
+# Arquivos de IDE / editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
