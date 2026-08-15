@@ -454,16 +454,20 @@ function renderStarsByNum(n) {
 
 /* ── Tier tables ── */
 var TIER_COLS = {
-  S: ["context", "release", "reasoning"],
-  A: ["context", "release", "reasoning"]
+  S: ["context", "release", "aa_index", "aa_stars"],
+  A: ["context", "release", "aa_index", "aa_stars"]
 };
 var TIER_LABELS = {
-  "intel": "Intelligence",
-  "agentic": "Agentic",
-  "coder": "Coder",
   "context": "Context",
   "release": "Release",
-  "reasoning": "Reasoning"
+  "aa_index": "AA Index",
+  "aa_stars": "AA ★"
+};
+var TIER_TIPS = {
+  "context": "Janela de contexto máxima suportada",
+  "release": "Data de release do modelo",
+  "aa_index": "Artificial Analysis Intelligence Index v4.1 (0-100). Agents 34% + Coding 24% + Sci 24% + General 18%. Click para abrir a fonte.",
+  "aa_stars": "Estrelas calibradas do AA Index: 5★ ≥50 | 4★ ≥35 | 3★ ≥20 | 2★ ≥10 | 1★ <10"
 };
 var TIER_PILL = { S: "s", A: "a" };
 
@@ -504,10 +508,14 @@ function renderTiers() {
 
     var sc = state.tierSort[tier] || { key: "rank", dir: "asc" };
     var sorted = shown.slice().sort(function (a, b) {
-      var av = a[sc.key] || "", bv = b[sc.key] || "";
       if (sc.key === "rank") return (sc.dir === "asc" ? 1 : -1) * (Number(a.rank) - Number(b.rank));
-      av = String(av); bv = String(bv);
-      return (sc.dir === "asc" ? 1 : -1) * av.localeCompare(bv);
+      if (sc.key === "aa_index" || sc.key === "aa_stars") {
+        var av = a[sc.key] == null ? -1 : a[sc.key];
+        var bv = b[sc.key] == null ? -1 : b[sc.key];
+        return (sc.dir === "asc" ? 1 : -1) * (av - bv);
+      }
+      var av2 = a[sc.key] || "", bv2 = b[sc.key] || "";
+      return (sc.dir === "asc" ? 1 : -1) * String(av2).localeCompare(String(bv2));
     });
 
     var cols = TIER_COLS[tier];
@@ -519,7 +527,7 @@ function renderTiers() {
     html += "<thead><tr><th data-key=\"rank\">Rank</th><th data-key=\"modelo\">Modelo</th>";
     for (var c = 0; c < cols.length; c++) {
       var ck = cols[c];
-      html += '<th data-key="' + ck + '" data-tip="' + TIER_LABELS[ck] + '">' + TIER_LABELS[ck] + '<span class="sort-icon ' + (sc.key === ck ? (sc.dir === "asc" ? "up" : "down") : "") + '"></span></th>';
+      html += '<th data-key="' + ck + '" data-tip="' + (TIER_TIPS[ck] || TIER_LABELS[ck]) + '" style="' + (ck === "aa_index" || ck === "aa_stars" ? "color:var(--accent)" : "") + '">' + TIER_LABELS[ck] + '<span class="sort-icon ' + (sc.key === ck ? (sc.dir === "asc" ? "up" : "down") : "") + '"></span></th>';
     }
     html += '<th>Notas</th></tr></thead><tbody>';
 
@@ -530,19 +538,19 @@ function renderTiers() {
         var m = sorted[i];
         html += "<tr>";
         html += '<td class="rank">' + esc(m.rank) + "</td>";
-        // Modelo + badge AA inline (se houver dado oficial)
-        var modelCell = esc(m.modelo);
-        if (m.aa_index != null) {
-          var aaBadge = m.aa_url
-            ? '<a href="' + esc(m.aa_url) + '" target="_blank" rel="noopener" class="aa-badge" title="AA Intelligence Index: ' + m.aa_index + ' (click para fonte)">' + m.aa_index + '</a>'
-            : '<span class="aa-badge" title="AA Intelligence Index: ' + m.aa_index + '">' + m.aa_index + '</span>';
-          modelCell += ' ' + aaBadge;
-        }
-        html += '<td class="model">' + modelCell + "</td>";
+        html += '<td class="model">' + esc(m.modelo) + "</td>";
         for (var cc = 0; cc < cols.length; cc++) {
           var key = cols[cc];
           var val = m[key];
-          html += "<td>" + (key === "context" ? '<span class="context">' + esc(val) + "</span>" : '<span class="tl">' + esc(val) + "</span>") + "</td>";
+          if (key === "context") {
+            html += '<td><span class="context">' + esc(val) + "</span></td>";
+          } else if (key === "aa_index") {
+            html += renderAACell(m);
+          } else if (key === "aa_stars") {
+            html += renderAAStarsCell(m);
+          } else {
+            html += '<td><span class="tl">' + esc(val) + "</span></td>";
+          }
         }
         html += '<td class="notas">' + esc(m.notas) + "</td>";
         html += "</tr>";

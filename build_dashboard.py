@@ -43,11 +43,9 @@ TIER_LABELS = {
     "A": "Tier A — Strong",
 }
 
-# Campos por tier nas tabelas
-TIER_CONFIG = {
-    "S": ["rank", "modelo", "context", "release", "reasoning", "notas"],
-    "A": ["rank", "modelo", "context", "release", "reasoning", "notas"],
-}
+# Campos padronizados para TODOS os tiers (mesmas colunas, mesmas infos)
+TIER_COLS_STANDARD = ["rank", "modelo", "context", "release", "aa_index", "aa_stars", "notas"]
+TIER_CONFIG = {"S": TIER_COLS_STANDARD, "A": TIER_COLS_STANDARD}
 
 SCORECARD_FIELDS = ["aa_rank", "modelo", "aa_index_raw", "aa_stars_raw", "tier"]
 
@@ -103,26 +101,18 @@ def tier_tables_from_pipeline(frontier: list[dict[str, Any]]) -> dict[str, list[
         ctx = (m.get("limit") or {}).get("context", 0)
         ctx_label = format_context(ctx)
         release = m.get("release_date", "—")
-        reasoning = "✓ reasoning" if m.get("reasoning") else "—"
-        multimodal = "✓ multimodal" if m.get("attachment") else ""
-        open_weights = "open" if m.get("open_weights") else "proprietário"
 
-        notes_parts = [open_weights]
-        if multimodal:
-            notes_parts.append(multimodal)
-        if m.get("tool_call"):
-            notes_parts.append("tool-call")
-
-        # AA stars quando disponível
-        if m.get("aa_stars"):
-            notes_parts.append(f"AA {m['aa_index']}/100")
+        # Notas limpas: só open/proprietário + multimodal (tool-call é pré-requisito do filtro)
+        notes_parts = []
+        notes_parts.append("open" if m.get("open_weights") else "proprietário")
+        if m.get("attachment"):
+            notes_parts.append("multimodal")
 
         by_tier[tier].append({
             "rank": str(rank_counter[tier]),
             "modelo": f"`{m.get('display_name', m['id'])}`",
             "context": ctx_label,
             "release": release,
-            "reasoning": reasoning,
             "notas": ", ".join(notes_parts),
             "aa_index": m.get("aa_index"),
             "aa_stars": m.get("aa_stars"),

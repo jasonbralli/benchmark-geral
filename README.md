@@ -55,6 +55,23 @@ models.dev/api.json ──► nim_pipeline/fetch.py ──► data/nvidia_models
 | `MODELOS_NVIDIA_NIM_RANKING.md` | Curadoria humana (scorecard top 10 por AA) |
 | `tests/` | Suíte pytest (39 testes) |
 
+## Colunas padronizadas (todos os blocos)
+
+Todos os blocos (Scorecard Top 10, Tier S, Tier A) exibem as mesmas informações:
+
+| Coluna | Fonte | Formato |
+|--------|-------|---------|
+| **Rank** | Posição no tier | `#` |
+| **Modelo** | `modelo` (display_name se versionado) | `` `model-id` `` |
+| **Context** | Context window máxima | `128K`, `256K`, `1M` |
+| **Release** | Data de release | `2026-07-31` |
+| **AA Index** | Artificial Analysis Intelligence Index v4.1 | `51` ou `N/D` (link para fonte) |
+| **AA ★** | Estrelas calibradas do AA Index | `★★★★★` ou `N/D` |
+| **Notas** | `open`/`proprietário` + `multimodal` | `open, multimodal` |
+
+Colunas removidas: **Tier** (separation visual por seção), **Reasoning** (pré-requisito do filtro),
+**tool-call** em notas (pré-requisito do filtro), **AA X/100** em notas (agora coluna dedicada).
+
 ## Uso
 
 ```bash
