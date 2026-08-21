@@ -24,7 +24,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = Path(__file__).resolve().parent
+BASE = Path(__file__).resolve().parent.parent
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ def main():
     logger.info("========================================")
 
     # Step 1: Sync Hermes
-    sync_cmd = [sys.executable, "sync_hermes_models.py"]
+    sync_cmd = [sys.executable, "scripts/sync_hermes_models.py"]
     if args.dry_run:
         sync_cmd.append("--dry-run")
     if args.verbose:
@@ -87,7 +87,7 @@ def main():
         sys.exit(1)
 
     # Step 2: Update pipeline
-    update_cmd = [sys.executable, "update_pipeline.py"]
+    update_cmd = [sys.executable, "scripts/update_pipeline.py"]
     if args.refresh:
         update_cmd.append("--refresh")
     if args.verbose:

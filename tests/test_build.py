@@ -12,7 +12,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 
 # Importa funções do build (evita execução do main)
-import build_dashboard as bd
+import scripts.build_dashboard as bd
 
 # Amostra real do MD (Scorecard — Top 10 por AA Index)
 SCORECARD_MD = """

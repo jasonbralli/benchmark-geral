@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any
 
 # Adiciona raiz do projeto ao sys.path para que nim_pipeline seja importável
-BASE = Path(__file__).resolve().parent
+BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 
 from nim_pipeline.fetch import fetch_nvidia_models

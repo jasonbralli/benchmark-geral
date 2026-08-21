@@ -153,6 +153,7 @@ Estes modelos **não são LLMs de chat** e não participam do ranking de capacid
 
 
 
+
 ## 📊 Scorecard — Top 10 por AA Index
 
 Ranking ordenado pelo **Artificial Analysis Intelligence Index v4.1** (score third-party oficial, 0-100). Modelos sem score AA aparecem no final com `N/D`. Calibração: 5★ ≥50 | 4★ ≥35 | 3★ ≥20 | 2★ ≥10 | 1★ <10
