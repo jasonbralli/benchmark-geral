@@ -35,6 +35,10 @@ AA_INTELLIGENCE_INDEX: dict[str, dict[str, Any]] = {
         "index": 51,
         "url": "https://artificialanalysis.ai/models/glm-5-2",
     },
+    "moonshotai/kimi-k3": {
+        "index": 57,
+        "url": "https://artificialanalysis.ai/models/kimi-k3",
+    },
     "moonshotai/kimi-k2.6": {
         "index": 43,
         "url": "https://artificialanalysis.ai/models/moonshot-kimi-k2",

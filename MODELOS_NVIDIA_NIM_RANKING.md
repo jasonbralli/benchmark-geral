@@ -146,22 +146,27 @@ Estes modelos **não são LLMs de chat** e não participam do ranking de capacid
 
 ---
 
+
+
+
+
+
+
+
 ## 📊 Scorecard — Top 10 por AA Index
 
 Ranking ordenado pelo **Artificial Analysis Intelligence Index v4.1** (score third-party oficial, 0-100). Modelos sem score AA aparecem no final com `N/D`. Calibração: 5★ ≥50 | 4★ ≥35 | 3★ ≥20 | 2★ ≥10 | 1★ <10
 
 | AA Rank | Modelo | AA Index | AA ★ | Tier |
 |--------:|--------|---------:|:----:|:----:|
-| 1 | `z-ai/glm-5.2` | 51 | ★★★★★ | S |
-| 2 | `deepseek-ai/deepseek-v4-flash-0731` | 50 | ★★★★★ | S |
-| 3 | `minimaxai/minimax-m3` | 44 | ★★★★☆ | S |
-| 4 | `moonshotai/kimi-k2.6` | 43 | ★★★★☆ | S |
-| 5 | `thinkingmachines/inkling` | 41 | ★★★★☆ | S |
-| 6 | `nvidia/nemotron-3-ultra-550b-a55b` | 38 | ★★★★☆ | S |
-| 7 | `nvidia/nemotron-3-super-120b-a12b` | 26 | ★★★☆☆ | S |
-| 8 | `openai/gpt-oss-120b` | 24 | ★★★☆☆ | S |
-| N/D | `poolside/laguna-xs-2.1` | N/D | N/D | S |
-| N/D | `mistralai/mistral-large-2-instruct` | N/D | N/D | A |
+| 1 | `moonshotai/kimi-k3` | 57 | ★★★★★ | S |
+| 2 | `z-ai/glm-5.2` | 51 | ★★★★★ | S |
+| 3 | `deepseek-ai/deepseek-v4-flash-0731` | 50 | ★★★★★ | S |
+| 4 | `minimaxai/minimax-m3` | 44 | ★★★★ | S |
+| 5 | `moonshotai/kimi-k2.6` | 43 | ★★★★ | S |
+| 6 | `thinkingmachines/inkling` | 41 | ★★★★ | S |
+| 7 | `nvidia/nemotron-3-ultra-550b-a55b` | 38 | ★★★★ | S |
+| 8 | `nvidia/nemotron-3-super-120b-a12b` | 26 | ★★★ | A |
 
 ---
 

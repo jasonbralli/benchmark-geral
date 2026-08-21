@@ -1,0 +1,23 @@
+[
+  "deepseek-ai/deepseek-coder-6.7b-instruct",
+  "deepseek-ai/deepseek-v4-flash-0731",
+  "meta/llama-3.1-70b-instruct",
+  "meta/llama-3.1-8b-instruct",
+  "meta/llama-3.2-1b-instruct",
+  "meta/llama-3.2-3b-instruct",
+  "meta/llama-3.3-70b-instruct",
+  "meta/llama2-70b",
+  "minimaxai/minimax-m3",
+  "mistralai/mistral-7b-instruct-v0.3",
+  "mistralai/mistral-large",
+  "mistralai/mistral-large-2-instruct",
+  "mistralai/mixtral-8x22b-v0.1",
+  "moonshotai/kimi-k2.6",
+  "moonshotai/kimi-k3",
+  "openai/gpt-oss-120b",
+  "openai/gpt-oss-20b",
+  "poolside/laguna-xs-2.1",
+  "stepfun-ai/step-3.7-flash",
+  "thinkingmachines/inkling",
+  "z-ai/glm-5.2"
+]
