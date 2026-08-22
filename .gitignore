@@ -7,6 +7,7 @@ venv/
 
 # Dados brutos / cache do inventário (regenerados pelo pipeline)
 data/nvidia_models_raw.json
+data/openrouter_models_raw.json
 
 # Imagens geradas do dashboard (regeneradas)
 preview.png

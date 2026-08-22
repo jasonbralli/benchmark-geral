@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benchmark Consolidado Multi-Provider — Custo × Benefício</title>
+<style>
+:root {
+  --bg: #0b0f14;
+  --card: #11161d;
+  --border: #1f2733;
+  --text: #e6edf3;
+  --muted: #8b98a9;
+  --accent: #4cc2ff;
+  --free: #2ea043;
+  --paid: #cf8e3a;
+  --warn: #d64545;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 24px;
+  background: var(--bg); color: var(--text);
+  font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+header { margin-bottom: 24px; }
+h1 { margin: 0 0 8px; font-size: 24px; color: var(--accent); }
+.subtitle { color: var(--muted); margin: 0; }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; margin-bottom: 24px;
+}
+.kpi {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px;
+}
+.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.kpi-value { font-size: 24px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+.kpi-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.filters {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  background: var(--card); border: 1px solid var(--border);
+  padding: 12px 14px; border-radius: 8px; margin-bottom: 16px;
+}
+.filters label { font-size: 13px; color: var(--muted); }
+.filters input, .filters select {
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 6px 10px; font-size: 13px;
+}
+.filters input[type="search"] { flex: 1; min-width: 200px; }
+.filters input[type="checkbox"] { margin-right: 4px; }
+
+table {
+  width: 100%; border-collapse: collapse;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  font-size: 13px;
+}
+thead { background: #161c25; }
+th, td {
+  padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+th { font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; cursor: pointer; user-select: none; }
+th:hover { color: var(--accent); }
+tbody tr:hover { background: rgba(76,194,255,.04); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+}
+.badge.free { background: rgba(46,160,67,.15); color: var(--free); border: 1px solid var(--free); }
+.badge.paid { background: rgba(207,142,58,.15); color: var(--paid); border: 1px solid var(--paid); }
+.badge.nd   { background: rgba(139,152,169,.12); color: var(--muted); border: 1px solid var(--border); }
+
+.rank { font-weight: 700; color: var(--accent); }
+.score { font-weight: 700; color: var(--accent); }
+.stars { color: #f2c94c; letter-spacing: 1px; }
+.mono  { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+.bool-true  { color: var(--free); }
+.bool-false { color: var(--muted); }
+.nd-text { color: var(--muted); font-style: italic; }
+
+h2 {
+  margin: 32px 0 12px; font-size: 18px; color: var(--accent);
+  border-bottom: 2px solid var(--accent); padding-bottom: 6px; display: inline-block;
+}
+.section-note { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
+
+footer.site-footer {
+  margin-top: 48px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center; font-size: 12px; color: var(--muted);
+}
+footer.site-footer a {
+  color: var(--muted); text-decoration: none;
+}
+footer.site-footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧠 Benchmark Consolidado Multi-Provider</h1>
+  <p class="subtitle">Ranking por custo × benefício — todos os providers do Hermes • atualizado automaticamente</p>
+</header>
+
+<section class="kpis" id="kpis"></section>
+
+<section class="filters">
+  <input type="search" id="q" placeholder="🔍 buscar modelo ou provider...">
+  <label><input type="checkbox" id="onlyFree"> só FREE</label>
+  <label><input type="checkbox" id="onlyTools"> tool_call</label>
+  <label><input type="checkbox" id="onlyReasoning"> reasoning</label>
+  <label>provider
+    <select id="provider"><option value="">todos</option></select>
+  </label>
+</section>
+
+<h2>🏆 Ranking — Custo × Benefício</h2>
+<p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
+<table id="tblRanked">
+  <thead><tr>
+    <th data-k="rank">#</th>
+    <th data-k="provider">Provider</th>
+    <th data-k="display_name">Modelo</th>
+    <th data-k="context_k">Ctx</th>
+    <th data-k="tool_call">Tool</th>
+    <th data-k="reasoning">Reas.</th>
+    <th data-k="multimodal">Mult.</th>
+    <th data-k="price_in">$/1M in</th>
+    <th data-k="price_out">$/1M out</th>
+    <th data-k="is_free">FREE</th>
+    <th data-k="aa_index">AA ★</th>
+    <th data-k="cxb_score">Score CxB</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2 style="margin-top:40px">📦 Inventário Completo (N/D)</h2>
+<p class="section-note">Providers sem fonte pública de metadados (gemini, kilocode, huggingface, nous, opencode-free). Listados apenas para referência de IDs.</p>
+<table id="tblND">
+  <thead><tr>
+    <th>Provider</th>
+    <th>Modelo</th>
+    <th>FREE</th>
+    <th>Source</th>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<footer class="site-footer">
+  <a href="https://inovatudo.com" target="_blank" rel="noopener">inovatudo.com</a>
+</footer>
+
+<script>
+var DATA = //CONSOLIDATED_DATA//;
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];}); }
+function boolCell(v){ if(v===null||v===undefined) return '<span class="nd-text">N/D</span>'; return v?'<span class="bool-true">✓</span>':'<span class="bool-false">—</span>'; }
+function ctxCell(k){ if(k==null) return '<span class="nd-text">N/D</span>'; return k>=1024 ? (k/1024).toFixed(0)+"M" : k+"K"; }
+function priceCell(p){ if(p==null) return '<span class="nd-text">N/D</span>'; if(p===0) return "0"; return p<1 ? p.toFixed(3) : p.toFixed(2); }
+function starsCell(s,idx){ if(idx==null) return '<span class="nd-text">N/D</span>'; var st = s?("★".repeat(s)+"☆".repeat(5-s)):"—"; return '<span class="stars">'+st+'</span> <span class="mono">'+(idx==null?"":idx)+'</span>'; }
+
+function renderKPIs(){
+  var k = DATA.kpis;
+  var html =
+    '<div class="kpi"><div class="kpi-label">Modelos Ranked</div><div class="kpi-value">'+k.total_ranked+'</div></div>'+
+    '<div class="kpi"><div class="kpi-label">Inventário Total</div><div class="kpi-value">'+k.total_inventory+'</div><div class="kpi-sub">todos os providers</div></div>'+
+    '<div class="kpi"><div class="kpi-label">FREE no Rank</div><div class="kpi-value">'+k.free_ranked+'</div></div>'+
+    '<div class="kpi"><div class="kpi-label">Melhor CxB</div><div class="kpi-value">'+k.top_cxb.toFixed(2)+'</div><div class="kpi-sub">'+esc(k.top_model)+'</div></div>';
+  document.getElementById("kpis").innerHTML = html;
+}
+
+var state = { q:"", free:false, tools:false, reasoning:false, provider:"", sortKey:"cxb_score", sortDir:-1 };
+
+function renderRanked(){
+  var rows = DATA.ranked.filter(function(r){
+    if(state.free && !r.is_free) return false;
+    if(state.tools && !r.tool_call) return false;
+    if(state.reasoning && !r.reasoning) return false;
+    if(state.provider && r.provider!==state.provider) return false;
+    if(state.q){
+      var q = state.q.toLowerCase();
+      if((r.display_name||"").toLowerCase().indexOf(q)<0 &&
+         (r.model_id||"").toLowerCase().indexOf(q)<0 &&
+         (r.provider||"").toLowerCase().indexOf(q)<0) return false;
+    }
+    return true;
+  });
+  rows.sort(function(a,b){
+    var ka=a[state.sortKey], kb=b[state.sortKey];
+    if(ka==null) ka = state.sortDir>0 ? Infinity : -Infinity;
+    if(kb==null) kb = state.sortDir>0 ? Infinity : -Infinity;
+    if(ka<kb) return -1*state.sortDir;
+    if(ka>kb) return  1*state.sortDir;
+    return 0;
+  });
+  var tbody = document.querySelector("#tblRanked tbody");
+  var html = "";
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    html += "<tr>"+
+      '<td class="rank">'+(i+1)+"</td>"+
+      "<td>"+esc(r.provider)+"</td>"+
+      '<td class="mono" title="'+esc(r.model_id)+'">'+esc(r.display_name)+"</td>"+
+      "<td>"+ctxCell(r.context_k)+"</td>"+
+      "<td>"+boolCell(r.tool_call)+"</td>"+
+      "<td>"+boolCell(r.reasoning)+"</td>"+
+      "<td>"+boolCell(r.multimodal)+"</td>"+
+      '<td class="mono">'+priceCell(r.price_in)+"</td>"+
+      '<td class="mono">'+priceCell(r.price_out)+"</td>"+
+      "<td>"+(r.is_free?'<span class="badge free">FREE</span>':'<span class="badge paid">pago</span>')+"</td>"+
+      "<td>"+starsCell(r.aa_stars, r.aa_index)+"</td>"+
+      '<td class="score">'+r.cxb_score.toFixed(2)+"</td>"+
+      "</tr>";
+  }
+  tbody.innerHTML = html || '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
+}
+
+function renderND(){
+  var tbody = document.querySelector("#tblND tbody");
+  var html = "";
+  for(var i=0;i<DATA.non_ranked.length;i++){
+    var r = DATA.non_ranked[i];
+    html += "<tr>"+
+      "<td>"+esc(r.provider)+"</td>"+
+      '<td class="mono">'+esc(r.display_name)+"</td>"+
+      "<td>"+(r.is_free?'<span class="badge free">FREE</span>':'<span class="badge nd">N/D</span>')+"</td>"+
+      '<td class="mono">'+esc(r.source)+"</td>"+
+      "</tr>";
+  }
+  tbody.innerHTML = html;
+}
+
+function fillProviders(){
+  var sel = document.getElementById("provider");
+  var seen = {};
+  DATA.ranked.concat(DATA.non_ranked).forEach(function(r){ seen[r.provider]=1; });
+  Object.keys(seen).sort().forEach(function(p){
+    var o = document.createElement("option");
+    o.value = p; o.textContent = p;
+    sel.appendChild(o);
+  });
+}
+
+document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value; renderRanked(); });
+document.getElementById("onlyFree").addEventListener("change", function(e){ state.free = e.target.checked; renderRanked(); });
+document.getElementById("onlyTools").addEventListener("change", function(e){ state.tools = e.target.checked; renderRanked(); });
+document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; renderRanked(); });
+document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; renderRanked(); });
+
+Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), function(th){
+  th.addEventListener("click", function(){
+    var k = th.getAttribute("data-k");
+    if(state.sortKey === k){ state.sortDir *= -1; } else { state.sortKey = k; state.sortDir = (k==="cxb_score"||k==="aa_index"||k==="context_k")?-1:1; }
+    renderRanked();
+  });
+});
+
+renderKPIs();
+fillProviders();
+renderRanked();
+renderND();
+</script>
+</body>
+</html>
