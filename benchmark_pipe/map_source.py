@@ -1,10 +1,17 @@
 """benchmark_pipe.map_source
 ===========================
 
-Anexa metadados por provider. NVIDIA reusa nim_pipeline.fetch; OpenRouter tem
-adapter novo; demais providers ficam como passthrough (sem fonte confiável).
+Anexa metadados por provider. NVIDIA é lido de models_dev_cache.json (fonte
+de verdade, 102 modelos — inclui os 2 novos deepseek-v4-flash-0731 +
+moonshotai/kimi-k3 que faltam no data/nvidia_models_raw.json stale).
+OpenRouter tem adapter próprio; demais providers ficam como passthrough.
 
-Cache OpenRouter em data/openrouter_models_raw.json (mesmo padrão do NVIDIA).
+Cache OpenRouter em data/openrouter_models_raw.json.
+
+A "single source of IDs" continua sendo o provider_models_cache.json do
+Hermes, mas os METADADOS NVIDIA vêm do models_dev_cache.json do Hermes
+(não do cache stale do projeto). O orquestrador faz o merge: IDs do Hermes
+que não batem em models_dev (antigos/deprecados) caem para passthrough N/D.
 """
 
 from __future__ import annotations
@@ -23,8 +30,32 @@ from nim_pipeline.fetch import fetch_nvidia_models  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
+HERMES_MODELS_DEV_CACHE = Path(
+    r"C:\Users\Jason\AppData\Local\hermes\models_dev_cache.json"
+)
 OPENROUTER_API = "https://openrouter.ai/api/v1/models"
 OR_CACHE = Path(__file__).parent.parent / "data" / "openrouter_models_raw.json"
+# Cache de fallback (stale) usado só quando models_dev_cache indisponível
+LEGACY_PROJECT_CACHE = Path(__file__).parent.parent / "data" / "nvidia_models_raw.json"
+
+
+def fetch_nvidia_from_models_dev_cache() -> list[dict[str, Any]]:
+    """Lê metadados NVIDIA de ~/AppData/Local/hermes/models_dev_cache.json.
+
+    Retorna lista de dicts no mesmo formato que fetch_nvidia_models.
+    Levanta RuntimeError se o cache não existir/formato inválido.
+    """
+    if not HERMES_MODELS_DEV_CACHE.exists():
+        raise RuntimeError(f"models_dev_cache ausente: {HERMES_MODELS_DEV_CACHE}")
+    data = json.loads(HERMES_MODELS_DEV_CACHE.read_text(encoding="utf-8"))
+    models = data.get("nvidia", {}).get("models", {})
+    # models é dict{id: meta} ou lista; normaliza para lista
+    if isinstance(models, dict):
+        out = list(models.values())
+    else:
+        out = list(models)
+    logger.info("models_dev_cache NVIDIA: %d modelos", len(out))
+    return out
 
 
 def fetch_openrouter(use_cache: bool = False) -> list[dict[str, Any]]:
@@ -67,10 +98,17 @@ def build_metadata_index(
 
     if "nvidia" in hermes_inventory:
         try:
-            out["nvidia"] = fetch_nvidia_models(use_cache=use_cache)
+            # Fonte de verdade: models_dev_cache do Hermes (102 modelos)
+            out["nvidia"] = fetch_nvidia_from_models_dev_cache()
         except Exception as e:  # noqa: BLE001
-            logger.warning("NVIDIA fetch falhou: %s", e)
-            out["nvidia"] = []
+            logger.warning(
+                "models_dev_cache falhou (%s); fallback p/ cache stale do projeto", e
+            )
+            try:
+                out["nvidia"] = fetch_nvidia_models(use_cache=True)
+            except Exception as e2:  # noqa: BLE001
+                logger.warning("Fallback NVIDIA também falhou: %s", e2)
+                out["nvidia"] = []
 
     if "openrouter" in hermes_inventory:
         try:

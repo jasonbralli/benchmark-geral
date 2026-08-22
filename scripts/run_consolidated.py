@@ -44,10 +44,17 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
 
     metadata = build_metadata_index(inventory, use_cache=use_cache)
 
-    # Providers com fonte -> normaliza
+    # Providers com fonte -> normaliza (com merge Hermes IDs × metadados)
     all_models = []
     nv_raw = metadata.get("nvidia", [])
-    all_models += normalize_nvidia(nv_raw)
+    nvidia_models = normalize_nvidia(nv_raw)
+    # Single source of IDs = Hermes cache. IDs do Hermes sem metadados em
+    # models_dev (antigos/deprecados) viram passthrough N/D — nunca drop.
+    nv_meta_ids = {m.model_id for m in nvidia_models}
+    nvidia_missing = set(inventory.get("nvidia", set())) - nv_meta_ids
+    all_models += nvidia_models
+    all_models += passthrough_ids("nvidia", nvidia_missing)
+
     or_raw = metadata.get("openrouter", [])
     all_models += normalize_openrouter(or_raw)
 

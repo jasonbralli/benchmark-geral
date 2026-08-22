@@ -32,7 +32,7 @@ def test_fetch_openrouter_falls_back_to_cache_on_error(tmp_path, monkeypatch):
 
 def test_build_metadata_index_only_known_providers(monkeypatch):
     """gemini/kilocode/huggingface/nous/opencode-free NÃO entram aqui."""
-    monkeypatch.setattr(map_source, "fetch_nvidia_models", lambda use_cache=False: [{"id": "n1"}])
+    monkeypatch.setattr(map_source, "fetch_nvidia_from_models_dev_cache", lambda: [{"id": "n1"}])
     monkeypatch.setattr(map_source, "fetch_openrouter", lambda use_cache=False: [{"id": "o1"}])
     inv = {
         "nvidia": {"a"},
@@ -50,10 +50,24 @@ def test_build_metadata_index_only_known_providers(monkeypatch):
 
 
 def test_build_metadata_index_resilient_to_fetch_failure(monkeypatch):
-    def boom(**k):
+    def boom():
         raise RuntimeError("x")
-    monkeypatch.setattr(map_source, "fetch_nvidia_models", boom)
+    def boom_legacy(**k):
+        raise RuntimeError("legacy too")
+    monkeypatch.setattr(map_source, "fetch_nvidia_from_models_dev_cache", boom)
+    monkeypatch.setattr(map_source, "fetch_nvidia_models", boom_legacy)
     monkeypatch.setattr(map_source, "fetch_openrouter", lambda use_cache=False: [{"id": "o1"}])
     out = build_metadata_index({"nvidia": {"a"}, "openrouter": {"b"}})
     assert out["nvidia"] == []
     assert out["openrouter"] == [{"id": "o1"}]
+
+
+def test_build_metadata_index_falls_back_to_legacy_project_cache(monkeypatch, tmp_path):
+    """models_dev_cache ausente -> fallback p/ data/nvidia_models_raw.json (stale)."""
+    def boom():
+        raise RuntimeError("models_dev_cache ausente")
+    fake_legacy = [{"id": "fallback/ok"}]
+    monkeypatch.setattr(map_source, "fetch_nvidia_from_models_dev_cache", boom)
+    monkeypatch.setattr(map_source, "fetch_nvidia_models", lambda use_cache=True: fake_legacy)
+    out = build_metadata_index({"nvidia": {"a"}})
+    assert out["nvidia"] == fake_legacy
