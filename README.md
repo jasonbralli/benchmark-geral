@@ -50,7 +50,7 @@ models.dev/api.json ──► nim_pipeline/fetch.py ──► data/nvidia_models
 | `nim_pipeline/enrich.py` | Adiciona AA Index + estrelas calibradas + display_name |
 | `build_dashboard.py` | Orquestrador — lê MD, monta JSON, injeta em template.html |
 | `run_pipeline.py` | Entrypoint — roda pipeline completo + opcional pytest |
-| `template.html` | Template canônico com marker `//NIM_RANKING_DATA//` |
+| `template.html` | **LEGADO NVIDIA** (arquivado, intocado). Marker `//NIM_RANKING_DATA//` |
 | `dashboard.html` | **Output** gerado (não edite manualmente) |
 | `MODELOS_NVIDIA_NIM_RANKING.md` | Curadoria humana (scorecard top 10 por AA) |
 | `tests/` | Suíte pytest (39 testes) |
