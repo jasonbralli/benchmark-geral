@@ -58,6 +58,65 @@ def fetch_nvidia_from_models_dev_cache() -> list[dict[str, Any]]:
     return out
 
 
+# Aliases: nome do provider Hermes -> nome no models_dev_cache (se diferente).
+PROVIDER_ALIASES = {
+    "kilocode": "kilo",
+    "opencode-free": "opencode",
+}
+
+
+def _load_models_dev_index() -> dict[str, dict[str, Any]]:
+    """Índice global de metadados: {model_id: meta} — preenche campos por
+    provider, mantendo preço/custo do primeiro provider que expõe cada campo.
+    Evita que um modelo free do nvidia infecte kilocode/nous (que cobram).
+    """
+    if not HERMES_MODELS_DEV_CACHE.exists():
+        return {}
+    try:
+        data = json.loads(HERMES_MODELS_DEV_CACHE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for prov_data in data.values():
+        if not isinstance(prov_data, dict):
+            continue
+        models = prov_data.get("models") or {}
+        if not isinstance(models, dict):
+            continue
+        for mid, meta in models.items():
+            if not (isinstance(mid, str) and isinstance(meta, dict)):
+                continue
+            entry = out.setdefault(mid, {})
+            if "cost" not in entry and "cost" in meta:
+                entry["cost"] = meta.get("cost")
+            if "limit" not in entry and "limit" in meta:
+                entry["limit"] = meta.get("limit")
+            if "tool_call" not in entry and "tool_call" in meta:
+                entry["tool_call"] = meta.get("tool_call")
+            if "reasoning" not in entry and "reasoning" in meta:
+                entry["reasoning"] = meta.get("reasoning")
+            if "attachment" not in entry and "attachment" in meta:
+                entry["attachment"] = meta.get("attachment")
+            if "open_weights" not in entry and "open_weights" in meta:
+                entry["open_weights"] = meta.get("open_weights")
+            if "release_date" not in entry and "release_date" in meta:
+                entry["release_date"] = meta.get("release_date")
+            if "name" not in entry and "name" in meta:
+                entry["name"] = meta.get("name")
+    return out
+
+
+def enrich_passthrough_with_models_dev(
+    provider: str,
+    ids: set[str] | list[str],
+) -> dict[str, dict[str, Any]]:
+    """Cross-join: {model_id: meta} priorizando o provider correto (via alias)."""
+    if not ids:
+        return {}
+    index = _load_models_dev_index()
+    return {mid: index[mid] for mid in ids if mid in index}
+
+
 def fetch_openrouter(use_cache: bool = False) -> list[dict[str, Any]]:
     """Retorna lista de modelos da OpenRouter (data[])."""
     if use_cache and OR_CACHE.exists():

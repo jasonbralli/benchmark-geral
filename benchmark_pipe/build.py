@@ -49,6 +49,10 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "cxb_score": m.cxb_score,
             "source": m.source,
             "release_date": m.release_date,
+            "canonical_id": m.canonical_id,
+            "variant": m.variant,
+            "aliases": m.aliases,
+            "divergences": m.divergences,
         }
 
     return {

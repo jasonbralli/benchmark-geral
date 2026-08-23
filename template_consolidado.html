@@ -77,6 +77,12 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 .badge.paid { background: rgba(207,142,58,.15); color: var(--paid); border: 1px solid var(--paid); }
 .badge.nd   { background: rgba(139,152,169,.12); color: var(--muted); border: 1px solid var(--border); }
 
+/* Coluna unificada Custo: efetivo + tabela de referência + badge de fonte */
+.custo { line-height: 1.2; }
+.custo .custo-efetivo { font-weight: 600; }
+.custo .custo-tabela  { font-size: 11px; color: var(--muted); }
+.badge.src { margin-left: 4px; padding: 1px 5px; font-size: 9px; background: rgba(139,152,169,.15); color: var(--muted); border: 1px solid var(--border); }
+
 .rank { font-weight: 700; color: var(--accent); }
 .score { font-weight: 700; color: var(--accent); }
 .stars { color: #f2c94c; letter-spacing: 1px; }
@@ -116,9 +122,11 @@ footer.site-footer a:hover { color: var(--accent); }
   <label><input type="checkbox" id="onlyFree"> só FREE</label>
   <label><input type="checkbox" id="onlyTools"> tool_call</label>
   <label><input type="checkbox" id="onlyReasoning"> reasoning</label>
-  <label>provider
-    <select id="provider"><option value="">todos</option></select>
-  </label>
+  <label><input type="checkbox" id="onlyMult"> multimodal</label>
+  <label>CTX <select id="fCtx"><option value="">todos</option><option value="32">≥32K</option><option value="128">≥128K</option><option value="256">≥256K</option><option value="1024">≥1M</option></select></label>
+  <label>AA★ <select id="fAa"><option value="">todos</option><option value="5">5★ (≥50)</option><option value="4">≥4★ (≥35)</option><option value="3">≥3★ (≥20)</option><option value="1">com AA</option></select></label>
+  <label>CxB <select id="fCxb"><option value="">todos</option><option value="50">≥50</option><option value="20">≥20</option><option value="10">≥10</option><option value="5">≥5</option></select></label>
+  <label>provider <select id="provider"><option value="">todos</option></select></label>
 </section>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
@@ -132,9 +140,7 @@ footer.site-footer a:hover { color: var(--accent); }
     <th data-k="tool_call">Tool</th>
     <th data-k="reasoning">Reas.</th>
     <th data-k="multimodal">Mult.</th>
-    <th data-k="price_in">$/1M in</th>
-    <th data-k="price_out">$/1M out</th>
-    <th data-k="is_free">FREE</th>
+    <th data-k="price_in">Custo</th>
     <th data-k="aa_index">AA ★</th>
     <th data-k="cxb_score">Score CxB</th>
   </tr></thead>
@@ -164,6 +170,18 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){retu
 function boolCell(v){ if(v===null||v===undefined) return '<span class="nd-text">N/D</span>'; return v?'<span class="bool-true">✓</span>':'<span class="bool-false">—</span>'; }
 function ctxCell(k){ if(k==null) return '<span class="nd-text">N/D</span>'; return k>=1024 ? (k/1024).toFixed(0)+"M" : k+"K"; }
 function priceCell(p){ if(p==null) return '<span class="nd-text">N/D</span>'; if(p===0) return "0"; return p<1 ? p.toFixed(3) : p.toFixed(2); }
+function custoCell(r){
+  // Custo unificado: efetivo (FREE/pago) + preço de tabela de referência + badge de confiabilidade
+  var badge = (r.source==='models.dev' || r.source==='openrouter-api') ? '' :
+              (r.source==='models.dev-cross' ? ' <span class="badge src" title="ctx/tool herdado de outro provider, sem preço próprio">⚠ cross</span>' :
+               ' <span class="badge src" title="só ID no inventário Hermes, sem metadado models.dev">⚠ inv.</span>');
+  var tabela = r.price_in==null ? '<span class="nd-text">tabela N/D</span>' :
+               (r.price_in===0 ? 'tabela $0' : 'tabela $'+priceCell(r.price_in));
+  if(r.is_free){
+    return '<div class="custo"><span class="custo-efetivo" style="color:var(--free)">FREE</span><div class="custo-tabela">'+tabela+badge+'</div></div>';
+  }
+  return '<div class="custo"><span class="custo-efetivo mono" style="color:var(--paid)">$'+priceCell(r.price_in)+'</span><div class="custo-tabela">'+tabela+badge+'</div></div>';
+}
 function starsCell(s,idx){ if(idx==null) return '<span class="nd-text">N/D</span>'; var st = s?("★".repeat(s)+"☆".repeat(5-s)):"—"; return '<span class="stars">'+st+'</span> <span class="mono">'+(idx==null?"":idx)+'</span>'; }
 
 function renderKPIs(){
@@ -176,13 +194,21 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML = html;
 }
 
-var state = { q:"", free:false, tools:false, reasoning:false, provider:"", sortKey:"cxb_score", sortDir:-1 };
+var state = { q:"", free:false, tools:false, reasoning:false, mult:false, ctx:0, aa:0, cxb:0, provider:"", sortKey:"cxb_score", sortDir:-1 };
 
 function renderRanked(){
   var rows = DATA.ranked.filter(function(r){
     if(state.free && !r.is_free) return false;
     if(state.tools && !r.tool_call) return false;
     if(state.reasoning && !r.reasoning) return false;
+    if(state.mult && !r.multimodal) return false;
+    if(state.ctx && (r.context_k==null || r.context_k < state.ctx)) return false;
+    if(state.cxb && (r.cxb_score==null || r.cxb_score < state.cxb)) return false;
+    if(state.aa){
+      if(r.aa_index==null) return false;
+      var thr = state.aa===5?50 : state.aa===4?35 : state.aa===3?20 : -1;
+      if(thr>=0 && r.aa_index < thr) return false;
+    }
     if(state.provider && r.provider!==state.provider) return false;
     if(state.q){
       var q = state.q.toLowerCase();
@@ -212,14 +238,12 @@ function renderRanked(){
       "<td>"+boolCell(r.tool_call)+"</td>"+
       "<td>"+boolCell(r.reasoning)+"</td>"+
       "<td>"+boolCell(r.multimodal)+"</td>"+
-      '<td class="mono">'+priceCell(r.price_in)+"</td>"+
-      '<td class="mono">'+priceCell(r.price_out)+"</td>"+
-      "<td>"+(r.is_free?'<span class="badge free">FREE</span>':'<span class="badge paid">pago</span>')+"</td>"+
+      "<td>"+custoCell(r)+"</td>"+
       "<td>"+starsCell(r.aa_stars, r.aa_index)+"</td>"+
       '<td class="score">'+r.cxb_score.toFixed(2)+"</td>"+
       "</tr>";
   }
-  tbody.innerHTML = html || '<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
+  tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
 }
 
 function renderND(){
@@ -252,6 +276,10 @@ document.getElementById("q").addEventListener("input", function(e){ state.q = e.
 document.getElementById("onlyFree").addEventListener("change", function(e){ state.free = e.target.checked; renderRanked(); });
 document.getElementById("onlyTools").addEventListener("change", function(e){ state.tools = e.target.checked; renderRanked(); });
 document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; renderRanked(); });
+document.getElementById("onlyMult").addEventListener("change", function(e){ state.mult = e.target.checked; renderRanked(); });
+document.getElementById("fCtx").addEventListener("change", function(e){ state.ctx = parseInt(e.target.value||0,10); renderRanked(); });
+document.getElementById("fAa").addEventListener("change", function(e){ state.aa = parseInt(e.target.value||0,10); renderRanked(); });
+document.getElementById("fCxb").addEventListener("change", function(e){ state.cxb = parseFloat(e.target.value||0); renderRanked(); });
 document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; renderRanked(); });
 
 Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), function(th){

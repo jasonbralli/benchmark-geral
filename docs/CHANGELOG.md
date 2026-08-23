@@ -1,5 +1,62 @@
 # Changelog — benchmark_geral
 
+## [v2.3.0] — 2026-08-23 — Normalização canónica + Enriquecimento AA Data API
+
+### ✨ Novo: `benchmark_pipe/aa_api.py`
+- **Bulk fetch** AA Data API v2: `GET /api/v2/language/models/free?page=N&page_size=200`
+  — 1-4 calls por ciclo (616 modelos), não 1/modelo.
+- Cache `data/aa_models_raw.json` com **TTL 24h** (= janela da quota Free). `use_cache=True`
+  não consome rede (`X-Ratelimit-Remaining: 99→95` validado).
+- `build_aa_index_map()` → `{slug_norm: index}` (596 entradas); `lookup_aa_index()` casa
+  `canonical_id`↔`slug` tolerando vendor omitido, `:free`, `.`/`_`, prefixo de checkpoint.
+- Key `AA_API_KEY_benchmark_geral` (env ou `.env`, sem hardcode). `401/403/429`/offline →
+  fallback cache stale → dict curado. Nunca quebra o pipeline.
+- **Impacto**: ~8 → **702/1032 modelos ranked com AA index (68%)**.
+
+### 🎯 Normalização canónica de nomes (`normalize.py`, `build.py`, `run_consolidated.py`)
+- **`canonicalize()`** resolve aliases de vendor (`deepseek`→`deepseek-ai`,
+  `zai-org`→`z-ai`), sufixo de variante (`:free`/`:batch`/`:nitro`) e equivalências
+  (`...flash` ↔ `...flash-0731`).
+- **`dedup_models()`** colapsa duplicatas **intra-provider** (provider + canónico + variante),
+  priorizando o ID exato do Hermes; preserva `aliases`/`divergences`.
+- **`enrich_unified()`** agora prioriza o mapa AA API, depois dict curado; propaga AA
+  para variantes do mesmo modelo (ex: `z-ai/glm-5.2:free` herda de `z-ai/glm-5.2`).
+- **`build.py`** expõe `canonical_id`, `variant`, `aliases`, `divergences` no payload.
+- Fonte NVIDIA primária confirmada como `models_dev_cache.json` do Hermes (102 modelos).
+
+### 🔄 Orquestrador
+- `run_consolidated.py` chama `dedup_models()` entre normalize e enrich; flag `--refresh-aa`
+  força only-AA re-busca; `_maybe_refresh_aa()` usa cache se fresco.
+
+### ⚙️ Infra
+- `.gitignore`: adiciona `data/aa_models_raw.json`, `.env`, `.hermes/`,
+  `data/hermes_inventory_bruto.*`.
+- AA key persistida em `.env` (não commitada).
+
+### 🧪 Testes
+- `tests/test_aa_api.py` novo — 12 testes (slug, map, lookup, paginação mockada, cache,
+  sem key, 401→stale).
+- `test_normalize.py` +97 linhas (regressões GLM/deepseek dedup); `test_enrich_multi.py`
+  relaxado p/ aceitar `curado | API`.
+- **Gate:** `python -m pytest -q` → **110 passed** (era 98).
+
+### 📊 Impacto CxB (exemplos)
+| Modelo | AA curado | AA API v4.1 | Δ | cxb novo |
+|---|---|---|---|---|
+| `moonshotai/kimi-k3` | 57 | **59.7** | +2.7 | 71.94 |
+| `z-ai/glm-5.2` | 51 | **52.6** | +1.6 | 60.52 |
+| `minimaxai/minimax-m3` | 44 | **45.4** | +1.4 | 68.88 |
+| `deepseek-v4-flash(-0731)` | 50 | **51.8** | +1.8 | 60.36 |
+
+| Métrica | v2.2 | v2.3 |
+|---------|------|------|
+| Modelos ranked | 1032 | 1032 |
+| Com AA index | ~8 | **702 (68%)** |
+| Testes pytest | 98 | **110** |
+| Fonte AA | curado | **API v2 bulk + curado** |
+
+---
+
 ## [v2.2.0] — 2026-08-21 — Sync Hermes + Auto-update
 
 ### ✨ Novos Scripts

@@ -23,3 +23,11 @@ Artificial Analysis Intelligence Index*.png
 
 # Logs
 *.log
+
+data/aa_models_raw.json
+.env
+
+# Artefatos de diagnóstico / planos internos
+.hermes/
+data/hermes_inventory_bruto.csv
+data/hermes_inventory_bruto.json
