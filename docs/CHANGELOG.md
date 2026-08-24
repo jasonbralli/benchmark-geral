@@ -1,5 +1,40 @@
 # Changelog — benchmark_geral
 
+## [v2.4.0] — 2026-08-24 — Nous free-tier dinâmico + 3 novos filtros
+
+### 🎯 Nous free-tier via Portal (dinâmico, sem hardcode)
+- **`normalize.py`**: `set_nous_free_ids()` injeta set dinâmico `_NOUS_FREE_IDS`;
+  `derive_is_free()` ganha regra: `provider == "nous" and model_id in _NOUS_FREE_IDS → is_free=True`.
+- **`map_source.py::fetch_nous_free_ids()`**: lê `freeRecommendedModels` de
+  `~/AppData/Local/hermes/cache/nous_recommended_cache.json` (fonte do app Hermes);
+  com `--refresh` bate na API ao vivo `portal.nousresearch.com/api/nous/recommended-models`
+  (pública, sem auth) com fallback ao cache.
+- **`run_consolidated.py`**: chama `fetch_nous_free_ids()` antes de `dedup_models()` e
+  **augua o inventário Nous** com IDs bare que o Portal anuncia mas o provider_models_cache
+  não expõe (4 adicionados automaticamente: solar-pro4, longcat-2.0, laguna-s-2.1, laguna-xs-2.1).
+- **6 modelos free detectados**: hy3, step-3.7-flash, solar-pro4, longcat-2.0, laguna-s-2.1, laguna-xs-2.1.
+- **Total Nous**: 32 → 36 modelos no inventário.
+- **Zero hardcode de IDs**: se o Portal mudar a lista amanhã, o dashboard reflete automaticamente.
+- **Issue resolvida**: modelos Nous free apareciam como `is_free=False` ou ausentes do inventário.
+
+### 🔍 Novos filtros no dashboard (3 campos do models_dev_cache)
+| Campo | Tipo | Filtro |
+|---|---|---|
+| `family` | string (91% cobertura) | **Dropdown** "família" (nemotron, qwen, llama, gemma...) |
+| `structured_output` | bool (68%) | **Checkbox** "structured_output" |
+| `has_cache_pricing` | bool (60% presença) | **Checkbox** "cache_pricing" |
+
+- Extração em `normalize_nvidia` (models.dev) e `passthrough_ids_enriched` (models.dev-cross —
+  campos funcionais herdam cross-provider como ctx/tool/reasoning).
+- Payload `build.py` inclui `family`, `structured_output`, `has_cache_pricing`.
+- Template: `fillFamilies()` popula o dropdown; filtros `state.struct`/`state.cache`/`state.family`
+  na função `renderRanked()`.
+
+### ✅ Validação
+- `pytest`: 110/110
+- ranked=1037, N/D=100, Nous free=6
+- JS syntax check: OK
+
 ## [v2.3.0] — 2026-08-23 — Normalização canónica + Enriquecimento AA Data API
 
 ### ✨ Novo: `benchmark_pipe/aa_api.py`

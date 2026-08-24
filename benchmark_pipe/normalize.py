@@ -34,6 +34,33 @@ logger = logging.getLogger(__name__)
 
 ALL_FREE_PROVIDERS = frozenset({"nvidia", "opencode-free"})
 
+# IDs free do Nous Portal (freeRecommendedModels), populado pelo orquestrador
+# via set_nous_free_ids(). Dinâmico: reflete o que o Portal anuncia agora —
+# sem hardcode de IDs no pipeline. Contém tanto a forma bare ("tencent/hy3")
+# quanto a sufixada ("tencent/hy3:free"), para casar com o que vier do
+# provider_models_cache.
+_NOUS_FREE_IDS: set[str] = set()
+
+
+def set_nous_free_ids(ids: set[str] | list[str] | None) -> None:
+    """Injeta o conjunto de IDs free vindos do Nous Portal (dinâmico).
+
+    Aceita formas bare e ':free'; armazena ambas para matching tolerante.
+    Chamada pelo orquestrador (run_consolidated.py) antes da normalização.
+    """
+    global _NOUS_FREE_IDS
+    out: set[str] = set()
+    for mid in ids or []:
+        m = str(mid).strip().lower()
+        if not m:
+            continue
+        out.add(m)
+        if m.endswith(":free"):
+            out.add(m[: -len(":free")])
+        else:
+            out.add(f"{m}:free")
+    _NOUS_FREE_IDS = out
+
 # ---------------------------------------------------------------------------
 # Normalização canónica
 # ---------------------------------------------------------------------------
@@ -94,6 +121,9 @@ class UnifiedModel:
     reasoning: bool | None = None
     multimodal: bool = False
     open_weights: bool | None = None
+    family: str | None = None            # ex: "nemotron", "llama", "gpt" — filtro granular
+    structured_output: bool | None = None  # suporta JSON mode / structured output
+    has_cache_pricing: bool | None = None  # cost.cache_read presente (reuso de contexto)
     price_in: float | None = None      # USD / 1M tokens input
     price_out: float | None = None     # USD / 1M tokens output
     is_free: bool = False
@@ -122,6 +152,8 @@ def derive_is_free(
 ) -> bool:
     """Resolve 'free' sem depender de tag do provider."""
     if provider in ALL_FREE_PROVIDERS:
+        return True
+    if provider == "nous" and model_id.lower() in _NOUS_FREE_IDS:
         return True
     if model_id.endswith(":free"):
         return True
@@ -261,6 +293,9 @@ def normalize_nvidia(items: list[dict[str, Any]]) -> list[UnifiedModel]:
             reasoning=bool(m["reasoning"]) if "reasoning" in m else None,
             multimodal=multimodal,
             open_weights=m.get("open_weights"),
+            family=m.get("family"),
+            structured_output=(bool(m["structured_output"]) if "structured_output" in m else None),
+            has_cache_pricing=True if "cache_read" in (cost or {}) else False,
             price_in=price_in,
             price_out=price_out,
             is_free=False,  # set abaixo
@@ -401,6 +436,9 @@ def passthrough_ids_enriched(
             reasoning=bool(meta["reasoning"]) if "reasoning" in meta else None,
             multimodal=multimodal,
             open_weights=meta.get("open_weights"),
+            family=meta.get("family"),
+            structured_output=(bool(meta["structured_output"]) if "structured_output" in meta else None),
+            has_cache_pricing=True if "cache_read" in (meta.get("cost") or {}) else False,
             price_in=None,   # preço é por-provider; N/D aqui
             price_out=None,
             is_free=False,   # set abaixo

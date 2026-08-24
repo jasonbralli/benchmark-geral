@@ -103,6 +103,28 @@ python scripts/run_consolidated.py --refresh --json data/consolidated_models.jso
 python -m pytest -q
 ```
 
+## Filtros do Dashboard (v2.4.0)
+
+Além da busca livre e filtros clássicos (provider/CTX/AA★/CxB), o dashboard consolidado oferece:
+
+| Filtro | Controle | Origem dos dados |
+|---|---|---|
+| **Só FREE** | checkbox | `is_free` (nvidia/opencode-free por política; `:free` por sufixo; Nous via Portal) |
+| **tool_call** | checkbox | `models_dev_cache.json` `tool_call` |
+| **reasoning** | checkbox | `models_dev_cache.json` `reasoning` |
+| **multimodal** | checkbox | `attachment` + `modalities.input` |
+| **CTX** | select (32K/128K/256K/1M) | `limit.context` |
+| **AA★** | select (5★/4★/3★) | AA Data API v2 enriquecimento |
+| **CxB** | select (≥5/≥10/≥20/≥50) | Score CxB do pipeline |
+| **provider** | select dinâmico | `provider_models_cache.json` providers |
+| **família** | select dinâmico (91% cobertura) | `models_dev_cache.json` `family` |
+| **structured_output** | checkbox (68% cobertura) | `models_dev_cache.json` `structured_output` |
+| **cache_pricing** | checkbox (60% cobertura) | `models_dev_cache.json` `cost.cache_read` presente |
+
+**Nous free-tier**: lido dinamicamente do Hermes (`~/AppData/Local/hermes/cache/nous_recommended_cache.json`
+ou `portal.nousresearch.com/api/nous/recommended-models` com `--refresh`). Quando o Portal
+muda a lista free, o dashboard reflete — sem hardcode de IDs.
+
 ## GitHub Pages
 
 O dashboard consolidado é publicado em GitHub Pages para acesso web:

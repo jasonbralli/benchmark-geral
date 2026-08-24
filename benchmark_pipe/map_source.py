@@ -33,7 +33,66 @@ logger = logging.getLogger(__name__)
 HERMES_MODELS_DEV_CACHE = Path(
     r"C:\Users\Jason\AppData\Local\hermes\models_dev_cache.json"
 )
+NOUS_RECOMMENDED_DISK_CACHE = Path(
+    r"C:\Users\Jason\AppData\Local\hermes\cache\nous_recommended_cache.json"
+)
+NOUS_RECOMMENDED_API = "https://portal.nousresearch.com/api/nous/recommended-models"
 OPENROUTER_API = "https://openrouter.ai/api/v1/models"
+
+def fetch_nous_free_ids(use_cache: bool = True) -> set[str]:
+    """Retorna IDs free do Nous Portal (freeRecommendedModels).
+
+    fonte 1 (cache): ~/AppData/Local/hermes/cache/nous_recommended_cache.json
+    fonte 2 (live):  GET portal.nousresearch.com/api/nous/recommended-models
+                     (público, sem auth; só tentado quando use_cache=False)
+
+    Retorna set de IDs bare+sufixados (lowercase). Falha -> set() (graceful).
+    """
+    ids: set[str] = set()
+
+    def _harvest(payload: dict) -> None:
+        block = payload.get("freeRecommendedModels")
+        if not isinstance(block, list):
+            return
+        for item in block:
+            if isinstance(item, dict):
+                name = item.get("modelName")
+            else:
+                name = item
+            if isinstance(name, str) and name.strip():
+                ids.add(name.strip().lower())
+
+    if use_cache and NOUS_RECOMMENDED_DISK_CACHE.exists():
+        try:
+            blob = json.loads(NOUS_RECOMMENDED_DISK_CACHE.read_text(encoding="utf-8"))
+            for entry in (blob or {}).values():
+                if isinstance(entry, dict) and isinstance(entry.get("data"), dict):
+                    _harvest(entry["data"])
+            if ids:
+                logger.info("Nous free IDs (disk cache): %d", len(ids))
+                return ids
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("nous_recommended_cache ilegível (%s); tentando live", e)
+
+    if not use_cache:
+        try:
+            req = Request(NOUS_RECOMMENDED_API, headers={"User-Agent": "benchmark-geral/1.0"})
+            with urlopen(req, timeout=10) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            _harvest(payload if isinstance(payload, dict) else {})
+            logger.info("Nous free IDs (live API): %d", len(ids))
+        except (URLError, HTTPError, json.JSONDecodeError, OSError) as e:
+            logger.warning("Nous recommended-models live falhou: %s", e)
+            # fallback: tenta disk cache se existir
+            if NOUS_RECOMMENDED_DISK_CACHE.exists():
+                try:
+                    blob = json.loads(NOUS_RECOMMENDED_DISK_CACHE.read_text(encoding="utf-8"))
+                    for entry in (blob or {}).values():
+                        if isinstance(entry, dict) and isinstance(entry.get("data"), dict):
+                            _harvest(entry["data"])
+                except (json.JSONDecodeError, OSError):
+                    pass
+    return ids
 OR_CACHE = Path(__file__).parent.parent / "data" / "openrouter_models_raw.json"
 # Cache de fallback (stale) usado só quando models_dev_cache indisponível
 LEGACY_PROJECT_CACHE = Path(__file__).parent.parent / "data" / "nvidia_models_raw.json"

@@ -127,6 +127,9 @@ footer.site-footer a:hover { color: var(--accent); }
   <label>AA★ <select id="fAa"><option value="">todos</option><option value="5">5★ (≥50)</option><option value="4">≥4★ (≥35)</option><option value="3">≥3★ (≥20)</option><option value="1">com AA</option></select></label>
   <label>CxB <select id="fCxb"><option value="">todos</option><option value="50">≥50</option><option value="20">≥20</option><option value="10">≥10</option><option value="5">≥5</option></select></label>
   <label>provider <select id="provider"><option value="">todos</option></select></label>
+  <label>família <select id="fFamily"><option value="">todos</option></select></label>
+  <label><input type="checkbox" id="onlyStruct"> structured_output</label>
+  <label><input type="checkbox" id="onlyCache"> cache_pricing</label>
 </section>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
@@ -194,7 +197,7 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML = html;
 }
 
-var state = { q:"", free:false, tools:false, reasoning:false, mult:false, ctx:0, aa:0, cxb:0, provider:"", sortKey:"cxb_score", sortDir:-1 };
+var state = { q:"", free:false, tools:false, reasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"", sortKey:"cxb_score", sortDir:-1 };
 
 function renderRanked(){
   var rows = DATA.ranked.filter(function(r){
@@ -202,6 +205,8 @@ function renderRanked(){
     if(state.tools && !r.tool_call) return false;
     if(state.reasoning && !r.reasoning) return false;
     if(state.mult && !r.multimodal) return false;
+    if(state.struct && !r.structured_output) return false;
+    if(state.cache && !r.has_cache_pricing) return false;
     if(state.ctx && (r.context_k==null || r.context_k < state.ctx)) return false;
     if(state.cxb && (r.cxb_score==null || r.cxb_score < state.cxb)) return false;
     if(state.aa){
@@ -210,6 +215,7 @@ function renderRanked(){
       if(thr>=0 && r.aa_index < thr) return false;
     }
     if(state.provider && r.provider!==state.provider) return false;
+    if(state.family && (r.family||"")!==state.family) return false;
     if(state.q){
       var q = state.q.toLowerCase();
       if((r.display_name||"").toLowerCase().indexOf(q)<0 &&
@@ -272,15 +278,29 @@ function fillProviders(){
   });
 }
 
+function fillFamilies(){
+  var sel = document.getElementById("fFamily");
+  var seen = {};
+  DATA.ranked.forEach(function(r){ if(r.family) seen[r.family]=1; });
+  Object.keys(seen).sort().forEach(function(f){
+    var o = document.createElement("option");
+    o.value = f; o.textContent = f;
+    sel.appendChild(o);
+  });
+}
+
 document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value; renderRanked(); });
 document.getElementById("onlyFree").addEventListener("change", function(e){ state.free = e.target.checked; renderRanked(); });
 document.getElementById("onlyTools").addEventListener("change", function(e){ state.tools = e.target.checked; renderRanked(); });
 document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; renderRanked(); });
 document.getElementById("onlyMult").addEventListener("change", function(e){ state.mult = e.target.checked; renderRanked(); });
+document.getElementById("onlyStruct").addEventListener("change", function(e){ state.struct = e.target.checked; renderRanked(); });
+document.getElementById("onlyCache").addEventListener("change", function(e){ state.cache = e.target.checked; renderRanked(); });
 document.getElementById("fCtx").addEventListener("change", function(e){ state.ctx = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fAa").addEventListener("change", function(e){ state.aa = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fCxb").addEventListener("change", function(e){ state.cxb = parseFloat(e.target.value||0); renderRanked(); });
 document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; renderRanked(); });
+document.getElementById("fFamily").addEventListener("change", function(e){ state.family = e.target.value; renderRanked(); });
 
 Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), function(th){
   th.addEventListener("click", function(){
@@ -292,6 +312,7 @@ Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), functio
 
 renderKPIs();
 fillProviders();
+fillFamilies();
 renderRanked();
 renderND();
 </script>

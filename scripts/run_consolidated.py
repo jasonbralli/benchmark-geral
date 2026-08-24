@@ -73,6 +73,30 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     if not inventory:
         inventory = extract_provider_models()
 
+    # Nous free-tier: popula o conjunto dinâmico ANTES de qualquer derive_is_free.
+    # Fonte: ~/AppData/Local/hermes/cache/nous_recommended_cache.json (ou live com --refresh).
+    from benchmark_pipe.map_source import fetch_nous_free_ids
+    from benchmark_pipe.normalize import set_nous_free_ids
+    try:
+        nous_free = fetch_nous_free_ids(use_cache=use_cache)
+        if nous_free:
+            set_nous_free_ids(nous_free)
+            logger.info("Nous free IDs carregados: %s", sorted(nous_free))
+            # Augmentar inventário: 4 IDs free do Portal não constam no cache
+            # provider_models_cache (hermes não os expõe). Adicionar bare IDs
+            # para que apareçam no inventário Nous como free.
+            nous_inv = inventory.setdefault("nous", set())
+            before = len(nous_inv)
+            for fid in nous_free:
+                bare = fid.replace(":free", "")
+                if bare not in nous_inv:
+                    nous_inv.add(bare)
+            if len(nous_inv) > before:
+                logger.info("Nous inventário augmentado: %d -> %d (%d adicionados)",
+                            before, len(nous_inv), len(nous_inv) - before)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("fetch_nous_free_ids falhou (%s); Nous seguirá sem tier free", e)
+
     metadata = build_metadata_index(inventory, use_cache=use_cache)
 
     # Cross-join de metadados: índice global reutilizado p/ missing NVIDIA
