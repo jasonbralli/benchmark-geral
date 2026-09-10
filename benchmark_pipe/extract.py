@@ -13,13 +13,25 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-HERMES_CACHE = Path(
-    r"C:\Users\Jason\AppData\Local\hermes\provider_models_cache.json"
-)
+def _get_hermes_cache_path() -> Path:
+    """Retorna o caminho do cache do Hermes.
+    
+    Prioridade: 
+    1. Variável de ambiente HERMES_PROVIDER_CACHE
+    2. Caminho padrão do Windows (AppData)
+    """
+    env_path = os.environ.get("HERMES_PROVIDER_CACHE")
+    if env_path:
+        return Path(env_path)
+    # Default Windows path
+    return Path(r"C:\Users\Jason\AppData\Local\hermes\provider_models_cache.json")
+
+HERMES_CACHE = _get_hermes_cache_path()
 
 
 def extract_provider_models(

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import sys
 from datetime import datetime
@@ -32,8 +33,14 @@ from typing import Any
 BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 
-# Config
-HERMES_CACHE = Path(r"C:\Users\Jason\AppData\Local\hermes\provider_models_cache.json")
+def _get_hermes_cache_path() -> Path:
+    """Retorna o caminho do cache do Hermes."""
+    env_path = os.environ.get("HERMES_PROVIDER_CACHE")
+    if env_path:
+        return Path(env_path)
+    return Path(r"C:\Users\Jason\AppData\Local\hermes\provider_models_cache.json")
+
+HERMES_CACHE = _get_hermes_cache_path()
 SNAPSHOT_PATH = BASE / "data" / "hermes_models_snapshot.json"
 PIPELINE_CACHE = BASE / "data" / "nvidia_models_raw.json"
 TXT_OUTPUT = BASE / "data" / "nvidia_models_from_hermes.txt"

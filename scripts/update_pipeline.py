@@ -445,9 +445,9 @@ def main():
     setup_logging(args.verbose)
 
     if args.all:
-        args.refresh = True
-        args.txt = args.txt or Path(r"C:\Users\Jason\Desktop\nvidia_model_list.txt")
-        args.aa_web = True
+            args.refresh = True
+            args.txt = args.txt or Path(os.environ.get("NVIDIA_MODEL_LIST", r"C:\Users\Jason\Desktop\nvidia_model_list.txt"))
+            args.aa_web = True
 
     logger.info("=== Iniciando auto-atualização ===")
 

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -30,12 +31,22 @@ from nim_pipeline.fetch import fetch_nvidia_models  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
-HERMES_MODELS_DEV_CACHE = Path(
-    r"C:\Users\Jason\AppData\Local\hermes\models_dev_cache.json"
-)
-NOUS_RECOMMENDED_DISK_CACHE = Path(
-    r"C:\Users\Jason\AppData\Local\hermes\cache\nous_recommended_cache.json"
-)
+def _get_hermes_models_dev_cache() -> Path:
+    """Retorna o caminho do models_dev_cache do Hermes."""
+    env_path = os.environ.get("HERMES_MODELS_DEV_CACHE")
+    if env_path:
+        return Path(env_path)
+    return Path(r"C:\Users\Jason\AppData\Local\hermes\models_dev_cache.json")
+
+def _get_nous_recommended_cache() -> Path:
+    """Retorna o caminho do cache de modelos recomendados do Nous."""
+    env_path = os.environ.get("HERMES_NOUS_RECOMMENDED_CACHE")
+    if env_path:
+        return Path(env_path)
+    return Path(r"C:\Users\Jason\AppData\Local\hermes\cache\nous_recommended_cache.json")
+
+HERMES_MODELS_DEV_CACHE = _get_hermes_models_dev_cache()
+NOUS_RECOMMENDED_DISK_CACHE = _get_nous_recommended_cache()
 NOUS_RECOMMENDED_API = "https://portal.nousresearch.com/api/nous/recommended-models"
 OPENROUTER_API = "https://openrouter.ai/api/v1/models"
 

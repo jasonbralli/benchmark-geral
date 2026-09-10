@@ -91,7 +91,7 @@ stale → dict curado. Resultado: **~68% dos modelos ranked com AA index** (ante
 ## Uso
 
 ```bash
-cd "C:/Users/Jason/Desktop/PROJETOS/02 - WORKING/benchmark_geral"
+cd benchmark_geral
 
 # Regenerar dashboard (usa caches locais) + roda pytest como gate
 python scripts/run_consolidated.py --use-cache --json data/consolidated_models.json
@@ -134,10 +134,10 @@ https://<usuario>.github.io/benchmark-geral-nim/.
 `dashboard.html` deve residir na **raiz** (renomeado/posicionado como o index servido),
 não em subdiretório. Após push, a página fica acessível em ~2 min.
 
-## Agendamento quinzenal
+## Agendamento semanal
 
-Hermes cron job **`benchmark-geral-nim-quinzenal`** roda
-`scripts/run_consolidated.py --refresh` a cada segundo segundas-feiras,
+Hermes cron job **`benchmark-geral-nim-semanal`** roda
+`scripts/run_consolidated.py --refresh` toda **segunda-feira às 09:00**,
 com fallback `--use-cache` se rede falhar (local-first).
 
 ## Assinatura obrigatória
