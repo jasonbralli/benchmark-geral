@@ -1,5 +1,4 @@
 """benchmark_pipe.extract
-========================
 
 Lê o cache de providers do Hermes (provider_models_cache.json) e retorna
 {provider: set(model_ids)}. Cache Hermes = single source of IDs (1 leitura,
@@ -20,16 +19,16 @@ logger = logging.getLogger(__name__)
 
 def _get_hermes_cache_path() -> Path:
     """Retorna o caminho do cache do Hermes.
-    
-    Prioridade: 
+
+    Prioridade:
     1. Variável de ambiente HERMES_PROVIDER_CACHE
-    2. Caminho padrão do Windows (AppData)
+    2. Perfil do usuário do Hermes em AppData (portátil, sem hardcode)
     """
     env_path = os.environ.get("HERMES_PROVIDER_CACHE")
     if env_path:
         return Path(env_path)
-    # Default Windows path
-    return Path(r"C:\Users\Jason\AppData\Local\hermes\provider_models_cache.json")
+    # Default: perfil do usuário do Hermes (portátil, sem hardcode de caminho)
+    return Path.home() / "AppData" / "Local" / "hermes" / "provider_models_cache.json"
 
 HERMES_CACHE = _get_hermes_cache_path()
 
