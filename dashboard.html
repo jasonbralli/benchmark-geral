@@ -114,6 +114,44 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
   background: rgba(76,194,255,.15); color: var(--accent); border-color: var(--accent);
 }
 
+/* v2.5.1 — Model column truncate + filters em grupos */
+#tblRanked td:nth-child(3) {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#tblRanked {
+  table-layout: auto;
+  width: 100%;
+}
+.filters fieldset {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: transparent;
+}
+.filters legend {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+  padding: 0 4px;
+  font-weight: 700;
+}
+.filters .filters-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+}
+
 h2 {
   margin: 32px 0 12px; font-size: 18px; color: var(--accent);
   border-bottom: 2px solid var(--accent); padding-bottom: 6px; display: inline-block;
@@ -152,24 +190,45 @@ footer.site-footer a:hover { color: var(--accent); }
     <button class="preset-btn" data-preset="agentic">🤖 Agente</button>
     <button class="preset-btn" data-preset="">limpar</button>
   </div>
-  <input type="search" id="q" placeholder="🔍 buscar modelo ou provider...">
-  <label><input type="checkbox" id="onlyFree"> só FREE</label>
-  <label><input type="checkbox" id="onlyTools"> tool_call</label>
-  <label><input type="checkbox" id="onlyReasoning"> reasoning</label>
-  <label><input type="checkbox" id="onlyMult"> multimodal</label>
-  <label>CTX <select id="fCtx"><option value="">todos</option><option value="32">≥32K</option><option value="128">≥128K</option><option value="256">≥256K</option><option value="1024">≥1M</option></select></label>
-  <label>AA★ <select id="fAa"><option value="">todos</option><option value="5">5★ (≥50)</option><option value="4">≥4★ (≥35)</option><option value="3">≥3★ (≥20)</option><option value="1">com AA</option></select></label>
-  <label>CxB <select id="fCxb"><option value="">todos</option><option value="50">≥50</option><option value="20">≥20</option><option value="10">≥10</option><option value="5">≥5</option></select></label>
-  <label>provider <select id="provider"><option value="">todos</option></select></label>
-  <label>família <select id="fFamily"><option value="">todos</option></select></label>
-  <label><input type="checkbox" id="onlyStruct"> structured_output</label>
-  <label><input type="checkbox" id="onlyCache"> cache_pricing</label>
-  <label><input type="checkbox" id="onlyCoding"> coding</label>
-  <label><input type="checkbox" id="onlyAgentic"> agentic</label>
-  <label><input type="checkbox" id="onlyOpenW"> open_weights</label>
-  <label>min tok/s <input type="number" id="minSpeed" min="0" step="5" placeholder="0" style="width:70px"></label>
-  <label>max TTFT(s) <input type="number" id="maxTtft" min="0" step="0.5" placeholder="∞" style="width:70px"></label>
-  <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
+
+  <div class="filters-row">
+    <input type="search" id="q" placeholder="🔍 buscar modelo ou provider...">
+  </div>
+
+  <div class="filters-row">
+    <fieldset>
+      <legend>Capacidade</legend>
+      <label><input type="checkbox" id="onlyTools"> tool_call</label>
+      <label><input type="checkbox" id="onlyReasoning"> reasoning</label>
+      <label><input type="checkbox" id="onlyMult"> multimodal</label>
+      <label><input type="checkbox" id="onlyStruct"> structured</label>
+      <label><input type="checkbox" id="onlyCoding"> coding</label>
+      <label><input type="checkbox" id="onlyAgentic"> agentic</label>
+      <label><input type="checkbox" id="onlyOpenW"> open weights</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Custo</legend>
+      <label><input type="checkbox" id="onlyFree"> só FREE</label>
+      <label><input type="checkbox" id="onlyCache"> cache_pricing</label>
+      <label>CxB <select id="fCxb"><option value="">todos</option><option value="50">≥50</option><option value="20">≥20</option><option value="10">≥10</option><option value="5">≥5</option></select></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Escala</legend>
+      <label>CTX <select id="fCtx"><option value="">todos</option><option value="32">≥32K</option><option value="128">≥128K</option><option value="256">≥256K</option><option value="1024">≥1M</option></select></label>
+      <label>tok/s ≥ <input type="number" id="minSpeed" min="0" step="5" placeholder="0" style="width:60px"></label>
+      <label>TTFT ≤ <input type="number" id="maxTtft" min="0" step="0.5" placeholder="∞" style="width:60px">s</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Qualidade & Origem</legend>
+      <label>AA★ <select id="fAa"><option value="">todos</option><option value="5">5★ (≥50)</option><option value="4">≥4★ (≥35)</option><option value="3">≥3★ (≥20)</option><option value="1">com AA</option></select></label>
+      <label>provider <select id="provider"><option value="">todos</option></select></label>
+      <label>família <select id="fFamily"><option value="">todos</option></select></label>
+      <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
+    </fieldset>
+  </div>
 </section>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
