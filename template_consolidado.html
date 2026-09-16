@@ -262,6 +262,22 @@ function renderKPIs(){
     '<div class="kpi"><div class="kpi-label">Inventário Total</div><div class="kpi-value">'+k.total_inventory+'</div><div class="kpi-sub">todos os providers</div></div>'+
     '<div class="kpi"><div class="kpi-label">FREE no Rank</div><div class="kpi-value">'+k.free_ranked+'</div></div>'+
     '<div class="kpi"><div class="kpi-label">Melhor CxB</div><div class="kpi-value">'+k.top_cxb.toFixed(2)+'</div><div class="kpi-sub">'+esc(k.top_model)+'</div></div>';
+  // v2.5 F3: KPIs agregados (opcionais, None-safe)
+  if(k.median_speed_tps!=null){
+    html += '<div class="kpi"><div class="kpi-label">Mediana Speed</div><div class="kpi-value">'+k.median_speed_tps.toFixed(1)+'</div><div class="kpi-sub">tok/s</div></div>';
+  }
+  if(k.median_ttft_s!=null){
+    html += '<div class="kpi"><div class="kpi-label">Mediana TTFT</div><div class="kpi-value">'+k.median_ttft_s.toFixed(2)+'</div><div class="kpi-sub">segundos</div></div>';
+  }
+  if(k.fastest_model){
+    html += '<div class="kpi"><div class="kpi-label">⚡ Mais Rápido</div><div class="kpi-value">'+k.fastest_model.value.toFixed(1)+'</div><div class="kpi-sub" title="'+esc(k.fastest_model.model_id)+'">'+esc(k.fastest_model.display_name)+'</div></div>';
+  }
+  if(k.top_coder){
+    html += '<div class="kpi"><div class="kpi-label">⌨️ Top Code</div><div class="kpi-value">'+k.top_coder.value.toFixed(1)+'</div><div class="kpi-sub" title="'+esc(k.top_coder.model_id)+'">'+esc(k.top_coder.display_name)+'</div></div>';
+  }
+  if(k.top_agentic){
+    html += '<div class="kpi"><div class="kpi-label">🤖 Top Agent</div><div class="kpi-value">'+k.top_agentic.value.toFixed(1)+'</div><div class="kpi-sub" title="'+esc(k.top_agentic.model_id)+'">'+esc(k.top_agentic.display_name)+'</div></div>';
+  }
   document.getElementById("kpis").innerHTML = html;
 }
 

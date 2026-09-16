@@ -28,6 +28,18 @@ OUTPUT = ROOT / "dashboard.html"
 MARKER = "//CONSOLIDATED_DATA//"
 
 
+def _median(xs: list[float]) -> float | None:
+    """Mediana de uma lista de floats; None se vazia."""
+    if not xs:
+        return None
+    s = sorted(xs)
+    n = len(s)
+    mid = n // 2
+    if n % 2:
+        return s[mid]
+    return (s[mid - 1] + s[mid]) / 2
+
+
 def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -> dict:
     def row(m: UnifiedModel, rank: int | None) -> dict:
         stars = aa_to_stars(m.aa_index)
@@ -80,7 +92,26 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "top_model": (models_ranked[0].display_name or models_ranked[0].model_id)
             if models_ranked
             else "-",
+            # v2.5 F3: KPIs agregados das métricas AA
+            "median_speed_tps": _median([m.speed_tps for m in models_ranked if m.speed_tps is not None]),
+            "median_ttft_s": _median([m.ttft_s for m in models_ranked if m.ttft_s is not None]),
+            "fastest_model": _best(models_ranked, key=lambda m: m.speed_tps, reverse=True),
+            "top_coder": _best(models_ranked, key=lambda m: m.coding_index, reverse=True),
+            "top_agentic": _best(models_ranked, key=lambda m: m.agentic_index, reverse=True),
         },
+    }
+
+
+def _best(models: list[UnifiedModel], key, reverse: bool = True) -> dict | None:
+    """Retorna {model_id, display_name, value} do modelo com max/min da key (None-safe)."""
+    pool = [m for m in models if key(m) is not None]
+    if not pool:
+        return None
+    top = max(pool, key=key) if reverse else min(pool, key=key)
+    return {
+        "model_id": top.model_id,
+        "display_name": top.display_name or top.model_id,
+        "value": key(top),
     }
 
 
