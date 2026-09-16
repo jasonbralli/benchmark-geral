@@ -11,6 +11,33 @@ Uma única visão ranqueada dos modelos que o Hermes realmente serve, pontuados 
 **Providers sem fonte (inventário N/D, fora do ranking):** `gemini`, `kilocode`,
 `huggingface`, `nous`, `opencode-free` — listados por ID para referência.
 
+## 🆕 v2.5 — Enriquecimento AA + capabilities
+
+**Colunas novas (dados reais do cache AA Data API v2 + models.dev + OpenRouter):**
+
+| Coluna | Fonte | Descrição |
+|---|---|---|
+| `tok/s` | AA `median_output_tokens_per_second` | Velocidade mediana de output |
+| `TTFT` | AA `median_time_to_first_token_seconds` | Latência até 1º token |
+| `Code` | AA `artificial_analysis_coding_index` | Sub-score de código |
+| `Agent` | AA `artificial_analysis_agentic_index` | Sub-score agentic |
+| `Modal` | models.dev `modalities.output` | Chips T/🖼/🎙/🎬/📎 |
+| `MaxOut` | `limit.output` ou `max_completion_tokens` | Máx tokens de saída |
+
+**Filtros novos:**
+- ✅ `coding`, `agentic`, `open_weights` (presença)
+- 🔢 `min tok/s`, `max TTFT` (sliders numéricos)
+- 🎨 `modalidade` (image-in / audio-in / video-in / file-in / image-out)
+
+**Presets (1 clique):**
+- 💬 **Chat** — ctx ≥32K + tools
+- ⌨️ **Code** — só com `coding_index`, ordena por code
+- 🖼️ **Vision** — input de imagem
+- 📜 **Long-Ctx** — ctx ≥256K
+- ⚡ **Rápido** — tok/s ≥80, ordena por speed
+- 💰 **Barato** — só free
+- 🤖 **Agente** — agentic + tools
+
 ## Arquitetura do pipeline
 
 ```
