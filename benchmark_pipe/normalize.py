@@ -131,6 +131,19 @@ class UnifiedModel:
     cxb_score: float = 0.0
     source: str = "unknown"
     release_date: str | None = None
+    # Performance (AA Data API v2 — enrich)
+    speed_tps: float | None = None      # median_output_tokens_per_second
+    ttft_s: float | None = None         # median_time_to_first_token_seconds
+    e2e_s: float | None = None          # median_end_to_end_response_time_seconds
+    # Quality sub-scores (AA Data API v2 — enrich)
+    coding_index: float | None = None   # artificial_analysis_coding_index
+    agentic_index: float | None = None  # artificial_analysis_agentic_index
+    # Capability metadata (models.dev / OpenRouter)
+    modalities_in: list[str] | None = None   # ex: ["text","image","audio"]
+    modalities_out: list[str] | None = None  # ex: ["text","image"]
+    max_output_tokens: int | None = None
+    knowledge_cutoff: str | None = None
+    attachment: bool | None = None
     # Normalização canónica
     canonical_id: str | None = None
     variant: str = "base"
@@ -301,6 +314,12 @@ def normalize_nvidia(items: list[dict[str, Any]]) -> list[UnifiedModel]:
             is_free=False,  # set abaixo
             source="models.dev",
             release_date=m.get("release_date"),
+            # Novos campos (v2.5): capabilities do models.dev
+            modalities_in=sorted(set(mods.get("input") or [])) or None,
+            modalities_out=sorted(set(mods.get("output") or [])) or None,
+            max_output_tokens=limit.get("output"),
+            knowledge_cutoff=m.get("knowledge"),
+            attachment=bool(m["attachment"]) if "attachment" in m else None,
         )
         um.is_free = derive_is_free("nvidia", model_id, price_in, price_out)
         apply_canonical(um)
@@ -363,13 +382,26 @@ def normalize_openrouter(
             context_k=(int(ctx) // 1024) if isinstance(ctx, (int, float)) else None,
             tool_call=bool(tool_call) if tool_call is not None else None,
             reasoning=bool(reasoning) if reasoning is not None else None,
-            multimodal=False,
+            multimodal=bool(
+                "image" in ((m.get("architecture") or {}).get("input_modalities") or [])
+                or "image" in (x.get("modalities", {}).get("input") or [])
+            ),
             open_weights=open_weights,
             price_in=price_in,
             price_out=price_out,
             is_free=False,  # set abaixo
             source="openrouter-api",
             release_date=release_date,
+            # Novos campos (v2.5)
+            modalities_in=(
+                sorted(set((m.get("architecture") or {}).get("input_modalities") or [])) or None
+            ),
+            modalities_out=(
+                sorted(set((m.get("architecture") or {}).get("output_modalities") or [])) or None
+            ),
+            max_output_tokens=(m.get("top_provider") or {}).get("max_completion_tokens"),
+            knowledge_cutoff=(x.get("knowledge")),
+            attachment=(x.get("attachment")),
         )
         um.is_free = derive_is_free("openrouter", model_id, price_in, price_out)
         apply_canonical(um)
@@ -444,6 +476,12 @@ def passthrough_ids_enriched(
             is_free=False,   # set abaixo
             source="models.dev-cross",
             release_date=meta.get("release_date"),
+            # Novos campos (v2.5) herdados do cross-join
+            modalities_in=sorted(set(mods.get("input") or [])) or None,
+            modalities_out=sorted(set(mods.get("output") or [])) or None,
+            max_output_tokens=limit.get("output"),
+            knowledge_cutoff=meta.get("knowledge"),
+            attachment=bool(meta["attachment"]) if "attachment" in meta else None,
         )
         um.is_free = derive_is_free(provider, mid, None, None)
         apply_canonical(um)

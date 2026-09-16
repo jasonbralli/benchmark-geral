@@ -179,6 +179,86 @@ def build_aa_index_map(raw: dict[str, Any] | list[dict[str, Any]]) -> dict[str, 
     return out
 
 
+def _f(v: Any) -> float | None:
+    """Converte para float tolerante; None/<invalido> -> None."""
+    if v is None:
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def build_aa_metrics_map(
+    raw: dict[str, Any] | list[dict[str, Any]],
+) -> dict[str, dict[str, float | None]]:
+    """Mapa rico {slug_norm: {aa_index, speed_tps, ttft_s, e2e_s, coding_index, agentic_index}}.
+
+    Mesma heurística de chave de build_aa_index_map. Mantém a entrada com MAIOR
+    aa_index quando slug duplica (mas preserva métricas de quem perde se forem
+    as únicas disponíveis e o vencedor tiver None).
+    """
+    data = raw["data"] if isinstance(raw, dict) and "data" in raw else raw  # type: ignore
+    if not isinstance(data, list):
+        return {}
+    out: dict[str, dict[str, float | None]] = {}
+    for m in data:
+        slug = (m.get("slug") or "").strip()
+        if not slug:
+            continue
+        ev = m.get("evaluations") or {}
+        perf = m.get("performance") or {}
+        entry: dict[str, float | None] = {
+            "aa_index": _f(ev.get("artificial_analysis_intelligence_index")),
+            "coding_index": _f(ev.get("artificial_analysis_coding_index")),
+            "agentic_index": _f(ev.get("artificial_analysis_agentic_index")),
+            "speed_tps": _f(perf.get("median_output_tokens_per_second")),
+            "ttft_s": _f(perf.get("median_time_to_first_token_seconds")),
+            "e2e_s": _f(perf.get("median_end_to_end_response_time_seconds")),
+        }
+        key = _norm_slug(slug)
+        if key not in out:
+            out[key] = entry
+            continue
+        # merge: prefer entry de maior aa_index; propaga métricas se faltam lá
+        cur = out[key]
+        cur_idx = cur.get("aa_index")
+        new_idx = entry.get("aa_index")
+        if new_idx is not None and (cur_idx is None or new_idx > cur_idx):
+            merged = dict(entry)
+            for k, v in cur.items():
+                if merged.get(k) is None:
+                    merged[k] = v
+            out[key] = merged
+        else:
+            for k, v in entry.items():
+                if cur.get(k) is None and v is not None:
+                    cur[k] = v
+    return out
+
+
+def lookup_aa_metrics(
+    model_id: str,
+    canonical_id: str | None,
+    metrics_map: dict[str, dict[str, float | None]],
+) -> dict[str, float | None] | None:
+    """Mesma estratégia de lookup_aa_index, mas retorna o dict de métricas completo."""
+    if not metrics_map:
+        return None
+    # Reusa lookup index para achar a chave que casa
+    idx_map = {k: v["aa_index"] for k, v in metrics_map.items() if v.get("aa_index") is not None}
+    if not idx_map:
+        return None
+    found_idx = lookup_aa_index(model_id, canonical_id, idx_map)
+    if found_idx is None:
+        return None
+    # Recupera a chave cuja aa_index casa (pode haver >1; pega a de maior score)
+    for key, metrics in metrics_map.items():
+        if metrics.get("aa_index") == found_idx:
+            return metrics
+    return None
+
+
 def lookup_aa_index(
     model_id: str,
     canonical_id: str | None,

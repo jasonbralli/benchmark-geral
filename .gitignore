@@ -25,10 +25,20 @@ Artificial Analysis Intelligence Index*.png
 *.log
 
 data/aa_models_raw.json
+
+# Segredos
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
 
 # Artefatos de diagnóstico / planos internos
 .hermes/
+archive/
 data/hermes_inventory_bruto.csv
 data/hermes_inventory_bruto.json
 index.html
+CLAUDE.md
+AGENTS.md
