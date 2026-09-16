@@ -256,7 +256,11 @@ footer.site-footer a:hover { color: var(--accent); }
 
 <h2 style="margin-top:40px">📦 Inventário Completo (N/D)</h2>
 <p class="section-note">Providers sem fonte pública de metadados (gemini, kilocode, huggingface, nous, opencode-free). Listados apenas para referência de IDs.</p>
-<table id="tblND">
+<details id="ndDetails">
+  <summary style="cursor:pointer;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;user-select:none">
+    <strong id="ndSummary">—</strong> modelos sem metadados — clique para expandir
+  </summary>
+  <table id="tblND" style="margin-top:8px">
   <thead><tr>
     <th>Provider</th>
     <th>Modelo</th>
@@ -264,7 +268,8 @@ footer.site-footer a:hover { color: var(--accent); }
     <th>Source</th>
   </tr></thead>
   <tbody></tbody>
-</table>
+  </table>
+</details>
 
 <footer class="site-footer">
   <a href="https://inovatudo.com" target="_blank" rel="noopener">inovatudo.com</a>
@@ -466,8 +471,10 @@ function renderRanked(){
 function renderND(){
   var tbody = document.querySelector("#tblND tbody");
   var html = "";
+  var byProvider = {};
   for(var i=0;i<DATA.non_ranked.length;i++){
     var r = DATA.non_ranked[i];
+    byProvider[r.provider] = (byProvider[r.provider]||0)+1;
     html += "<tr>"+
       "<td>"+esc(r.provider)+"</td>"+
       '<td class="mono">'+esc(r.display_name)+"</td>"+
@@ -476,6 +483,17 @@ function renderND(){
       "</tr>";
   }
   tbody.innerHTML = html;
+  // Resumo no summary: total + breakdown por provider
+  var total = DATA.non_ranked.length;
+  var parts = [];
+  var keys = [];
+  for (var k in byProvider) keys.push(k);
+  keys.sort();
+  for (var j=0;j<keys.length;j++){
+    parts.push(keys[j]+" "+byProvider[keys[j]]);
+  }
+  var sum = document.getElementById("ndSummary");
+  if (sum) sum.textContent = total + " (" + parts.join(", ") + ")";
 }
 
 function fillProviders(){
