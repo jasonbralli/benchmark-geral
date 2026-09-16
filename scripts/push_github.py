@@ -103,15 +103,20 @@ def main():
     blob_sha = blob.stdout.strip()
 
     # 2) Cria tree temporária com index.html apontando pro blob
-    tree = _run(
+    # ATENÇÃO: passar bytes, nao text=True - no Windows subprocess com text=True
+    # converte o newline do input antes de enviar pro stdin, criando arquivo
+    # com nome sujo.
+    tree_input = f"100644 blob {blob_sha}\tindex.html\n".encode("utf-8")
+    tree = subprocess.run(
         ["git", "mktree"],
-        input=f"100644 blob {blob_sha}\tindex.html\n",
+        input=tree_input,
+        capture_output=True,
         cwd=str(PROJETO_DIR),
     )
     if tree.returncode != 0:
-        print(f"Erro mktree: {tree.stderr.strip()[:200]}")
+        print(f"Erro mktree: {tree.stderr.decode('utf-8', errors='replace').strip()[:200]}")
         return 1
-    tree_sha = tree.stdout.strip()
+    tree_sha = tree.stdout.decode("utf-8").strip()
 
     # 3) Commit orphan com o tree (sem parent = histórico novo)
     commit_orphan = _run(
