@@ -91,6 +91,29 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 .bool-false { color: var(--muted); }
 .nd-text { color: var(--muted); font-style: italic; }
 
+/* chips de modalidade (v2.5) */
+.chip {
+  display: inline-block; padding: 1px 6px; margin-right: 3px;
+  background: rgba(76,194,255,.12); color: var(--accent);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: 10px; font-weight: 600; text-transform: lowercase;
+}
+.chip.out { background: rgba(46,160,67,.12); color: var(--free); }
+.num-cell { font-variant-numeric: tabular-nums; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+.metric-best { color: var(--free); font-weight: 700; }
+
+/* preset selector */
+.preset-group { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.preset-btn {
+  background: var(--bg); color: var(--muted); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .5px; cursor: pointer;
+}
+.preset-btn:hover { color: var(--accent); border-color: var(--accent); }
+.preset-btn.active {
+  background: rgba(76,194,255,.15); color: var(--accent); border-color: var(--accent);
+}
+
 h2 {
   margin: 32px 0 12px; font-size: 18px; color: var(--accent);
   border-bottom: 2px solid var(--accent); padding-bottom: 6px; display: inline-block;
@@ -118,6 +141,17 @@ footer.site-footer a:hover { color: var(--accent); }
 <section class="kpis" id="kpis"></section>
 
 <section class="filters">
+  <div class="preset-group" style="width:100%">
+    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">preset:</span>
+    <button class="preset-btn" data-preset="chat">💬 Chat</button>
+    <button class="preset-btn" data-preset="code">⌨️ Code</button>
+    <button class="preset-btn" data-preset="vision">🖼️ Vision</button>
+    <button class="preset-btn" data-preset="longctx">📜 Long-Ctx</button>
+    <button class="preset-btn" data-preset="fast">⚡ Rápido</button>
+    <button class="preset-btn" data-preset="cheap">💰 Barato</button>
+    <button class="preset-btn" data-preset="agentic">🤖 Agente</button>
+    <button class="preset-btn" data-preset="">limpar</button>
+  </div>
   <input type="search" id="q" placeholder="🔍 buscar modelo ou provider...">
   <label><input type="checkbox" id="onlyFree"> só FREE</label>
   <label><input type="checkbox" id="onlyTools"> tool_call</label>
@@ -130,6 +164,12 @@ footer.site-footer a:hover { color: var(--accent); }
   <label>família <select id="fFamily"><option value="">todos</option></select></label>
   <label><input type="checkbox" id="onlyStruct"> structured_output</label>
   <label><input type="checkbox" id="onlyCache"> cache_pricing</label>
+  <label><input type="checkbox" id="onlyCoding"> coding</label>
+  <label><input type="checkbox" id="onlyAgentic"> agentic</label>
+  <label><input type="checkbox" id="onlyOpenW"> open_weights</label>
+  <label>min tok/s <input type="number" id="minSpeed" min="0" step="5" placeholder="0" style="width:70px"></label>
+  <label>max TTFT(s) <input type="number" id="maxTtft" min="0" step="0.5" placeholder="∞" style="width:70px"></label>
+  <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
 </section>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
@@ -140,9 +180,14 @@ footer.site-footer a:hover { color: var(--accent); }
     <th data-k="provider">Provider</th>
     <th data-k="display_name">Modelo</th>
     <th data-k="context_k">Ctx</th>
+    <th data-k="max_output_tokens" title="Max output tokens">MaxOut</th>
     <th data-k="tool_call">Tool</th>
     <th data-k="reasoning">Reas.</th>
-    <th data-k="multimodal">Mult.</th>
+    <th data-k="modalities_out" title="Output modalities">Modal</th>
+    <th data-k="speed_tps" title="Median output tokens/sec (AA)">tok/s</th>
+    <th data-k="ttft_s" title="Time-to-first-token (s)">TTFT</th>
+    <th data-k="coding_index" title="AA Coding Index">Code</th>
+    <th data-k="agentic_index" title="AA Agentic Index">Agent</th>
     <th data-k="price_in">Custo</th>
     <th data-k="aa_index">AA ★</th>
     <th data-k="cxb_score">Score CxB</th>
@@ -187,6 +232,29 @@ function custoCell(r){
 }
 function starsCell(s,idx){ if(idx==null) return '<span class="nd-text">N/D</span>'; var st = s?("★".repeat(s)+"☆".repeat(5-s)):"—"; return '<span class="stars">'+st+'</span> <span class="mono">'+(idx==null?"":idx)+'</span>'; }
 
+/* ==== v2.5 helpers ==== */
+function numCell(v, unit, decimals){
+  if(v==null) return '<span class="nd-text">N/D</span>';
+  var n = (typeof decimals === "number") ? v.toFixed(decimals) : String(v);
+  return '<span class="num-cell">'+n+(unit?'<span style="color:var(--muted);font-size:10px">'+unit+'</span>':'')+'</span>';
+}
+function speedCell(v){ return numCell(v, " t/s", v!=null&&v<10?2:0); }
+function ttftCell(v){ return numCell(v, "s", 1); }
+function maxOutCell(v){
+  if(v==null) return '<span class="nd-text">N/D</span>';
+  return '<span class="num-cell">'+(v>=1000000?(v/1000000).toFixed(1)+"M":v>=1000?(v/1000).toFixed(0)+"K":v)+'</span>';
+}
+function modalCell(list){
+  if(!list || !list.length) return '<span class="nd-text">—</span>';
+  var out = "";
+  for(var i=0;i<list.length && i<3;i++){
+    var m = list[i];
+    var icon = m==="text"?"T":m==="image"?"🖼":m==="audio"?"🎙":m==="video"?"🎬":m==="file"?"📎":m;
+    out += '<span class="chip out" title="'+esc(m)+'">'+icon+'</span>';
+  }
+  return out;
+}
+
 function renderKPIs(){
   var k = DATA.kpis;
   var html =
@@ -197,7 +265,54 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML = html;
 }
 
-var state = { q:"", free:false, tools:false, reasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"", sortKey:"cxb_score", sortDir:-1 };
+var state = { q:"", free:false, tools:false, reasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
+  coding:false, agentic:false, openw:false, minSpeed:0, maxTtft:null, modal:"",
+  sortKey:"cxb_score", sortDir:-1 };
+
+var PRESETS = {
+  chat:    { minCtx:32,   tools:true,  sortKey:"cxb_score" },
+  code:    { coding:true, sortKey:"coding_index", sortDir:-1 },
+  vision:  { modal:"image" },
+  longctx: { minCtx:256,  sortKey:"context_k", sortDir:-1 },
+  fast:    { minSpeed:80, sortKey:"speed_tps", sortDir:-1 },
+  cheap:   { free:true,   sortKey:"cxb_score" },
+  agentic: { agentic:true, tools:true, sortKey:"agentic_index", sortDir:-1 }
+};
+
+function applyPreset(name){
+  // reset filtros
+  state.free=state.tools=state.reasoning=state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
+  state.ctx=0; state.aa=0; state.cxb=0; state.provider=""; state.family=""; state.minSpeed=0; state.maxTtft=null; state.modal="";
+  state.sortKey="cxb_score"; state.sortDir=-1;
+  // aplica
+  var p = PRESETS[name];
+  if(p){
+    if(p.free) state.free = true;
+    if(p.tools) state.tools = true;
+    if(p.coding) state.coding = true;
+    if(p.agentic) state.agentic = true;
+    if(p.minCtx) state.ctx = p.minCtx;
+    if(p.minSpeed) state.minSpeed = p.minSpeed;
+    if(p.modal) state.modal = p.modal;
+    if(p.sortKey) state.sortKey = p.sortKey;
+    if(p.sortDir) state.sortDir = p.sortDir;
+  }
+  // sincroniza UI
+  document.getElementById("onlyFree").checked = state.free;
+  document.getElementById("onlyTools").checked = state.tools;
+  document.getElementById("onlyCoding").checked = state.coding;
+  document.getElementById("onlyAgentic").checked = state.agentic;
+  document.getElementById("fCtx").value = state.ctx || "";
+  document.getElementById("minSpeed").value = state.minSpeed || "";
+  document.getElementById("fModal").value = state.modal || "";
+  // marca botão ativo
+  var btns = document.querySelectorAll(".preset-btn");
+  for(var i=0;i<btns.length;i++){
+    if(btns[i].getAttribute("data-preset")===name) btns[i].classList.add("active");
+    else btns[i].classList.remove("active");
+  }
+  renderRanked();
+}
 
 function renderRanked(){
   var rows = DATA.ranked.filter(function(r){
@@ -207,6 +322,19 @@ function renderRanked(){
     if(state.mult && !r.multimodal) return false;
     if(state.struct && !r.structured_output) return false;
     if(state.cache && !r.has_cache_pricing) return false;
+    if(state.coding && r.coding_index==null) return false;
+    if(state.agentic && r.agentic_index==null) return false;
+    if(state.openw && !r.open_weights) return false;
+    if(state.minSpeed>0 && (r.speed_tps==null || r.speed_tps < state.minSpeed)) return false;
+    if(state.maxTtft!=null && state.maxTtft>0 && (r.ttft_s==null || r.ttft_s > state.maxTtft)) return false;
+    if(state.modal){
+      var key = state.modal==="img-out" ? "modalities_out" : "modalities_in";
+      var probe = state.modal==="img-out" ? "image" : state.modal;
+      var arr = r[key] || [];
+      var has = false;
+      for(var i=0;i<arr.length;i++){ if(arr[i]===probe){ has=true; break; } }
+      if(!has) return false;
+    }
     if(state.ctx && (r.context_k==null || r.context_k < state.ctx)) return false;
     if(state.cxb && (r.cxb_score==null || r.cxb_score < state.cxb)) return false;
     if(state.aa){
@@ -226,6 +354,9 @@ function renderRanked(){
   });
   rows.sort(function(a,b){
     var ka=a[state.sortKey], kb=b[state.sortKey];
+    // arrays (modalities): compara por length desc como fallback
+    if(ka!=null && typeof ka==="object" && ka.length!=null) ka = ka.length;
+    if(kb!=null && typeof kb==="object" && kb.length!=null) kb = kb.length;
     if(ka==null) ka = state.sortDir>0 ? Infinity : -Infinity;
     if(kb==null) kb = state.sortDir>0 ? Infinity : -Infinity;
     if(ka<kb) return -1*state.sortDir;
@@ -241,15 +372,20 @@ function renderRanked(){
       "<td>"+esc(r.provider)+"</td>"+
       '<td class="mono" title="'+esc(r.model_id)+'">'+esc(r.display_name)+"</td>"+
       "<td>"+ctxCell(r.context_k)+"</td>"+
+      "<td>"+maxOutCell(r.max_output_tokens)+"</td>"+
       "<td>"+boolCell(r.tool_call)+"</td>"+
       "<td>"+boolCell(r.reasoning)+"</td>"+
-      "<td>"+boolCell(r.multimodal)+"</td>"+
+      "<td>"+modalCell(r.modalities_out)+"</td>"+
+      "<td>"+speedCell(r.speed_tps)+"</td>"+
+      "<td>"+ttftCell(r.ttft_s)+"</td>"+
+      "<td>"+numCell(r.coding_index, "", 1)+"</td>"+
+      "<td>"+numCell(r.agentic_index, "", 1)+"</td>"+
       "<td>"+custoCell(r)+"</td>"+
       "<td>"+starsCell(r.aa_stars, r.aa_index)+"</td>"+
       '<td class="score">'+r.cxb_score.toFixed(2)+"</td>"+
       "</tr>";
   }
-  tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
+  tbody.innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
 }
 
 function renderND(){
@@ -296,16 +432,27 @@ document.getElementById("onlyReasoning").addEventListener("change", function(e){
 document.getElementById("onlyMult").addEventListener("change", function(e){ state.mult = e.target.checked; renderRanked(); });
 document.getElementById("onlyStruct").addEventListener("change", function(e){ state.struct = e.target.checked; renderRanked(); });
 document.getElementById("onlyCache").addEventListener("change", function(e){ state.cache = e.target.checked; renderRanked(); });
+document.getElementById("onlyCoding").addEventListener("change", function(e){ state.coding = e.target.checked; renderRanked(); });
+document.getElementById("onlyAgentic").addEventListener("change", function(e){ state.agentic = e.target.checked; renderRanked(); });
+document.getElementById("onlyOpenW").addEventListener("change", function(e){ state.openw = e.target.checked; renderRanked(); });
+document.getElementById("minSpeed").addEventListener("input", function(e){ state.minSpeed = parseFloat(e.target.value)||0; renderRanked(); });
+document.getElementById("maxTtft").addEventListener("input", function(e){ var v = parseFloat(e.target.value); state.maxTtft = isNaN(v)?null:v; renderRanked(); });
+document.getElementById("fModal").addEventListener("change", function(e){ state.modal = e.target.value; renderRanked(); });
 document.getElementById("fCtx").addEventListener("change", function(e){ state.ctx = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fAa").addEventListener("change", function(e){ state.aa = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fCxb").addEventListener("change", function(e){ state.cxb = parseFloat(e.target.value||0); renderRanked(); });
 document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; renderRanked(); });
 document.getElementById("fFamily").addEventListener("change", function(e){ state.family = e.target.value; renderRanked(); });
 
+// preset buttons
+Array.prototype.forEach.call(document.querySelectorAll(".preset-btn"), function(btn){
+  btn.addEventListener("click", function(){ applyPreset(btn.getAttribute("data-preset")||""); });
+});
+
 Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), function(th){
   th.addEventListener("click", function(){
     var k = th.getAttribute("data-k");
-    if(state.sortKey === k){ state.sortDir *= -1; } else { state.sortKey = k; state.sortDir = (k==="cxb_score"||k==="aa_index"||k==="context_k")?-1:1; }
+    if(state.sortKey === k){ state.sortDir *= -1; } else { state.sortKey = k; state.sortDir = (k==="cxb_score"||k==="aa_index"||k==="context_k"||k==="speed_tps"||k==="coding_index"||k==="agentic_index"||k==="max_output_tokens")?-1:1; }
     renderRanked();
   });
 });
