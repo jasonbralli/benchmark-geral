@@ -31,3 +31,4 @@ data/aa_models_raw.json
 .hermes/
 data/hermes_inventory_bruto.csv
 data/hermes_inventory_bruto.json
+index.html
