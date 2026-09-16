@@ -167,11 +167,6 @@ Hermes cron job **`benchmark-geral-nim-semanal`** roda
 `scripts/run_consolidated.py --refresh` toda **segunda-feira às 09:00**,
 com fallback `--use-cache` se rede falhar (local-first).
 
-## Assinatura obrigatória
-
-Todo HTML `index`/`dashboard` inclui no rodapé (`<footer class="site-footer">`) um
-link para `https://inovatudo.com` com `target="_blank" rel="noopener"`.
-
 ## Scorecard (Top 10 por AA Index — curado)
 
 | AA Rank | Modelo | AA Index | AA ★ |

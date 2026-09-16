@@ -173,6 +173,17 @@ def _load_models_dev_index() -> dict[str, dict[str, Any]]:
                 entry["release_date"] = meta.get("release_date")
             if "name" not in entry and "name" in meta:
                 entry["name"] = meta.get("name")
+            # v2.5: campos de capability/modalidade ausentes (causavam perda
+            # de modalities_in/out, family, structured_output, knowledge no
+            # cross-join de kilocode/nous/huggingface/opencode-free).
+            if "modalities" not in entry and "modalities" in meta:
+                entry["modalities"] = meta.get("modalities")
+            if "family" not in entry and "family" in meta:
+                entry["family"] = meta.get("family")
+            if "structured_output" not in entry and "structured_output" in meta:
+                entry["structured_output"] = meta.get("structured_output")
+            if "knowledge" not in entry and "knowledge" in meta:
+                entry["knowledge"] = meta.get("knowledge")
     return out
 
 

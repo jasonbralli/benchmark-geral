@@ -440,8 +440,23 @@ def passthrough_ids_enriched(
     custo 0 do nvidia.
     """
     out: list[UnifiedModel] = []
+    # Índice canônico secundário: canonical_id -> meta. Permite cruzar
+    # "kilocode/openai/gpt-6-astra" com "kilo/openai/gpt-6-astra" (vendors
+    # discrepantes do mesmo modelo lógico).
+    canon_index: dict[str, dict[str, Any]] = {}
+    for mid, meta in meta_index.items():
+        if not isinstance(meta, dict):
+            continue
+        canon, _ = canonicalize(mid)
+        # prefere o primeiro não-vazio; não sobrescreve
+        if canon and canon not in canon_index:
+            canon_index[canon] = meta
     for mid in sorted(set(ids)):
         meta = meta_index.get(mid)
+        if not meta:
+            # fallback: tenta pelo canónico
+            canon, _ = canonicalize(mid)
+            meta = canon_index.get(canon)
         if not meta:
             um = UnifiedModel(
                 provider=provider,
