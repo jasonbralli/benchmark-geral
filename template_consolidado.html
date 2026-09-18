@@ -200,6 +200,7 @@ footer.site-footer a:hover { color: var(--accent); }
       <legend>Capacidade</legend>
       <label><input type="checkbox" id="onlyTools"> tool_call</label>
       <label><input type="checkbox" id="onlyReasoning"> reasoning</label>
+      <label><input type="checkbox" id="noReasoning"> sem reasoning</label>
       <label><input type="checkbox" id="onlyMult"> multimodal</label>
       <label><input type="checkbox" id="onlyStruct"> structured</label>
       <label><input type="checkbox" id="onlyCoding"> coding</label>
@@ -230,6 +231,11 @@ footer.site-footer a:hover { color: var(--accent); }
     </fieldset>
   </div>
 </section>
+
+<h2>🏥 Saúde dos Providers (24h)</h2>
+<p class="section-note">Probes diários — uptime real, P50/P99, load-shedding (429/503/Retry-After). Fonte: <code>data/provider_health.jsonl</code>.</p>
+<section class="kpis" id="providerHealthKpis"></section>
+<div id="providerHealthTable"></div>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
 <p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
@@ -345,7 +351,46 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML = html;
 }
 
-var state = { q:"", free:false, tools:false, reasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
+function renderProviderHealth(){
+  var h = DATA.provider_health;
+  var kpiEl = document.getElementById("providerHealthKpis");
+  var tblEl = document.getElementById("providerHealthTable");
+  if(!h || !h.providers){
+    kpiEl.innerHTML = '<div class="kpi"><div class="kpi-label">Provider Health</div><div class="kpi-value">—</div><div class="kpi-sub">sem dados (rode probe_health.py)</div></div>';
+    tblEl.innerHTML = "";
+    return;
+  }
+  var provs = Object.keys(h.providers).sort();
+  var upSum=0, upN=0, worst=null;
+  var html = "";
+  for(var i=0;i<provs.length;i++){
+    var p = h.providers[provs[i]];
+    if(p.uptime_pct!=null){ upSum+=p.uptime_pct; upN++; }
+    if(!worst || (p.uptime_pct!=null && p.uptime_pct<worst.uptime_pct)) worst = p;
+    var okCls = p.last_ok ? "color:#2e8b57" : "color:#c0392b";
+    var shed = p.shed_hits>0 ? " ⚠"+p.shed_hits : "";
+    html += '<div class="kpi"><div class="kpi-label">'+esc(provs[i])+'</div>'+
+            '<div class="kpi-value" style="'+okCls+'">'+(p.uptime_pct!=null?p.uptime_pct.toFixed(1)+'%':'N/D')+'</div>'+
+            '<div class="kpi-sub">P50 '+(p.p50_ms!=null?p.p50_ms.toFixed(0)+'ms':'—')+' · P99 '+(p.p99_ms!=null?p.p99_ms.toFixed(0)+'ms':'—')+shed+'</div></div>';
+  }
+  kpiEl.innerHTML = html;
+  // tabela detalhe
+  var rows = "";
+  for(var j=0;j<provs.length;j++){
+    var q = h.providers[provs[j]];
+    rows += '<tr><td>'+esc(provs[j])+'</td>'+
+      '<td>'+(q.samples||0)+'</td>'+
+      '<td>'+(q.uptime_pct!=null?q.uptime_pct.toFixed(2)+'%':'—')+'</td>'+
+      '<td>'+(q.p50_ms!=null?q.p50_ms.toFixed(0)+' ms':'—')+'</td>'+
+      '<td>'+(q.p99_ms!=null?q.p99_ms.toFixed(0)+' ms':'—')+'</td>'+
+      '<td>'+(q.shed_hits||0)+'</td>'+
+      '<td>'+(q.last_error?esc(q.last_error):'—')+'</td>'+
+      '<td>'+(q.last_ts||'')+'</td></tr>';
+  }
+  tblEl.innerHTML = '<table><thead><tr><th>Provider</th><th>Amostras</th><th>Uptime</th><th>P50</th><th>P99</th><th>Sheds</th><th>Último erro</th><th>Última probe</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+var state = { q:"", free:false, tools:false, reasoning:false, noReasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
   coding:false, agentic:false, openw:false, minSpeed:0, maxTtft:null, modal:"",
   sortKey:"cxb_score", sortDir:-1 };
 
@@ -361,7 +406,7 @@ var PRESETS = {
 
 function applyPreset(name){
   // reset filtros
-  state.free=state.tools=state.reasoning=state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
+  state.free=state.tools=state.reasoning=state.noReasoning=state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
   state.ctx=0; state.aa=0; state.cxb=0; state.provider=""; state.family=""; state.minSpeed=0; state.maxTtft=null; state.modal="";
   state.sortKey="cxb_score"; state.sortDir=-1;
   // aplica
@@ -380,6 +425,8 @@ function applyPreset(name){
   // sincroniza UI
   document.getElementById("onlyFree").checked = state.free;
   document.getElementById("onlyTools").checked = state.tools;
+  document.getElementById("onlyReasoning").checked = state.reasoning;
+  document.getElementById("noReasoning").checked = state.noReasoning;
   document.getElementById("onlyCoding").checked = state.coding;
   document.getElementById("onlyAgentic").checked = state.agentic;
   document.getElementById("fCtx").value = state.ctx || "";
@@ -399,6 +446,7 @@ function renderRanked(){
     if(state.free && !r.is_free) return false;
     if(state.tools && !r.tool_call) return false;
     if(state.reasoning && !r.reasoning) return false;
+    if(state.noReasoning && r.reasoning) return false;
     if(state.mult && !r.multimodal) return false;
     if(state.struct && !r.structured_output) return false;
     if(state.cache && !r.has_cache_pricing) return false;
@@ -521,7 +569,8 @@ function fillFamilies(){
 document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value; renderRanked(); });
 document.getElementById("onlyFree").addEventListener("change", function(e){ state.free = e.target.checked; renderRanked(); });
 document.getElementById("onlyTools").addEventListener("change", function(e){ state.tools = e.target.checked; renderRanked(); });
-document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; renderRanked(); });
+document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; if(state.reasoning){ state.noReasoning=false; document.getElementById("noReasoning").checked=false; } renderRanked(); });
+document.getElementById("noReasoning").addEventListener("change", function(e){ state.noReasoning = e.target.checked; if(state.noReasoning){ state.reasoning=false; document.getElementById("onlyReasoning").checked=false; } renderRanked(); });
 document.getElementById("onlyMult").addEventListener("change", function(e){ state.mult = e.target.checked; renderRanked(); });
 document.getElementById("onlyStruct").addEventListener("change", function(e){ state.struct = e.target.checked; renderRanked(); });
 document.getElementById("onlyCache").addEventListener("change", function(e){ state.cache = e.target.checked; renderRanked(); });
@@ -551,6 +600,7 @@ Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), functio
 });
 
 renderKPIs();
+renderProviderHealth();
 fillProviders();
 fillFamilies();
 renderRanked();

@@ -1,0 +1,2 @@
+{"ts": "2026-09-18T12:55:36Z", "model_probe": "mistralai/mistral-large-3-675b-instruct-2512", "ok": false, "latency_ms": 567.2, "http_status": 410, "shed_detected": false, "retry_after": null, "error": "HTTP 410", "provider": "nvidia", "attempt": 3}
+{"ts": "2026-09-18T12:55:41Z", "model_probe": "meta-llama/llama-3.1-8b-instruct", "ok": true, "latency_ms": 771.1, "http_status": 200, "shed_detected": false, "retry_after": null, "error": null, "provider": "openrouter", "attempt": 1}

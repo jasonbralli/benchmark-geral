@@ -26,6 +26,18 @@ ROOT = Path(__file__).parent.parent
 TEMPLATE = ROOT / "template_consolidado.html"
 OUTPUT = ROOT / "dashboard.html"
 MARKER = "//CONSOLIDATED_DATA//"
+HEALTH_FILE = ROOT / "data" / "provider_health.json"
+
+
+def _load_provider_health() -> dict | None:
+    """Lê data/provider_health.json (gerado por benchmark_pipe.probe_health).
+    Retorna None se ausente/inválido — NUNCA quebra o build."""
+    if not HEALTH_FILE.exists():
+        return None
+    try:
+        return json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def _median(xs: list[float]) -> float | None:
@@ -99,6 +111,7 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "top_coder": _best(models_ranked, key=lambda m: m.coding_index, reverse=True),
             "top_agentic": _best(models_ranked, key=lambda m: m.agentic_index, reverse=True),
         },
+        "provider_health": _load_provider_health(),
     }
 
 

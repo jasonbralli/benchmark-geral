@@ -1,0 +1,24 @@
+{
+  "providers": {
+    "nvidia": {
+      "url": "https://integrate.api.nvidia.com/v1/chat/completions",
+      "model": "mistralai/mistral-large-3-675b-instruct-2512",
+      "key_env": "NVIDIA_API_KEY"
+    },
+    "openrouter": {
+      "url": "https://openrouter.ai/api/v1/chat/completions",
+      "model": "meta-llama/llama-3.1-8b-instruct",
+      "key_env": "OPENROUTER_API_KEY"
+    }
+  },
+  "probe": {
+    "max_tokens": 1,
+    "timeout_s": 30,
+    "retries": 3,
+    "backoff_s": 1.5
+  },
+  "alert": {
+    "consecutive_threshold": 3,
+    "latency_threshold_ms": 5000
+  }
+}
