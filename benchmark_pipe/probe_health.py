@@ -236,6 +236,8 @@ def run(config_path: Path, jsonl_path: Path, aggregate_path: Path, alert: bool =
     alert_cfg = cfg.get("alert", {})
     new_samples = []
     for name, pcfg in cfg.get("providers", {}).items():
+        if pcfg.get("disabled"):
+            continue
         s = probe_provider(name, pcfg, probe_cfg)
         append_jsonl(jsonl_path, s)
         new_samples.append(s)
