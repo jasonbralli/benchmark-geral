@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).parent.parent
 TEMPLATE = ROOT / "template_consolidado.html"
-OUTPUT = ROOT / "dashboard.html"
+OUTPUT = ROOT / "index.html"
 MARKER = "//CONSOLIDATED_DATA//"
 HEALTH_FILE = ROOT / "data" / "provider_health.json"
 

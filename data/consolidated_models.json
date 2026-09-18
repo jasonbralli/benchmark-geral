@@ -45169,6 +45169,40 @@
     },
     {
       "provider": "huggingface",
+      "model_id": "zai-org/GLM-4.7-FP8",
+      "display_name": "zai-org/GLM-4.7-FP8",
+      "context_k": null,
+      "tool_call": null,
+      "reasoning": null,
+      "multimodal": false,
+      "open_weights": null,
+      "family": null,
+      "structured_output": null,
+      "has_cache_pricing": null,
+      "price_in": null,
+      "price_out": null,
+      "is_free": false,
+      "aa_index": 22.2,
+      "cxb_score": 0.0,
+      "source": "hermes-cache-only",
+      "release_date": null,
+      "speed_tps": 98.29,
+      "ttft_s": 1.17,
+      "e2e_s": 26.6,
+      "coding_index": 45.3,
+      "agentic_index": null,
+      "modalities_in": null,
+      "modalities_out": null,
+      "max_output_tokens": null,
+      "knowledge_cutoff": null,
+      "attachment": null,
+      "canonical_id": "z-ai/glm-4.7-fp8",
+      "variant": "base",
+      "aliases": [],
+      "divergences": {}
+    },
+    {
+      "provider": "huggingface",
       "model_id": "zai-org/GLM-5.3-BF16",
       "display_name": "zai-org/GLM-5.3-BF16",
       "context_k": null,
@@ -45236,5 +45270,5 @@
       "divergences": {}
     }
   ],
-  "generated_at": "2026-09-18T11:33:48"
+  "generated_at": "2026-09-18T14:06:07"
 }

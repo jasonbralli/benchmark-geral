@@ -43,20 +43,13 @@ def main():
 
     print("Enviando para o GitHub...")
 
-    # O GitHub Pages serve index.html na raiz da branch gh-pages
-    # O dashboard.html deve ser copiado/renomeado para index.html na raiz
-    # ou o template já gera index.html
-    # Aqui assumimos que dashboard.html é o arquivo principal
-
-    # Verifica se index.html já existe na raiz (o GitHub Pages serve da raiz)
+    # O build.py já gera index.html direto na raiz (GitHub Pages serve index.html)
+    # Não há mais etapa de cópia — simplificação v2.6.5
     index_path = PROJETO_DIR / "index.html"
-    dashboard_path = PROJETO_DIR / "dashboard.html"
 
-    # Copia dashboard.html para index.html (o Pages serve index.html na raiz)
-    if dashboard_path.exists():
-        import shutil
-        shutil.copy2(dashboard_path, index_path)
-        print(f"Copiado {dashboard_path.name} -> {index_path.name}")
+    if not index_path.exists():
+        print(f"Erro: {index_path} não existe — rode run_consolidated.py antes.")
+        return 1
 
     # Git add: tracked com mudanças. index.html é gitignored (artefato de gh-pages).
     git_add_result = _run(["git", "add", "-u"], cwd=str(PROJETO_DIR))
@@ -91,10 +84,6 @@ def main():
     # gh-pages: snapshot orphan contendo APENAS index.html na raiz.
     # Estratégia: cria tree temporária com index.html, commit orphan, push --force.
     # Isto evita herdar o histórico de main (que tem scripts/data/código irrelevantes).
-    if not index_path.exists():
-        print(f"Erro: {index_path} não existe após cópia.")
-        return 1
-
     # 1) Cria blob do index.html
     blob = _run(["git", "hash-object", "-w", str(index_path)], cwd=str(PROJETO_DIR))
     if blob.returncode != 0:
