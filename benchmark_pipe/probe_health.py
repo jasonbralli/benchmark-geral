@@ -43,23 +43,33 @@ def _read_env_key(name: str) -> str:
     return ""
 
 
-def probe_once(url: str, model: str, api_key: str, max_tokens: int, timeout: int) -> dict:
+def probe_once(url: str, model: str, api_key: str, max_tokens: int, timeout: int, api_style: str = "openai") -> dict:
     """Uma tentativa. Retorna amostra para jsonl."""
     ts = _now_iso()
-    body = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": "ping"}],
-        "max_tokens": max_tokens,
-        "temperature": 0,
-        "stream": False,
-    }).encode("utf-8")
+    if api_style == "gemini":
+        # Gemini API usa formato diferente: contents + generationConfig
+        body = json.dumps({
+            "contents": [{"parts": [{"text": "ping"}]}],
+            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0}
+        }).encode("utf-8")
+    else:
+        body = json.dumps({
+            "model": model,
+            "messages": [{"role": "user", "content": "ping"}],
+            "max_tokens": max_tokens,
+            "temperature": 0,
+            "stream": False,
+        }).encode("utf-8")
 
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "benchmark-geral-probe/1.0",
     }
     if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
+        if api_style == "gemini":
+            headers["x-goog-api-key"] = api_key
+        else:
+            headers["Authorization"] = f"Bearer {api_key}"
 
     req = urllib.request.Request(url, data=body, headers=headers, method="POST")
     t0 = time.perf_counter()
@@ -115,6 +125,7 @@ def probe_provider(name: str, cfg: dict, probe_cfg: dict) -> dict:
             api_key=api_key,
             max_tokens=int(probe_cfg.get("max_tokens", 1)),
             timeout=int(probe_cfg.get("timeout_s", 10)),
+            api_style=cfg.get("api_style", "openai"),
         )
         s["provider"] = name
         s["attempt"] = i + 1

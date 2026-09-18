@@ -9,6 +9,22 @@
       "url": "https://openrouter.ai/api/v1/chat/completions",
       "model": "meta-llama/llama-3.1-8b-instruct",
       "key_env": "OPENROUTER_API_KEY"
+    },
+    "kilocode": {
+      "url": "https://api.kilocode.ai/api/openrouter/chat/completions",
+      "model": "thinkingmachines/inkling-small:free",
+      "key_env": "KILOCODE_API_KEY"
+    },
+    "gemini": {
+      "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "model": "gemini-2.5-flash",
+      "key_env": "GOOGLE_API_KEY",
+      "api_style": "gemini"
+    },
+    "huggingface": {
+      "url": "https://router.huggingface.co/v1/chat/completions",
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "key_env": "HF_TOKEN"
     }
   },
   "probe": {

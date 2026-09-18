@@ -11106,7 +11106,7 @@
       "modalities_out": [
         "text"
       ],
-      "max_output_tokens": 384000,
+      "max_output_tokens": 393216,
       "knowledge_cutoff": null,
       "attachment": false,
       "canonical_id": "deepseek-ai/deepseek-pro-latest",
@@ -11227,6 +11227,44 @@
       "knowledge_cutoff": "2025-04",
       "attachment": true,
       "canonical_id": "z-ai/glm-4.5v",
+      "variant": "base",
+      "aliases": [],
+      "divergences": {}
+    },
+    {
+      "provider": "kilocode",
+      "model_id": "~z-ai/glm-latest",
+      "display_name": "Z.ai: GLM Latest",
+      "context_k": 976,
+      "tool_call": true,
+      "reasoning": true,
+      "multimodal": false,
+      "open_weights": false,
+      "family": "glm",
+      "structured_output": true,
+      "has_cache_pricing": true,
+      "price_in": null,
+      "price_out": null,
+      "is_free": false,
+      "aa_index": null,
+      "cxb_score": 49.8,
+      "source": "models.dev-cross",
+      "release_date": "2026-08-19",
+      "speed_tps": null,
+      "ttft_s": null,
+      "e2e_s": null,
+      "coding_index": null,
+      "agentic_index": null,
+      "modalities_in": [
+        "text"
+      ],
+      "modalities_out": [
+        "text"
+      ],
+      "max_output_tokens": 131072,
+      "knowledge_cutoff": null,
+      "attachment": false,
+      "canonical_id": "z-ai/glm-latest",
       "variant": "base",
       "aliases": [],
       "divergences": {}
@@ -11774,6 +11812,44 @@
       "knowledge_cutoff": "2026-01",
       "attachment": false,
       "canonical_id": "z-ai/glm-5",
+      "variant": "base",
+      "aliases": [],
+      "divergences": {}
+    },
+    {
+      "provider": "huggingface",
+      "model_id": "zai-org/GLM-5.1-FP8",
+      "display_name": "GLM 5.1",
+      "context_k": 198,
+      "tool_call": true,
+      "reasoning": true,
+      "multimodal": false,
+      "open_weights": true,
+      "family": "glm",
+      "structured_output": true,
+      "has_cache_pricing": true,
+      "price_in": null,
+      "price_out": null,
+      "is_free": false,
+      "aa_index": 27.9,
+      "cxb_score": 48.81,
+      "source": "models.dev-cross",
+      "release_date": "2026-04-07",
+      "speed_tps": 60.0,
+      "ttft_s": 1.47,
+      "e2e_s": 61.55,
+      "coding_index": null,
+      "agentic_index": null,
+      "modalities_in": [
+        "text"
+      ],
+      "modalities_out": [
+        "text"
+      ],
+      "max_output_tokens": 131072,
+      "knowledge_cutoff": null,
+      "attachment": false,
+      "canonical_id": "z-ai/glm-5.1-fp8",
       "variant": "base",
       "aliases": [],
       "divergences": {}
@@ -14828,44 +14904,6 @@
       "attachment": false,
       "canonical_id": "poolside/laguna-xs-2.1",
       "variant": "free",
-      "aliases": [],
-      "divergences": {}
-    },
-    {
-      "provider": "kilocode",
-      "model_id": "~z-ai/glm-latest",
-      "display_name": "Z.ai: GLM Latest",
-      "context_k": 256,
-      "tool_call": true,
-      "reasoning": true,
-      "multimodal": false,
-      "open_weights": false,
-      "family": "glm",
-      "structured_output": true,
-      "has_cache_pricing": true,
-      "price_in": null,
-      "price_out": null,
-      "is_free": false,
-      "aa_index": null,
-      "cxb_score": 44.29,
-      "source": "models.dev-cross",
-      "release_date": "2026-08-19",
-      "speed_tps": null,
-      "ttft_s": null,
-      "e2e_s": null,
-      "coding_index": null,
-      "agentic_index": null,
-      "modalities_in": [
-        "text"
-      ],
-      "modalities_out": [
-        "text"
-      ],
-      "max_output_tokens": 235929,
-      "knowledge_cutoff": null,
-      "attachment": false,
-      "canonical_id": "z-ai/glm-latest",
-      "variant": "base",
       "aliases": [],
       "divergences": {}
     },
@@ -45198,5 +45236,5 @@
       "divergences": {}
     }
   ],
-  "generated_at": "2026-09-18T10:00:14"
+  "generated_at": "2026-09-18T11:03:13"
 }
