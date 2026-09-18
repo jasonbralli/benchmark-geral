@@ -60,7 +60,7 @@ provider_models_cache.json ──► benchmark_pipe/extract.py      ({provider: 
                                     │
                                     ▼
        benchmark_pipe/build.py   (injeta payload em template_consolidado.html,
-                                  marker //CONSOLIDATED_DATA//) → dashboard.html (idempotente)
+                                  marker //CONSOLIDATED_DATA//) → index.html (idempotente)
 ```
 
 ## Ranking CxB (score.py)
@@ -106,7 +106,7 @@ stale → dict curado. Resultado: **~68% dos modelos ranked com AA index** (ante
 | `scripts/update_pipeline.py` | Merge + filter + enrich + MD scorecard |
 | `scripts/run_full_pipeline.py` | Orquestrador master (sync + update em 1 comando) |
 | `template_consolidado.html` | **Canónico** com marker `//CONSOLIDATED_DATA//` (edite aqui para layout/JS) |
-| `dashboard.html` | **Output** gerado — nunca edite manualmente |
+| `index.html` | **Output** gerado — nunca edite manualmente (gitignored, artefato de build) |
 | `template.html` | **LEGADO NVIDIA** (arquivado, intocado). Marker `//NIM_RANKING_DATA//` |
 | `data/aa_models_raw.json` | Cache AA API v2 (gitignored, regenera) |
 | `data/nvidia_models_raw.json` | Cache models.dev NVIDIA (gitignored, regenera) |
@@ -158,7 +158,7 @@ O dashboard consolidado é publicado em GitHub Pages para acesso web:
 https://<usuario>.github.io/benchmark-geral-nim/.
 
 **IMPORTANTE:** GitHub Pages serve apenas arquivos **da raiz** da branch de publicação.
-`dashboard.html` deve residir na **raiz** (renomeado/posicionado como o index servido),
+`index.html` deve residir na **raiz** (gerado diretamente pelo build desde v2.6.5 — sem etapa de cópia),
 não em subdiretório. Após push, a página fica acessível em ~2 min.
 
 ## Agendamento semanal

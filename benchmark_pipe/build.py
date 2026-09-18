@@ -1,11 +1,11 @@
 """benchmark_pipe.build
 ======================
 
-Gera dashboard.html consolidado multi-provider via template_consolidado.html
+Gera index.html consolidado multi-provider via template_consolidado.html
 (marker //CONSOLIDATED_DATA//). Idempotente: lê template, injeta, escreve OUT.
 
-Output = `dashboard.html` (canónico) — decisão 22/08/2026: substitui o
-dashboard NVIDIA antigo.
+Output = `index.html` (canónico desde v2.6.5) — arquivo único servido pelo
+GitHub Pages. Substituiu `dashboard.html` (22/08/2026→18/09/2026).
 """
 
 from __future__ import annotations

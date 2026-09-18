@@ -4,7 +4,7 @@
 Orquestrador do pipeline consolidado multi-provider.
 
     extract (cache Hermes) -> map_source (metadados) -> normalize
-    -> enrich (AA) -> score (CxB) -> build (dashboard.html)
+    -> enrich (AA) -> score (CxB) -> build (index.html)
 
 Flags:
     --refresh   re-busca OpenRouter/model.dev da API (sem cache)
