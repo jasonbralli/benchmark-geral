@@ -232,11 +232,6 @@ footer.site-footer a:hover { color: var(--accent); }
   </div>
 </section>
 
-<h2>🏥 Saúde dos Providers (24h)</h2>
-<p class="section-note">Probes diários — uptime real, P50/P99, load-shedding (429/503/Retry-After). Fonte: <code>data/provider_health.jsonl</code>.</p>
-<section class="kpis" id="providerHealthKpis"></section>
-<div id="providerHealthTable"></div>
-
 <h2>🏆 Ranking — Custo × Benefício</h2>
 <p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
 <table id="tblRanked">
@@ -259,6 +254,11 @@ footer.site-footer a:hover { color: var(--accent); }
   </tr></thead>
   <tbody></tbody>
 </table>
+
+<h2>🏥 Saúde dos Providers (24h)</h2>
+<p class="section-note">Probes diários — uptime real, P50/P99, load-shedding (429/503/Retry-After). Fonte: <code>data/provider_health.jsonl</code>.</p>
+<section class="kpis" id="providerHealthKpis"></section>
+<div id="providerHealthTable"></div>
 
 <h2 style="margin-top:40px">📦 Inventário Completo (N/D)</h2>
 <p class="section-note">Providers sem fonte pública de metadados (gemini, kilocode, huggingface, nous, opencode-free). Listados apenas para referência de IDs.</p>
@@ -347,6 +347,25 @@ function renderKPIs(){
   }
   if(k.top_agentic){
     html += '<div class="kpi"><div class="kpi-label">🤖 Top Agent</div><div class="kpi-value">'+k.top_agentic.value.toFixed(1)+'</div><div class="kpi-sub" title="'+esc(k.top_agentic.model_id)+'">'+esc(k.top_agentic.display_name)+'</div></div>';
+  }
+  // Provider health KPI agregado
+  var h = DATA.provider_health;
+  if(h && h.providers){
+    var provs = Object.keys(h.providers);
+    var okCount = 0, sumUp = 0, minUp = 101, worst = null;
+    for(var i=0;i<provs.length;i++){
+      var p = h.providers[provs[i]];
+      if(p.uptime_pct != null){
+        sumUp += p.uptime_pct;
+        if(p.uptime_pct >= 99.5) okCount++;
+        if(p.uptime_pct < minUp){ minUp = p.uptime_pct; worst = provs[i]; }
+      }
+    }
+    var avgUp = provs.length ? (sumUp/provs.length).toFixed(1) : "—";
+    var allOk = okCount === provs.length;
+    var cls = allOk ? "color:#2e8b57" : "color:#c0392b";
+    var sub = allOk ? provs.length+" providers ✓" : "pior: "+worst+" ("+minUp+"%)";
+    html += '<div class="kpi"><div class="kpi-label">🏥 Providers Saúde</div><div class="kpi-value" style="'+cls+'">'+avgUp+'%</div><div class="kpi-sub">'+sub+'</div></div>';
   }
   document.getElementById("kpis").innerHTML = html;
 }
