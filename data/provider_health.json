@@ -1,66 +1,66 @@
 {
-  "generated_at": "2026-09-18T14:32:00Z",
+  "generated_at": "2026-09-18T16:10:31Z",
   "window_hours": 24,
   "providers": {
     "nvidia": {
       "samples": 1,
-      "ok": 0,
-      "uptime_pct": 0.0,
+      "ok": 1,
+      "uptime_pct": 100.0,
       "shed_hits": 0,
-      "p50_ms": 681.8,
-      "p99_ms": 681.8,
-      "last_status": 410,
-      "last_error": "HTTP 410",
-      "last_ok": false,
-      "last_ts": "2026-09-18T14:31:27Z"
+      "p50_ms": 70094.4,
+      "p99_ms": 70094.4,
+      "last_status": 200,
+      "last_error": null,
+      "last_ok": true,
+      "last_ts": "2026-09-18T16:08:38Z"
     },
     "openrouter": {
       "samples": 1,
       "ok": 1,
       "uptime_pct": 100.0,
       "shed_hits": 0,
-      "p50_ms": 1515.2,
-      "p99_ms": 1515.2,
+      "p50_ms": 4128.5,
+      "p99_ms": 4128.5,
       "last_status": 200,
       "last_error": null,
       "last_ok": true,
-      "last_ts": "2026-09-18T14:31:33Z"
+      "last_ts": "2026-09-18T16:09:48Z"
     },
     "kilocode": {
       "samples": 1,
       "ok": 0,
       "uptime_pct": 0.0,
       "shed_hits": 1,
-      "p50_ms": 1176.9,
-      "p99_ms": 1176.9,
+      "p50_ms": 807.5,
+      "p99_ms": 807.5,
       "last_status": 429,
       "last_error": "HTTP 429",
       "last_ok": false,
-      "last_ts": "2026-09-18T14:31:42Z"
+      "last_ts": "2026-09-18T16:09:58Z"
     },
     "gemini": {
       "samples": 1,
       "ok": 1,
       "uptime_pct": 100.0,
       "shed_hits": 0,
-      "p50_ms": 10386.8,
-      "p99_ms": 10386.8,
+      "p50_ms": 1178.6,
+      "p99_ms": 1178.6,
       "last_status": 200,
       "last_error": null,
       "last_ok": true,
-      "last_ts": "2026-09-18T14:31:48Z"
+      "last_ts": "2026-09-18T16:10:04Z"
     },
     "huggingface": {
       "samples": 1,
       "ok": 1,
       "uptime_pct": 100.0,
       "shed_hits": 0,
-      "p50_ms": 1450.3,
-      "p99_ms": 1450.3,
+      "p50_ms": 26380.2,
+      "p99_ms": 26380.2,
       "last_status": 200,
       "last_error": null,
       "last_ok": true,
-      "last_ts": "2026-09-18T14:31:58Z"
+      "last_ts": "2026-09-18T16:10:05Z"
     }
   }
 }

@@ -2,8 +2,9 @@
   "providers": {
     "nvidia": {
       "url": "https://integrate.api.nvidia.com/v1/chat/completions",
-      "model": "mistralai/mistral-large-3-675b-instruct-2512",
-      "key_env": "NVIDIA_API_KEY"
+      "model": "moonshotai/kimi-k3",
+      "key_env": "NVIDIA_API_KEY",
+      "note": "Free-tier NVIDIA expoe so reasoning models (kimi-k3, glm-5.3-flash). mistral/llama/gemma retornam 410 Gone (deprecated) ou 404 Not Found (not provisioned). kimi-k3 responde 200 em ~60-90s."
     },
     "openrouter": {
       "url": "https://openrouter.ai/api/v1/chat/completions",
@@ -29,7 +30,7 @@
   },
   "probe": {
     "max_tokens": 1,
-    "timeout_s": 30,
+    "timeout_s": 120,
     "retries": 3,
     "backoff_s": 1.5
   },
