@@ -1,0 +1,16 @@
+{
+  "ranked_count": 1077,
+  "non_ranked_count": 93,
+  "total": 1170,
+  "by_provider": {
+    "kilocode": 380,
+    "opencode-free": 6,
+    "nvidia": 160,
+    "gemini": 15,
+    "huggingface": 141,
+    "copilot-acp": 17,
+    "openrouter": 444,
+    "nous": 7
+  },
+  "captured_at": "2026-09-18T19:14:49.364921+00:00"
+}
