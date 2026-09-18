@@ -58,7 +58,7 @@ Script: scripts/curate_daily.py
   5. Rodar dedup + cross-join + propagate
   6. Validar: alerta se modelo count cair >5% (indica deslistagem tipo opencode-free)
   7. Rebuild index.html
-  8. Commit + push (opcional)
+  8. Commit + push (diário após todas as verificações)
 ```
 
 ## Decisões de Design
@@ -70,6 +70,7 @@ Script: scripts/curate_daily.py
    - Provider desaparece da listagem Hermes
    - Count de modelos cai >10% de ontem para hoje
    - Novo provider aparece (oportunidade)
+   - modelo count cair >5%
 
 ## Próximos Passos (não implementados)
 

@@ -315,13 +315,19 @@ function maxOutCell(v){
   return '<span class="num-cell">'+(v>=1000000?(v/1000000).toFixed(1)+"M":v>=1000?(v/1000).toFixed(0)+"K":v)+'</span>';
 }
 function modalCell(list){
+  // CORREÇÃO v2.7.1: mostrar multimodalidade real (apenas icones não-text)
+  // 'text' não é chip visível — só indicamos capacidade extra
   if(!list || !list.length) return '<span class="nd-text">—</span>';
   var out = "";
+  var nonText = 0;
   for(var i=0;i<list.length && i<3;i++){
     var m = list[i];
-    var icon = m==="text"?"T":m==="image"?"🖼":m==="audio"?"🎙":m==="video"?"🎬":m==="file"?"📎":m;
+    if(m === "text") continue;  // pular explicitamente texto
+    nonText++;
+    var icon = m==="image"?"🖼":m==="audio"?"🎙":m==="video"?"🎬":m==="file"?"📎":m;
     out += '<span class="chip out" title="'+esc(m)+'">'+icon+'</span>';
   }
+  if(!nonText) return '<span class="nd-text">—</span>';  // só texto = nada a mostrar
   return out;
 }
 
@@ -466,7 +472,7 @@ function renderRanked(){
     if(state.tools && !r.tool_call) return false;
     if(state.reasoning && !r.reasoning) return false;
     if(state.noReasoning && r.reasoning) return false;
-    if(state.mult && !r.multimodal) return false;
+    if(state.mult && !r.multimodal && !((r.modalities_in||[]).filter(function(m){return m!=='text';}).length > 0)) return false;
     if(state.struct && !r.structured_output) return false;
     if(state.cache && !r.has_cache_pricing) return false;
     if(state.coding && r.coding_index==null) return false;
