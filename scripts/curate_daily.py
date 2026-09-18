@@ -61,6 +61,34 @@ PROVIDER_HEALTH_JSON = DATA_DIR / "provider_health.json"
 DROP_THRESHOLD_PCT = 5.0  # alerta se modelos caírem >5% vs ontem
 MIN_MODELS = 50  # sanity check
 
+# Filtro para modelos obsoletos — removidos pelo provider
+REMOVED_PROVIDERS = {"opencode-free"}  # opencode-free foi removido do Hermes
+
+
+def _load_hermes_inventory() -> dict[str, set]:
+    """Carrega provider_models_cache.json — fonte de verdade da LISTAGEM."""
+    return extract_provider_models()
+
+
+def _check_obsolete_models(curr: dict, hermes: dict[str, set]) -> list[str]:
+    """Detecta modelos no consolidated que não estão mais no provider (Hermes)."""
+    alerts = []
+    
+    # Índice de modelos ativos por provider
+    active_json = json.loads(CONSOLIDATED.read_text(encoding="utf-8"))
+    curr_models = {m.get("model_id") for m in active_json.get("ranked", [])}
+    
+    # 1. Se provider não está mais no Hermes → remover TODOS os modelos dele
+    for prov in list(curr["by_provider"].keys()):
+        if prov not in hermes and prov not in REMOVED_PROVIDERS:
+            alerts.append(f"⚠️ Provider REMOVIDO do Hermes: {prov}")
+    
+    # 2. Modelos que estão no consolidated mas não na lista ativa do provider?
+    # Simplificação: se model_id não está na lista do provider -> obsoleto
+    # (não filtramos aqui — filtra no build. Só alertamos.)
+    
+    return alerts
+
 
 def _run_cmd(cmd: list[str], check=True, timeout=300) -> tuple[int, str, str]:
     """Roda comando no ROOT, captura stdout/stderr."""

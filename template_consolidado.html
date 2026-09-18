@@ -67,6 +67,11 @@ th, td {
 }
 th { font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; cursor: pointer; user-select: none; }
 th:hover { color: var(--accent); }
+th.sorted-asc  { color: var(--accent); }
+th.sorted-desc { color: var(--accent); }
+th .sort-arrow { display: inline-block; margin-left: 4px; font-size: 10px; font-weight: 700; }
+th.sorted-asc  .sort-arrow::after { content: " ▲"; }
+th.sorted-desc .sort-arrow::after { content: " ▼"; }
 tbody tr:hover { background: rgba(76,194,255,.04); }
 
 .badge {
@@ -236,21 +241,21 @@ footer.site-footer a:hover { color: var(--accent); }
 <p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
 <table id="tblRanked">
   <thead><tr>
-    <th data-k="rank">#</th>
-    <th data-k="provider">Provider</th>
-    <th data-k="display_name">Modelo</th>
-    <th data-k="context_k">Ctx</th>
-    <th data-k="max_output_tokens" title="Max output tokens">MaxOut</th>
-    <th data-k="tool_call">Tool</th>
-    <th data-k="reasoning">Reas.</th>
-    <th data-k="modalities_out" title="Output modalities">Modal</th>
-    <th data-k="speed_tps" title="Median output tokens/sec (AA)">tok/s</th>
-    <th data-k="ttft_s" title="Time-to-first-token (s)">TTFT</th>
-    <th data-k="coding_index" title="AA Coding Index">Code</th>
-    <th data-k="agentic_index" title="AA Agentic Index">Agent</th>
-    <th data-k="price_in">Custo</th>
-    <th data-k="aa_index">AA ★</th>
-    <th data-k="cxb_score">Score CxB</th>
+    <th data-k="rank">#<span class="sort-arrow"></span></th>
+    <th data-k="provider">Provider<span class="sort-arrow"></span></th>
+    <th data-k="display_name">Modelo<span class="sort-arrow"></span></th>
+    <th data-k="context_k">Ctx<span class="sort-arrow"></span></th>
+    <th data-k="max_output_tokens" title="Max output tokens">MaxOut<span class="sort-arrow"></span></th>
+    <th data-k="tool_call">Tool<span class="sort-arrow"></span></th>
+    <th data-k="reasoning">Reas.<span class="sort-arrow"></span></th>
+    <th data-k="modalities_out" title="Output modalities">Modal<span class="sort-arrow"></span></th>
+    <th data-k="speed_tps" title="Median output tokens/sec (AA)">tok/s<span class="sort-arrow"></span></th>
+    <th data-k="ttft_s" title="Time-to-first-token (s)">TTFT<span class="sort-arrow"></span></th>
+    <th data-k="coding_index" title="AA Coding Index">Code<span class="sort-arrow"></span></th>
+    <th data-k="agentic_index" title="AA Agentic Index">Agent<span class="sort-arrow"></span></th>
+    <th data-k="price_in">Custo<span class="sort-arrow"></span></th>
+    <th data-k="aa_index">AA ★<span class="sort-arrow"></span></th>
+    <th data-k="cxb_score">Score CxB<span class="sort-arrow"></span></th>
   </tr></thead>
   <tbody></tbody>
 </table>
@@ -430,11 +435,14 @@ var PRESETS = {
 };
 
 function applyPreset(name){
-  // reset filtros
-  state.free=state.tools=state.reasoning=state.noReasoning=state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
-  state.ctx=0; state.aa=0; state.cxb=0; state.provider=""; state.family=""; state.minSpeed=0; state.maxTtft=null; state.modal="";
+  // reset filtros — TODOS os campos, incluindo os que faltavam antes
+  state.free=state.tools=state.reasoning=state.noReasoning=false;
+  state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
+  state.ctx=0; state.aa=0; state.cxb=0;
+  state.provider=""; state.family=""; state.modal="";
+  state.minSpeed=0; state.maxTtft=null;
   state.sortKey="cxb_score"; state.sortDir=-1;
-  // aplica
+  // aplica preset
   var p = PRESETS[name];
   if(p){
     if(p.free) state.free = true;
@@ -447,20 +455,29 @@ function applyPreset(name){
     if(p.sortKey) state.sortKey = p.sortKey;
     if(p.sortDir) state.sortDir = p.sortDir;
   }
-  // sincroniza UI
+  // sincroniza UI — TODOS os checkboxes/dropdowns
   document.getElementById("onlyFree").checked = state.free;
   document.getElementById("onlyTools").checked = state.tools;
   document.getElementById("onlyReasoning").checked = state.reasoning;
   document.getElementById("noReasoning").checked = state.noReasoning;
+  document.getElementById("onlyMult").checked = state.mult;
+  document.getElementById("onlyStruct").checked = state.struct;
+  document.getElementById("onlyCache").checked = state.cache;
   document.getElementById("onlyCoding").checked = state.coding;
   document.getElementById("onlyAgentic").checked = state.agentic;
+  document.getElementById("onlyOpenW").checked = state.openw;
   document.getElementById("fCtx").value = state.ctx || "";
+  document.getElementById("fCxb").value = state.cxb || "";
   document.getElementById("minSpeed").value = state.minSpeed || "";
+  document.getElementById("maxTtft").value = state.maxTtft || "";
   document.getElementById("fModal").value = state.modal || "";
-  // marca botão ativo
+  document.getElementById("fAa").value = state.aa || "";
+  document.getElementById("provider").value = state.provider || "";
+  document.getElementById("fFamily").value = state.family || "";
+  // marca botão ativo (limpar = NENHUM ativo)
   var btns = document.querySelectorAll(".preset-btn");
   for(var i=0;i<btns.length;i++){
-    if(btns[i].getAttribute("data-preset")===name) btns[i].classList.add("active");
+    if(btns[i].getAttribute("data-preset")===name && name!=="") btns[i].classList.add("active");
     else btns[i].classList.remove("active");
   }
   renderRanked();
@@ -616,10 +633,23 @@ Array.prototype.forEach.call(document.querySelectorAll(".preset-btn"), function(
   btn.addEventListener("click", function(){ applyPreset(btn.getAttribute("data-preset")||""); });
 });
 
+function updateSortIndicators(){
+  var ths = document.querySelectorAll("#tblRanked th");
+  for(var i=0;i<ths.length;i++){
+    var th = ths[i];
+    th.classList.remove("sorted-asc","sorted-desc");
+    if(th.getAttribute("data-k") === state.sortKey){
+      if(state.sortDir === 1) th.classList.add("sorted-asc");
+      else th.classList.add("sorted-desc");
+    }
+  }
+}
+
 Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), function(th){
   th.addEventListener("click", function(){
     var k = th.getAttribute("data-k");
     if(state.sortKey === k){ state.sortDir *= -1; } else { state.sortKey = k; state.sortDir = (k==="cxb_score"||k==="aa_index"||k==="context_k"||k==="speed_tps"||k==="coding_index"||k==="agentic_index"||k==="max_output_tokens")?-1:1; }
+    updateSortIndicators();
     renderRanked();
   });
 });
@@ -628,6 +658,7 @@ renderKPIs();
 renderProviderHealth();
 fillProviders();
 fillFamilies();
+updateSortIndicators();
 renderRanked();
 renderND();
 </script>
