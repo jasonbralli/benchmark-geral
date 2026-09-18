@@ -106,13 +106,13 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     # Providers com fonte -> normaliza (com merge Hermes IDs × metadados)
     all_models = []
     nv_raw = metadata.get("nvidia", [])
-    nvidia_models = normalize_nvidia(nv_raw)
+    nvidia_models = normalize_nvidia(nv_raw, hermes_inventory=inventory)
     # Single source of IDs = Hermes cache. IDs do Hermes sem metadados em
     # models_dev (antigos/deprecados) viram passthrough N/D — nunca drop.
     nv_meta_ids = {m.model_id for m in nvidia_models}
     nvidia_missing = set(inventory.get("nvidia", set())) - nv_meta_ids
     all_models += nvidia_models
-    all_models += passthrough_ids_enriched("nvidia", nvidia_missing, models_dev_index)
+    all_models += passthrough_ids_enriched("nvidia", nvidia_missing, models_dev_index, hermes_inventory=inventory)
 
     or_raw = metadata.get("openrouter", [])
     all_models += normalize_openrouter(or_raw, meta_index=models_dev_index)
@@ -120,7 +120,7 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     # Providers sem fonte -> passthrough com cross-join de metadados
     no_source = [p for p in inventory if p not in ("nvidia", "openrouter")]
     for prov in no_source:
-        all_models += passthrough_ids_enriched(prov, inventory[prov], models_dev_index)
+        all_models += passthrough_ids_enriched(prov, inventory[prov], models_dev_index, hermes_inventory=inventory)
 
     # Dedup intra-provider (provider + canonical + variant) antes do enrich
     from benchmark_pipe.normalize import dedup_models

@@ -252,7 +252,31 @@ def lookup_aa_metrics(
     found_idx = lookup_aa_index(model_id, canonical_id, idx_map)
     if found_idx is None:
         return None
-    # Recupera a chave cuja aa_index casa (pode haver >1; pega a de maior score)
+    # Recupera a chave pela chave exata que casou (evita colisão de aa_index)
+    # Construir candidates da mesma forma que lookup_aa_index para encontrar a key
+    candidates: list[str] = []
+    for raw in [model_id, canonical_id or ""]:
+        if not raw:
+            continue
+        low = raw.lower().strip()
+        last = low.split("/")[-1]
+        full_hyphen = low.replace("/", "-").replace(".", "-").replace("_", "-")
+        last_norm = _norm_slug(last)
+        full_norm = _norm_slug(full_hyphen)
+        for c in (last_norm, full_norm, _norm_slug(low)):
+            if c and c not in candidates:
+                candidates.append(c)
+    # 1) match exato — retorna a métrica da key correta
+    for c in candidates:
+        if c in metrics_map:
+            return metrics_map[c]
+    # 2) fallback por prefixo — preferir a key com aa_index == found_idx
+    for c in candidates:
+        for slug, metrics in metrics_map.items():
+            if (slug == c or c.startswith(slug + "-") or slug.startswith(c + "-") or c == slug.replace(".", "-")):
+                if metrics.get("aa_index") == found_idx:
+                    return metrics
+    # 3) último fallback: retorna pelo aa_index (comportamento antigo, mas evita None)
     for key, metrics in metrics_map.items():
         if metrics.get("aa_index") == found_idx:
             return metrics

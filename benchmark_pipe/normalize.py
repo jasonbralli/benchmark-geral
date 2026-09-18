@@ -283,13 +283,22 @@ def dedup_models(
 # Normalizadores por provider
 # ---------------------------------------------------------------------------
 
-def normalize_nvidia(items: list[dict[str, Any]]) -> list[UnifiedModel]:
-    """models.dev -> UnifiedModel (provider=nvidia)."""
+def normalize_nvidia(items: list[dict[str, Any]], hermes_inventory: dict[str, set[str]] | None = None) -> list[UnifiedModel]:
+    """models.dev -> UnifiedModel (provider=nvidia).
+
+    Sanitização v2.7.3: se `hermes_inventory` fornecido, remove modelos que
+    estão no models.dev mas NÃO estão listados pelo provider (NVIDIA deprecou).
+    Ex: gpt-oss-120b retorna 410 mas está no catálogo models.dev.
+    """
     out: list[UnifiedModel] = []
     for m in items:
         model_id = m.get("id") or ""
         if not model_id:
             continue
+        # SANITIZAÇÃO: pular modelos que não estão no provider_models_cache
+        if hermes_inventory and "nvidia" in hermes_inventory:
+            if model_id not in hermes_inventory["nvidia"]:
+                continue
         limit = m.get("limit") or {}
         ctx = limit.get("context")
         cost = m.get("cost") or {}
@@ -429,6 +438,7 @@ def passthrough_ids_enriched(
     provider: str,
     ids: set[str] | list[str],
     meta_index: dict[str, dict[str, Any]],
+    hermes_inventory: dict[str, set[str]] | None = None,
 ) -> list[UnifiedModel]:
     """Passthrough IDs com cross-join de metadados do models_dev_cache.
 
@@ -438,6 +448,10 @@ def passthrough_ids_enriched(
     Sem meta de preço própria -> price None (N/D) e is_free depende só do
     ALL_FREE_PROVIDERS. Evita que kilocode/nous apareçam FREE por herdar o
     custo 0 do nvidia.
+
+    Sanitização v2.7.3: se `hermes_inventory` fornecido, modelos que NÃO estão
+    na lista do provider (provider_models_cache.json) são excluídos — são
+    "modelos fantasma" de outro provider que vazaram pelo cross-join.
     """
     out: list[UnifiedModel] = []
     # Índice canônico secundário: canonical_id -> meta. Permite cruzar
@@ -457,6 +471,14 @@ def passthrough_ids_enriched(
             # fallback: tenta pelo canónico
             canon, _ = canonicalize(mid)
             meta = canon_index.get(canon)
+        # SANITIZAÇÃO (v2.7.3): se hermes_inventory está disponível, verificar
+        # se modelo está na lista do provider. Se não, NÃO incluir — é modelo
+        # obsoleto/vazamento de outro provider.
+        if hermes_inventory is not None:
+            if provider in hermes_inventory:
+                if mid not in hermes_inventory[provider]:
+                    # Modelo não está no provider_models_cache — pular
+                    continue
         if not meta:
             um = UnifiedModel(
                 provider=provider,
