@@ -4531,7 +4531,7 @@
       "modalities_out": [
         "text"
       ],
-      "max_output_tokens": 131072,
+      "max_output_tokens": 943718,
       "knowledge_cutoff": null,
       "attachment": true,
       "canonical_id": "deepseek-ai/deepseek-flash-latest",
@@ -9200,15 +9200,15 @@
     {
       "provider": "kilocode",
       "model_id": "prism-ml/ternary-bonsai-2-27b",
-      "display_name": "PrismML: Ternary Bonsai 2 27B",
+      "display_name": "Ternary Bonsai 2 27B",
       "context_k": 256,
       "tool_call": true,
       "reasoning": true,
       "multimodal": true,
-      "open_weights": false,
+      "open_weights": true,
       "family": null,
       "structured_output": true,
-      "has_cache_pricing": false,
+      "has_cache_pricing": true,
       "price_in": null,
       "price_out": null,
       "is_free": false,
@@ -10431,7 +10431,7 @@
       "tool_call": true,
       "reasoning": true,
       "multimodal": true,
-      "open_weights": false,
+      "open_weights": true,
       "family": null,
       "structured_output": null,
       "has_cache_pricing": null,
@@ -10804,7 +10804,7 @@
       "modalities_out": [
         "text"
       ],
-      "max_output_tokens": 943718,
+      "max_output_tokens": 131072,
       "knowledge_cutoff": null,
       "attachment": false,
       "canonical_id": "z-ai/glm-latest",
@@ -23258,6 +23258,44 @@
       "knowledge_cutoff": "2025-07",
       "attachment": false,
       "canonical_id": "deepseek-ai/deepseek-v3.1-terminus",
+      "variant": "base",
+      "aliases": [],
+      "divergences": {}
+    },
+    {
+      "provider": "huggingface",
+      "model_id": "deepseek-ai/DeepSeek-V3",
+      "display_name": "deepseek-ai/DeepSeek-V3",
+      "context_k": 160,
+      "tool_call": true,
+      "reasoning": false,
+      "multimodal": false,
+      "open_weights": false,
+      "family": "deepseek",
+      "structured_output": true,
+      "has_cache_pricing": false,
+      "price_in": null,
+      "price_out": null,
+      "is_free": false,
+      "aa_index": 8.5,
+      "cxb_score": 29.05,
+      "source": "models.dev-cross",
+      "release_date": "2024-12-26",
+      "speed_tps": null,
+      "ttft_s": null,
+      "e2e_s": null,
+      "coding_index": 23.0,
+      "agentic_index": 0.8,
+      "modalities_in": [
+        "text"
+      ],
+      "modalities_out": [
+        "text"
+      ],
+      "max_output_tokens": 164000,
+      "knowledge_cutoff": "2024-07",
+      "attachment": false,
+      "canonical_id": "deepseek-ai/deepseek-v3",
       "variant": "base",
       "aliases": [],
       "divergences": {}
@@ -42172,5 +42210,5 @@
       "divergences": {}
     }
   ],
-  "generated_at": "2026-09-18T20:52:26"
+  "generated_at": "2026-09-18T21:42:51"
 }

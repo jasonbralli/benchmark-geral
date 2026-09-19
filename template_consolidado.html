@@ -217,6 +217,7 @@ footer.site-footer a:hover { color: var(--accent); }
       <legend>Custo</legend>
       <label><input type="checkbox" id="onlyFree"> só FREE</label>
       <label><input type="checkbox" id="onlyCache"> cache_pricing</label>
+      <label>Preço/1M in ≤ <select id="maxPriceIn"><option value="">todos</option><option value="0.1">$0.10</option><option value="0.5">$0.50</option><option value="1">$1</option><option value="5">$5</option><option value="10">$10</option><option value="999">> $10</option></select></label>
       <label>CxB <select id="fCxb"><option value="">todos</option><option value="50">≥50</option><option value="20">≥20</option><option value="10">≥10</option><option value="5">≥5</option></select></label>
     </fieldset>
 
@@ -231,6 +232,10 @@ footer.site-footer a:hover { color: var(--accent); }
       <legend>Qualidade & Origem</legend>
       <label>AA★ <select id="fAa"><option value="">todos</option><option value="5">5★ (≥50)</option><option value="4">≥4★ (≥35)</option><option value="3">≥3★ (≥20)</option><option value="1">com AA</option></select></label>
       <label>provider <select id="provider"><option value="">todos</option></select></label>
+      <div id="providerMulti" style="display:none;margin-top:4px;font-size:11px;">
+        <div id="provCheckboxes" style="max-height:120px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:4px 6px;background:var(--bg);"></div>
+      </div>
+      <label><input type="checkbox" id="providerMultiMode"> multi-seleção</label>
       <label>família <select id="fFamily"><option value="">todos</option></select></label>
       <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
     </fieldset>
@@ -422,6 +427,7 @@ function renderProviderHealth(){
 
 var state = { q:"", free:false, tools:false, reasoning:false, noReasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
   coding:false, agentic:false, openw:false, minSpeed:0, maxTtft:null, modal:"",
+  maxPriceIn:null, provMulti:false, selProviders:[],
   sortKey:"cxb_score", sortDir:-1 };
 
 var PRESETS = {
@@ -474,6 +480,12 @@ function applyPreset(name){
   document.getElementById("fAa").value = state.aa || "";
   document.getElementById("provider").value = state.provider || "";
   document.getElementById("fFamily").value = state.family || "";
+  document.getElementById("maxPriceIn").value = state.maxPriceIn || "";
+  document.getElementById("providerMultiMode").checked = state.provMulti;
+  document.getElementById("providerMulti").style.display = state.provMulti ? "block" : "none";
+  renderProviderMulti();  // redesenha checkboxes
+  state.selProviders = [];  // reset seleção
+  syncProviderChecks();
   // marca botão ativo (limpar = NENHUM ativo)
   var btns = document.querySelectorAll(".preset-btn");
   for(var i=0;i<btns.length;i++){
@@ -497,6 +509,7 @@ function renderRanked(){
     if(state.openw && !r.open_weights) return false;
     if(state.minSpeed>0 && (r.speed_tps==null || r.speed_tps < state.minSpeed)) return false;
     if(state.maxTtft!=null && state.maxTtft>0 && (r.ttft_s==null || r.ttft_s > state.maxTtft)) return false;
+    if(state.maxPriceIn!=null && (r.price_in==null || r.price_in > state.maxPriceIn)) return false;
     if(state.modal){
       var key = state.modal==="img-out" ? "modalities_out" : "modalities_in";
       var probe = state.modal==="img-out" ? "image" : state.modal;
@@ -512,7 +525,10 @@ function renderRanked(){
       var thr = state.aa===5?50 : state.aa===4?35 : state.aa===3?20 : -1;
       if(thr>=0 && r.aa_index < thr) return false;
     }
-    if(state.provider && r.provider!==state.provider) return false;
+    // Filtro provider: single-select OU multi-select
+    if(state.provMulti && state.selProviders.length>0){
+      if(!state.selProviders.includes(r.provider)) return false;
+    } else if(state.provider && r.provider!==state.provider) return false;
     if(state.family && (r.family||"")!==state.family) return false;
     if(state.q){
       var q = state.q.toLowerCase();
@@ -595,6 +611,40 @@ function fillProviders(){
     o.value = p; o.textContent = p;
     sel.appendChild(o);
   });
+  // Também preencher multi-select
+  renderProviderMulti();
+}
+
+function renderProviderMulti(){
+  var container = document.getElementById("provCheckboxes");
+  if(!container) return;
+  var seen = {};
+  DATA.ranked.concat(DATA.non_ranked).forEach(function(r){ seen[r.provider]=1; });
+  var html = "";
+  Object.keys(seen).sort().forEach(function(p){
+    var id = "provm_" + p.replace(/[^a-z0-9]/gi, "_");
+    html += '<label style="display:inline-flex;align-items:center;margin-right:8px;margin-bottom:2px;cursor:pointer">'+
+      '<input type="checkbox" id="'+id+'" value="'+esc(p)+'" data-provider="'+esc(p)+'" style="margin-right:3px">'+esc(p)+'</label>';
+  });
+  container.innerHTML = html;
+  // Listeners
+  container.querySelectorAll("input[type=checkbox]").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var val = this.getAttribute("data-provider");
+      var idx = state.selProviders.indexOf(val);
+      if(this.checked) state.selProviders.push(val);
+      else state.selProviders.splice(idx, 1);
+      renderRanked();
+    });
+  });
+}
+
+function syncProviderChecks(){
+  var boxes = document.querySelectorAll("#provCheckboxes input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++){
+    var val = boxes[i].getAttribute("data-provider");
+    boxes[i].checked = state.selProviders.indexOf(val) >= 0;
+  }
 }
 
 function fillFamilies(){
@@ -625,7 +675,16 @@ document.getElementById("fModal").addEventListener("change", function(e){ state.
 document.getElementById("fCtx").addEventListener("change", function(e){ state.ctx = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fAa").addEventListener("change", function(e){ state.aa = parseInt(e.target.value||0,10); renderRanked(); });
 document.getElementById("fCxb").addEventListener("change", function(e){ state.cxb = parseFloat(e.target.value||0); renderRanked(); });
-document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; renderRanked(); });
+document.getElementById("provider").addEventListener("change", function(e){ state.provider = e.target.value; if(state.provider){ state.provMulti=false; document.getElementById("providerMultiMode").checked=false; document.getElementById("providerMulti").style.display="none"; state.selProviders=[]; } renderRanked(); });
+// Novo: toggle multi-select
+document.getElementById("providerMultiMode").addEventListener("change", function(e){
+  state.provMulti = e.target.checked;
+  document.getElementById("providerMulti").style.display = state.provMulti ? "block" : "none";
+  if(!state.provMulti){ state.selProviders=[]; renderRanked(); }
+});
+document.getElementById("maxPriceIn").addEventListener("change", function(e){ var v = parseFloat(e.target.value); state.maxPriceIn = isNaN(v)?null:v; renderRanked(); });
+// Filtro preço máximo
+
 document.getElementById("fFamily").addEventListener("change", function(e){ state.family = e.target.value; renderRanked(); });
 
 // preset buttons
