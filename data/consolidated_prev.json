@@ -1,16 +1,15 @@
 {
-  "ranked_count": 1077,
-  "non_ranked_count": 93,
-  "total": 1170,
+  "ranked_count": 996,
+  "non_ranked_count": 94,
+  "total": 1090,
   "by_provider": {
-    "kilocode": 380,
-    "opencode-free": 6,
-    "nvidia": 160,
+    "kilocode": 381,
+    "nvidia": 84,
     "gemini": 15,
-    "huggingface": 141,
+    "huggingface": 140,
     "copilot-acp": 17,
-    "openrouter": 444,
+    "openrouter": 446,
     "nous": 7
   },
-  "captured_at": "2026-09-18T19:14:49.364921+00:00"
+  "captured_at": "2026-09-19T10:32:58.600236+00:00"
 }

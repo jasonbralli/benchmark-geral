@@ -26,12 +26,20 @@ ROOT = Path(__file__).parent.parent
 TEMPLATE = ROOT / "template_consolidado.html"
 OUTPUT = ROOT / "index.html"
 MARKER = "//CONSOLIDATED_DATA//"
-HEALTH_FILE = ROOT / "data" / "provider_health.json"
+# provider_health.json agora vive em benchmark_providers (repo separado).
+# Env var PROVIDERS_DATA_DIR permite override; default = pasta irma benchmark_providers/data.
+_PROVIDERS_DATA = Path(
+    __import__("os").environ.get(
+        "PROVIDERS_DATA_DIR",
+        str(ROOT.parent / "benchmark_providers" / "data"),
+    )
+)
+HEALTH_FILE = _PROVIDERS_DATA / "provider_health.json"
 
 
 def _load_provider_health() -> dict | None:
-    """Lê data/provider_health.json (gerado por benchmark_pipe.probe_health).
-    Retorna None se ausente/inválido — NUNCA quebra o build."""
+    """Le provider_health.json (gerado por benchmark_providers.probe_health).
+    Retorna None se ausente/invalido — NUNCA quebra o build."""
     if not HEALTH_FILE.exists():
         return None
     try:

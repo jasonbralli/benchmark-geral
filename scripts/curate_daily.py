@@ -38,14 +38,34 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 from benchmark_pipe.extract import extract_provider_models  # noqa: E402
-from benchmark_pipe.probe_health import (  # noqa: E402
-    aggregate,
-    append_jsonl,
-    detect_alert,
-    read_jsonl,
-    run as probe_run,
-    send_telegram,
-)
+
+# probe_health agora vive em benchmark_providers (repo separado).
+# Localizacao: pasta irma ../benchmark_providers. Override via PROVIDERS_HOME env var.
+_PROVIDERS_HOME = Path(os.environ.get(
+    "PROVIDERS_HOME",
+    str(ROOT.parent / "benchmark_providers"),
+))
+# Reimportar de la: adicionar ao sys.path se nao estiver
+if str(_PROVIDERS_HOME) not in sys.path:
+    sys.path.insert(0, str(_PROVIDERS_HOME))
+
+try:
+    from benchmark_providers.probe_health import (  # noqa: E402
+        aggregate,
+        append_jsonl,
+        detect_alert,
+        read_jsonl,
+        run as probe_run,
+        send_telegram,
+    )
+    _PROBE_AVAILABLE = True
+except ImportError as _e:
+    logger_warn = f"benchmark_providers nao encontrado em {_PROVIDERS_HOME}: {_e}"
+    _PROBE_AVAILABLE = False
+    # Stubs que falham de forma explicita quando probe e' exigido
+    def _missing(*a, **kw):
+        raise RuntimeError(f"probe_health indisponivel: {logger_warn}")
+    aggregate = append_jsonl = detect_alert = read_jsonl = probe_run = send_telegram = _missing
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("curate_daily")
@@ -54,8 +74,8 @@ logger = logging.getLogger("curate_daily")
 DATA_DIR = ROOT / "data"
 CONSOLIDATED = DATA_DIR / "consolidated_models.json"
 PREV_SNAPSHOT = DATA_DIR / "consolidated_prev.json"
-PROVIDER_HEALTH_JSONL = DATA_DIR / "provider_health.jsonl"
-PROVIDER_HEALTH_JSON = DATA_DIR / "provider_health.json"
+PROVIDER_HEALTH_JSONL = _PROVIDERS_HOME / "data" / "provider_health.jsonl"
+PROVIDER_HEALTH_JSON = _PROVIDERS_HOME / "data" / "provider_health.json"
 
 # Thresholds
 DROP_THRESHOLD_PCT = 5.0  # alerta se modelos caírem >5% vs ontem
@@ -164,9 +184,9 @@ def main() -> int:
 
     # 1. PROVIDER HEALTH — probe antes de qualquer coisa
     logger.info("Passo 1: provider health probe...")
-    probe_cfg = json.loads((ROOT / "scripts" / "probe_config.json").read_text(encoding="utf-8"))
+    probe_cfg = json.loads((_PROVIDERS_HOME / "scripts" / "probe_config.json").read_text(encoding="utf-8"))
     probe_res = probe_run(
-        config_path=ROOT / "scripts" / "probe_config.json",
+        config_path=_PROVIDERS_HOME / "scripts" / "probe_config.json",
         jsonl_path=PROVIDER_HEALTH_JSONL,
         aggregate_path=PROVIDER_HEALTH_JSON,
         alert=True,
@@ -213,8 +233,7 @@ def main() -> int:
     if dirty:
         # Commit consolidado + index.html
         add_msg = f"dashboard curadoria {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}"
-        _run_cmd(["git", "add", "data/consolidated_models.json", "data/provider_health.json",
-                  "data/provider_health.jsonl", "index.html"], check=False)
+        _run_cmd(["git", "add", "data/consolidated_models.json", "index.html"], check=False)
         commit_res = _run_cmd(
             ["git", "commit", "-m", add_msg],
             check=False,
