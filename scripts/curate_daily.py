@@ -217,10 +217,11 @@ def main() -> int:
             send_telegram("\n".join(alerts))
             return 2
 
-    # 2.5 ROTATION — fallback chain p/ melhor free (CxB x health x inventário)
-    #     Idempotente: no-op silencioso se a chain já estiver aplicada.
-    #     Nunca quebra a curadoria — falha vira alerta, não exit != 0.
-    logger.info("Passo 2.5: rotação fallback free...")
+    # 2.5 MONITOR — fallback free (READ-ONLY: rotação é 100% manual)
+    #     Lê a chain atual do config.yaml, cruza com health real e calcula a
+    #     recomendação CxB. Dispara alerta diário no Telegram (não escreve
+    #     no config). Nunca quebra a curadoria — falha vira alerta, não exit != 0.
+    logger.info("Passo 2.5: monitor fallback free...")
     try:
         sys.path.insert(0, str(ROOT / "scripts"))
         import importlib.util as _iutil
@@ -229,16 +230,13 @@ def main() -> int:
         )
         rot = _iutil.module_from_spec(_spec)
         _spec.loader.exec_module(rot)
-        res = rot.rotate(top=rot.DEFAULT_TOP, dry_run=False)
-        if res.get("changed"):
-            logger.info(
-                "Fallback rotado: %s",
-                " → ".join(f"{t['provider']}/{t['model']}" for t in res["chain"]),
-            )
-        if res.get("problems"):
-            alerts.extend([f"🔄 rotação: {p}" for p in res["problems"]])
-    except Exception as e:  # noqa: BLE001 — rotação é best-effort
-        alerts.append(f"🔄 rotação falhou (não bloqueia): {e}")
+        res = rot.monitor(top=rot.DEFAULT_TOP)
+        # Alerta diário no Telegram (chain atual + health + recomendação CxB).
+        # Health ruim já está no relatório (⚠️) — NÃO vai em `alerts`, porque a
+        # rotação é manual: health ruim é informativo, não falha do pipeline.
+        send_telegram(rot.build_alert(res))
+    except Exception as e:  # noqa: BLE001 — monitor é best-effort
+        alerts.append(f"🔄 monitor fallback falhou (não bloqueia): {e}")
 
     # 3. SNAPSHOT — comparar com anterior
     logger.info("Passo 3: validando mudanças no inventário...")
