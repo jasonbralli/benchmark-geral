@@ -247,10 +247,12 @@ def assemble_payload(
     scorecard: list[dict],
 ) -> dict[str, Any]:
     today = datetime.now().strftime("%d/%m/%Y")
+    iso_now = datetime.now().isoformat(timespec="seconds")
     total = sum(len(v) for v in tiers.values())
     aa_total = aa_count(frontier)
 
     return {
+        "generated_at": iso_now,
         "meta": {
             "title": "Modelos NVIDIA NIM — Ranking de Capacidade",
             "data": today,

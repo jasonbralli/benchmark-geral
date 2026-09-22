@@ -53,6 +53,8 @@ h1 { margin: 0 0 8px; font-size: 24px; color: var(--accent); }
 .filters input[type="search"] { flex: 1; min-width: 200px; }
 .filters input[type="checkbox"] { margin-right: 4px; }
 
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 8px; margin: 0 -4px; padding: 0 4px; }
+.table-wrap table { border: none; border-radius: 0; }
 table {
   width: 100%; border-collapse: collapse;
   background: var(--card); border: 1px solid var(--border);
@@ -244,7 +246,7 @@ footer.site-footer a:hover { color: var(--accent); }
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
 <p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
-<table id="tblRanked">
+<div class="table-wrap"><table id="tblRanked">
   <thead><tr>
     <th data-k="rank">#<span class="sort-arrow"></span></th>
     <th data-k="provider">Provider<span class="sort-arrow"></span></th>
@@ -263,12 +265,7 @@ footer.site-footer a:hover { color: var(--accent); }
     <th data-k="cxb_score">Score CxB<span class="sort-arrow"></span></th>
   </tr></thead>
   <tbody></tbody>
-</table>
-
-<h2>🏥 Saúde dos Providers (24h)</h2>
-<p class="section-note">Probes diários — uptime real, P50/P99, load-shedding (429/503/Retry-After). Fonte: <code>data/provider_health.jsonl</code>.</p>
-<section class="kpis" id="providerHealthKpis"></section>
-<div id="providerHealthTable"></div>
+</table></div>
 
 <h2 style="margin-top:40px">📦 Inventário Completo (N/D)</h2>
 <p class="section-note">Providers sem fonte pública de metadados (gemini, kilocode, huggingface, nous, opencode-free). Listados apenas para referência de IDs.</p>
@@ -288,6 +285,7 @@ footer.site-footer a:hover { color: var(--accent); }
 </details>
 
 <footer class="site-footer">
+  <div style="margin-bottom:6px">Atualizado em <span id="tsAtualizado">—</span></div>
   <a href="https://inovatudo.com" target="_blank" rel="noopener">inovatudo.com</a>
 </footer>
 
@@ -386,44 +384,6 @@ function renderKPIs(){
   document.getElementById("kpis").innerHTML = html;
 }
 
-function renderProviderHealth(){
-  var h = DATA.provider_health;
-  var kpiEl = document.getElementById("providerHealthKpis");
-  var tblEl = document.getElementById("providerHealthTable");
-  if(!h || !h.providers){
-    kpiEl.innerHTML = '<div class="kpi"><div class="kpi-label">Provider Health</div><div class="kpi-value">—</div><div class="kpi-sub">sem dados (rode probe_health.py)</div></div>';
-    tblEl.innerHTML = "";
-    return;
-  }
-  var provs = Object.keys(h.providers).sort();
-  var upSum=0, upN=0, worst=null;
-  var html = "";
-  for(var i=0;i<provs.length;i++){
-    var p = h.providers[provs[i]];
-    if(p.uptime_pct!=null){ upSum+=p.uptime_pct; upN++; }
-    if(!worst || (p.uptime_pct!=null && p.uptime_pct<worst.uptime_pct)) worst = p;
-    var okCls = p.last_ok ? "color:#2e8b57" : "color:#c0392b";
-    var shed = p.shed_hits>0 ? " ⚠"+p.shed_hits : "";
-    html += '<div class="kpi"><div class="kpi-label">'+esc(provs[i])+'</div>'+
-            '<div class="kpi-value" style="'+okCls+'">'+(p.uptime_pct!=null?p.uptime_pct.toFixed(1)+'%':'N/D')+'</div>'+
-            '<div class="kpi-sub">P50 '+(p.p50_ms!=null?p.p50_ms.toFixed(0)+'ms':'—')+' · P99 '+(p.p99_ms!=null?p.p99_ms.toFixed(0)+'ms':'—')+shed+'</div></div>';
-  }
-  kpiEl.innerHTML = html;
-  // tabela detalhe
-  var rows = "";
-  for(var j=0;j<provs.length;j++){
-    var q = h.providers[provs[j]];
-    rows += '<tr><td>'+esc(provs[j])+'</td>'+
-      '<td>'+(q.samples||0)+'</td>'+
-      '<td>'+(q.uptime_pct!=null?q.uptime_pct.toFixed(2)+'%':'—')+'</td>'+
-      '<td>'+(q.p50_ms!=null?q.p50_ms.toFixed(0)+' ms':'—')+'</td>'+
-      '<td>'+(q.p99_ms!=null?q.p99_ms.toFixed(0)+' ms':'—')+'</td>'+
-      '<td>'+(q.shed_hits||0)+'</td>'+
-      '<td>'+(q.last_error?esc(q.last_error):'—')+'</td>'+
-      '<td>'+(q.last_ts||'')+'</td></tr>';
-  }
-  tblEl.innerHTML = '<table><thead><tr><th>Provider</th><th>Amostras</th><th>Uptime</th><th>P50</th><th>P99</th><th>Sheds</th><th>Último erro</th><th>Última probe</th></tr></thead><tbody>'+rows+'</tbody></table>';
-}
 
 var state = { q:"", free:false, tools:false, reasoning:false, noReasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
   coding:false, agentic:false, openw:false, minSpeed:0, maxTtft:null, modal:"",
@@ -714,12 +674,19 @@ Array.prototype.forEach.call(document.querySelectorAll("#tblRanked th"), functio
 });
 
 renderKPIs();
-renderProviderHealth();
+
 fillProviders();
 fillFamilies();
 updateSortIndicators();
 renderRanked();
 renderND();
+function renderTimestamp(){
+  var el = document.getElementById('tsAtualizado');
+  if(!el) return;
+  var ts = (DATA && DATA.generated_at) ? DATA.generated_at : null;
+  el.textContent = ts ? new Date(ts).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}) : new Date().toLocaleString('pt-BR');
+}
+renderTimestamp();
 </script>
 </body>
 </html>
