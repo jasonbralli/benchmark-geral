@@ -189,7 +189,7 @@ def main() -> int:
         config_path=_PROVIDERS_HOME / "scripts" / "probe_config.json",
         jsonl_path=PROVIDER_HEALTH_JSONL,
         aggregate_path=PROVIDER_HEALTH_JSON,
-        alert=True,
+        alert=False,  # Telegram consolidado sai só no final do main()
     )
     if probe_res["alerts"]:
         alerts.extend([f"🏥 {a}" for a in probe_res["alerts"]])
