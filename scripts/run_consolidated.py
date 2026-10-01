@@ -18,6 +18,8 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -173,8 +175,13 @@ def main(argv=None) -> int:
     out = run({}, use_cache=use_cache, out_json=Path(args.json) if args.json else None)
     logger.info("Dashboard gerado: %s", out)
 
-    # Gate: roda pytest no projeto
-    res = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=ROOT, capture_output=True, text=True)
+    # Gate: roda pytest no projeto.
+    # NÃO usar sys.executable: quando rodado pelo Python do Hermes (tools/python-3.X+...),
+    # esse runtime é recriado a cada `hermes update` e perde os pip pkgs (pytest incluído)
+    # — 3 reincidências (25/09, 28/09, 01/10). Resolver via env BENCH_PYTEST_PYTHON
+    # (interpreter externo estável; fallback: python3 do PATH).
+    gate_exe = os.environ.get("BENCH_PYTEST_PYTHON", "") or shutil.which("python3") or sys.executable
+    res = subprocess.run([gate_exe, "-m", "pytest", "-q"], cwd=ROOT, capture_output=True, text=True)
     if res.returncode != 0:
         logger.error("pytest falhou:\n%s", res.stdout or res.stderr)
         return 1
