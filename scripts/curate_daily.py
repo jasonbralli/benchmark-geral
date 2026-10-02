@@ -288,7 +288,9 @@ def main() -> int:
         send_telegram(header + "\n".join(alerts))
         # Saída com os alertas (Hermes cron delivera pro Telegram quando exit != 0)
         print("\n".join(alerts))
-        return 1
+        # 02/10/2026: retornar 0 — alertas já vão pro Telegram via send_telegram
+        # acima; exit 1 marcava o cron como "failed" mesmo sem bug (ruído).
+        return 0
 
     return 0  # silencioso
 
