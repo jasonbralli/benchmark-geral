@@ -111,8 +111,16 @@ def _check_obsolete_models(curr: dict, hermes: dict[str, set]) -> list[str]:
 
 
 def _run_cmd(cmd: list[str], check=True, timeout=300) -> tuple[int, str, str]:
-    """Roda comando no ROOT, captura stdout/stderr."""
-    p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=timeout)
+    """Roda comando no ROOT, captura stdout/stderr.
+
+    11/10/2026: errors="replace" — stderr de subprocesso pode vir em CP1252
+    (ex.: stub da Microsoft Store), e um UnicodeDecodeError na reader thread
+    do subprocess zera stdout/stderr (None), escondendo o erro real.
+    """
+    p = subprocess.run(
+        cmd, cwd=ROOT, capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=timeout,
+    )
     if check and p.returncode != 0:
         logger.error("Comando falhou: %s\n%s", cmd, p.stderr[-300:])
     return p.returncode, p.stdout, p.stderr

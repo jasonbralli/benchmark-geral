@@ -33,6 +33,27 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(messag
 logger = logging.getLogger(__name__)
 
 
+def _resolve_gate_exe() -> str:
+    """Interpreter do gate pytest.
+
+    Chain (11/10/2026): BENCH_PYTEST_PYTHON > `py` launcher > python3 > sys.executable.
+    Motivo do `py` à frente de python3: o Windows recriou os aliases
+    python3.exe/python.exe em WindowsApps (stub da Store,
+    AppInstallerPythonRedirector — 09/10 14:05). shutil.which('python3') acha o
+    stub, que imprime "Python não foi encontrado..." em CP1252 e mata a reader
+    thread do subprocess com UnicodeDecodeError (byte 0xe3 = 'ã' na posição 8)
+    → stdout/stderr=None → "pytest falhou: None". `py` (PSF Python Manager) é
+    launcher real: roda o 3.13 instalado com pytest.
+    """
+    env_exe = os.environ.get("BENCH_PYTEST_PYTHON", "")
+    if env_exe:
+        return env_exe
+    py_exe = shutil.which("py")
+    if py_exe:
+        return py_exe
+    return shutil.which("python3") or sys.executable
+
+
 def _maybe_refresh_aa(use_cache: bool):
     """Refresh AA cache se --refresh ou cache expirado (>24h). Silencioso, nunca quebra."""
     try:
@@ -176,12 +197,22 @@ def main(argv=None) -> int:
     logger.info("Dashboard gerado: %s", out)
 
     # Gate: roda pytest no projeto.
-    # NÃO usar sys.executable: quando rodado pelo Python do Hermes (tools/python-3.X+...),
-    # esse runtime é recriado a cada `hermes update` e perde os pip pkgs (pytest incluído)
-    # — 3 reincidências (25/09, 28/09, 01/10). Resolver via env BENCH_PYTEST_PYTHON
-    # (interpreter externo estável; fallback: python3 do PATH).
-    gate_exe = os.environ.get("BENCH_PYTEST_PYTHON", "") or shutil.which("python3") or sys.executable
-    res = subprocess.run([gate_exe, "-m", "pytest", "-q"], cwd=ROOT, capture_output=True, text=True)
+    # Interpreter resolvido por _resolve_gate_exe() (nível de módulo, testável):
+    # chain BENCH_PYTEST_PYTHON > `py` launcher > python3 > sys.executable.
+    # Histórico: (1) tools/python-3.X+... do Hermes é recriado a cada `hermes
+    # update` e perde os pip pkgs (25/09, 28/09, 01/10); (2) 10-11/10 o
+    # python3 do PATH era o stub da Microsoft Store (aliases recriados 09/10
+    # 14:05) → UnicodeDecodeError 0xe3 → "pytest falhou: None". `py` = PSF
+    # Python Manager, launcher real com pytest.
+    gate_exe = _resolve_gate_exe()
+    res = subprocess.run(
+        [gate_exe, "-m", "pytest", "-q"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",  # stderr do subprocess pode vir em CP1252 — nunca decodifica explodindo
+    )
     if res.returncode != 0:
         logger.error("pytest falhou:\n%s", res.stdout or res.stderr)
         return 1
