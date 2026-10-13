@@ -18,10 +18,12 @@ Fluxo:
 6.  **Auto-commit** se dashboard mudou.
 7.  **Auto-push para GitHub** se confirmado.
 
-Telegram: alertas via send_telegram() (probe_health.py), silencioso em caso verde.
+Telegram: o stdout do cron É o canal de alerta (Hermes entrega stdout no
+Telegram também com exit 0). Silencioso quando tudo verde. O monitor 2.5
+(fallback chain) mantém send_telegram próprio.
 
-Uso: `python scripts/curated_daily.py` (projeto cwd).
-Exit codes: 0=ok silencioso, 1=alertas, 2=falha crítica.
+Uso: `python scripts/curate_daily.py` (projeto cwd).
+Exit codes: 0=ok (alertas informativos incluídos), 2=falha crítica.
 """
 from __future__ import annotations
 
@@ -186,6 +188,43 @@ def _check_alerts(curr: dict, prev: dict | None, alerts: list[str]):
         alerts.append(f"⚠️ Total muito baixo: {curr['total']} < {MIN_MODELS}")
 
 
+def _format_health_summary(raw_alerts: list[str], probe_cfg: dict, agg: dict) -> list[str]:
+    """Resumo de saúde em 1 linha por categoria (stdout do cron = canal único).
+
+    raw_alerts vem de probe_run(alert=False), que NÃO aplica o filtro
+    `alerts:false` (o filtro em probe_health.run() só roda com alert=True) —
+    filtrar aqui. Categorias:
+      🏥 falha real | 🟡 instável (não alertou, uptime <100%) |
+      🟢 OK | 🚫 sem credencial (alerts:false — falha por design)
+    """
+    by_design = {
+        n for n, pc in probe_cfg.get("providers", {}).items()
+        if pc.get("alerts") is False
+    }
+    fail_real = sorted(p for p in raw_alerts if p not in by_design)
+    fail_design = sorted(p for p in raw_alerts if p in by_design)
+    stable: list[str] = []
+    unstable: list[str] = []
+    for p in sorted(agg):
+        if p in raw_alerts:
+            continue
+        up = agg[p].get("uptime_pct")
+        if up is None or float(up) == 100.0:
+            stable.append(p)
+        else:
+            unstable.append(f"{p} ({up}%)")
+    out: list[str] = []
+    if fail_real:
+        out.append(f"🏥 Falha ({len(fail_real)}): {', '.join(fail_real)}")
+    if unstable:
+        out.append(f"🟡 Instável ({len(unstable)}): {', '.join(unstable)}")
+    if stable:
+        out.append(f"🟢 OK ({len(stable)}): {', '.join(stable)}")
+    if fail_design:
+        out.append(f"🚫 Sem credencial, by design ({len(fail_design)}): {', '.join(fail_design)}")
+    return out
+
+
 def main() -> int:
     alerts: list[str] = []
     logger.info("=== benchmark-curatoria-diario ===")
@@ -197,10 +236,15 @@ def main() -> int:
         config_path=_PROVIDERS_HOME / "scripts" / "probe_config.json",
         jsonl_path=PROVIDER_HEALTH_JSONL,
         aggregate_path=PROVIDER_HEALTH_JSON,
-        alert=False,  # Telegram consolidado sai só no final do main()
+        alert=False,  # sem Telegram aqui: stdout do cron é o canal único
     )
     if probe_res["alerts"]:
-        alerts.extend([f"🏥 {a}" for a in probe_res["alerts"]])
+        # alert=False NÃO aplica o filtro alerts:false do probe_health.run
+        # (o filtro só roda com alert=True) — _format_health_summary filtra
+        # e compacta (1 linha por categoria, inclui 🟢 OK).
+        alerts.extend(_format_health_summary(
+            probe_res["alerts"], probe_cfg, probe_res["aggregate"],
+        ))
 
     # 2. REFRESH CACHES — models.dev / OpenRouter / AA
     logger.info("Passo 2: refresh caches (--refresh)...")
@@ -222,7 +266,8 @@ def main() -> int:
         )
         if code_cache != 0:
             alerts.append("⚠️ Pipeline falhou mesmo com --use-cache")
-            send_telegram("\n".join(alerts))
+            print("\n".join(alerts))  # stdout → trail em cron/output/
+            send_telegram("\n".join(alerts))  # redundância p/ falha crítica
             return 2
 
     # 2.5 MONITOR — fallback free (READ-ONLY: rotação é 100% manual)
@@ -291,13 +336,12 @@ def main() -> int:
         logger.warning(a)
 
     if alerts:
-        # Envia pro Telegram em modo consolidado
-        header = "🤖 benchmark-curatoria-diario\n"
-        send_telegram(header + "\n".join(alerts))
-        # Saída com os alertas (Hermes cron delivera pro Telegram quando exit != 0)
+        # 13/10/2026: stdout do cron É o canal de alerta — Hermes entrega o
+        # stdout no Telegram também com exit 0 (delivery_outcome=delivered,
+        # validado 12-13/10). O send_telegram daqui + o interno do probe da
+        # light + a entrega do cron somavam 3 mensagens/dia com o mesmo
+        # conteúdo. Monitor 2.5 (chain fallback) mantém send_telegram próprio.
         print("\n".join(alerts))
-        # 02/10/2026: retornar 0 — alertas já vão pro Telegram via send_telegram
-        # acima; exit 1 marcava o cron como "failed" mesmo sem bug (ruído).
         return 0
 
     return 0  # silencioso
