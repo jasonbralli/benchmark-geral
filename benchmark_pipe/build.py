@@ -26,12 +26,12 @@ ROOT = Path(__file__).parent.parent
 TEMPLATE = ROOT / "template_consolidado.html"
 OUTPUT = ROOT / "index.html"
 MARKER = "//CONSOLIDATED_DATA//"
-# provider_health.json agora vive em benchmark_providers (repo separado).
+# provider_health.json agora vive em benchmark-providers (repo separado).
 # Env var PROVIDERS_DATA_DIR permite override; default = pasta irma benchmark_providers/data.
 _PROVIDERS_DATA = Path(
     __import__("os").environ.get(
         "PROVIDERS_DATA_DIR",
-        str(ROOT.parent / "benchmark_providers" / "data"),
+        str(ROOT.parent / "benchmark-providers" / "data"),
     )
 )
 HEALTH_FILE = _PROVIDERS_DATA / "provider_health.json"

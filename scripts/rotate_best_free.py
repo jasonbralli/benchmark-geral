@@ -16,7 +16,7 @@ Este script só **monitora e alerta**:
 
 Fontes:
   1. **Curadoria CxB** — `data/consolidated_models.json` (is_free, cxb_score).
-  2. **Health real** — `../benchmark_providers/data/provider_health.json`
+  2. **Health real** — `../benchmark-providers/data/provider_health.json`
      (probe diário: uptime 24h, p50, last_ok).
   3. **Config do Hermes** — `fallback_providers:` (chain manual atual).
 
@@ -42,7 +42,7 @@ os.chdir(ROOT)
 
 # provider_health.json — override via PROVIDERS_DATA_DIR (mesmo contrato do build.py)
 PROVIDERS_DATA_DIR = Path(
-    os.environ.get("PROVIDERS_DATA_DIR", str(ROOT.parent / "benchmark_providers" / "data"))
+    os.environ.get("PROVIDERS_DATA_DIR", str(ROOT.parent / "benchmark-providers" / "data"))
 )
 HEALTH_JSON = PROVIDERS_DATA_DIR / "provider_health.json"
 CONSOLIDATED = ROOT / "data" / "consolidated_models.json"

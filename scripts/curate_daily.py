@@ -42,10 +42,10 @@ os.chdir(ROOT)
 from benchmark_pipe.extract import extract_provider_models  # noqa: E402
 
 # probe_health agora vive em benchmark_providers (repo separado).
-# Localizacao: pasta irma ../benchmark_providers. Override via PROVIDERS_HOME env var.
+# Localizacao: pasta irma ../benchmark-providers. Override via PROVIDERS_HOME env var.
 _PROVIDERS_HOME = Path(os.environ.get(
     "PROVIDERS_HOME",
-    str(ROOT.parent / "benchmark_providers"),
+    str(ROOT.parent / "benchmark-providers"),
 ))
 # Reimportar de la: adicionar ao sys.path se nao estiver
 if str(_PROVIDERS_HOME) not in sys.path:

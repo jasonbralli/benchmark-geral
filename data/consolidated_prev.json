@@ -1,17 +1,17 @@
 {
-  "ranked_count": 1125,
-  "non_ranked_count": 107,
-  "total": 1232,
+  "ranked_count": 1090,
+  "non_ranked_count": 108,
+  "total": 1198,
   "by_provider": {
-    "kilocode": 392,
-    "novita": 119,
-    "huggingface": 136,
-    "nvidia": 81,
-    "gemini": 15,
+    "kilocode": 385,
+    "gemini": 16,
+    "novita": 95,
+    "huggingface": 132,
+    "nous": 9,
+    "nvidia": 82,
     "copilot-acp": 17,
-    "openrouter": 465,
-    "nous": 6,
+    "openrouter": 461,
     "custom:http://localhost:8080/v1#aff94a1a7f730464": 1
   },
-  "captured_at": "2026-10-05T12:02:07.573123+00:00"
+  "captured_at": "2026-10-15T10:32:04.164637+00:00"
 }
