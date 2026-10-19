@@ -117,9 +117,10 @@ def main():
         return 1
     orphan_sha = commit_orphan.stdout.strip()
 
-    # 4) Force-push do orphan commit para gh-pages
+    # 4) Force-push do orphan commit para gh-pages (--force-with-lease p/ não
+    # sobrescrever remoto que tenha avançado fora deste cron).
     push_gh = _run(
-        ["git", "push", "--force", "origin", f"{orphan_sha}:refs/heads/gh-pages"],
+        ["git", "push", "--force-with-lease", "origin", f"{orphan_sha}:refs/heads/gh-pages"],
         cwd=str(PROJETO_DIR),
     )
     if push_gh.returncode != 0:
