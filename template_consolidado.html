@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ranking de modelos LLM por custo × benefício (CxB) — NVIDIA NIM, OpenRouter e inventário completo de providers do Hermes.">
 <title>Benchmark Consolidado Multi-Provider — Custo × Benefício</title>
 <style>
 :root {
@@ -31,6 +32,7 @@ h1 { margin: 0 0 8px; font-size: 24px; color: var(--accent); }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px; margin-bottom: 24px;
+  min-height: 96px;
 }
 .kpi {
   background: var(--card); border: 1px solid var(--border);
@@ -89,7 +91,7 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 .custo { line-height: 1.2; }
 .custo .custo-efetivo { font-weight: 600; }
 .custo .custo-tabela  { font-size: 11px; color: var(--muted); }
-.badge.src { margin-left: 4px; padding: 1px 5px; font-size: 9px; background: rgba(139,152,169,.15); color: var(--muted); border: 1px solid var(--border); }
+.badge.src { margin-left: 4px; padding: 1px 5px; font-size: 10px; background: rgba(139,152,169,.15); color: var(--muted); border: 1px solid var(--border); }
 
 .rank { font-weight: 700; color: var(--accent); }
 .score { font-weight: 700; color: var(--accent); }
@@ -175,6 +177,11 @@ footer.site-footer a {
   color: var(--muted); text-decoration: none;
 }
 footer.site-footer a:hover { color: var(--accent); }
+
+/* v2.6 — UX/a11y */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.result-count { font-size: 12px; color: var(--muted); margin: -6px 0 12px; }
+mark { background: rgba(76,194,255,.25); color: inherit; padding: 0 1px; border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -185,23 +192,24 @@ footer.site-footer a:hover { color: var(--accent); }
   <div class="ts-header">Atualizado em <span id="tsAtualizado">—</span></div>
 </header>
 
+<main>
 <section class="kpis" id="kpis"></section>
 
 <section class="filters">
   <div class="preset-group" style="width:100%">
     <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">preset:</span>
-    <button class="preset-btn" data-preset="chat">💬 Chat</button>
-    <button class="preset-btn" data-preset="code">⌨️ Code</button>
-    <button class="preset-btn" data-preset="vision">🖼️ Vision</button>
-    <button class="preset-btn" data-preset="longctx">📜 Long-Ctx</button>
-    <button class="preset-btn" data-preset="fast">⚡ Rápido</button>
-    <button class="preset-btn" data-preset="cheap">💰 Barato</button>
-    <button class="preset-btn" data-preset="agentic">🤖 Agente</button>
-    <button class="preset-btn" data-preset="">limpar</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="chat">💬 Chat</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="code">⌨️ Code</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="vision">🖼️ Vision</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="longctx">📜 Long-Ctx</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="fast">⚡ Rápido</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="cheap">💰 Barato</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="agentic">🤖 Agente</button>
+    <button class="preset-btn" aria-pressed="false" data-preset="">limpar</button>
   </div>
 
   <div class="filters-row">
-    <input type="search" id="q" placeholder="🔍 buscar modelo ou provider...">
+    <input type="search" id="q" placeholder="🔍 buscar modelo ou provider..." aria-label="Buscar modelo ou provider" title="Atalho: / foca a busca • Esc limpa">
   </div>
 
   <div class="filters-row">
@@ -248,6 +256,7 @@ footer.site-footer a:hover { color: var(--accent); }
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
 <p class="section-note">Apenas providers com metadados completos entram no rank. Ordenado por Score CxB (desc).</p>
+<div class="result-count" id="resultCount" role="status">Mostrando — de — modelos</div>
 <div class="table-wrap"><table id="tblRanked">
   <thead><tr>
     <th data-k="rank">#<span class="sort-arrow"></span></th>
@@ -285,6 +294,7 @@ footer.site-footer a:hover { color: var(--accent); }
   <tbody></tbody>
   </table>
 </details>
+</main>
 
 <footer class="site-footer">
   <a href="https://inovatudo.com" target="_blank" rel="noopener">inovatudo.com</a>
@@ -452,10 +462,19 @@ function applyPreset(name){
   // marca botão ativo (limpar = NENHUM ativo)
   var btns = document.querySelectorAll(".preset-btn");
   for(var i=0;i<btns.length;i++){
-    if(btns[i].getAttribute("data-preset")===name && name!=="") btns[i].classList.add("active");
-    else btns[i].classList.remove("active");
+    var on = btns[i].getAttribute("data-preset")===name && name!=="";
+    btns[i].classList.toggle("active", on);
+    btns[i].setAttribute("aria-pressed", on?"true":"false");
   }
   renderRanked();
+}
+
+function hi(t){
+  if(!state.q) return t;
+  var q = esc(state.q); if(!q) return t;
+  var i = t.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0) return t;
+  return t.slice(0,i)+"<mark>"+t.slice(i,i+q.length)+"</mark>"+t.slice(i+q.length);
 }
 
 function renderRanked(){
@@ -518,8 +537,8 @@ function renderRanked(){
     var r = rows[i];
     html += "<tr>"+
       '<td class="rank">'+(i+1)+"</td>"+
-      "<td>"+esc(r.provider)+"</td>"+
-      '<td class="mono" title="'+esc(r.model_id)+'">'+esc(r.display_name)+"</td>"+
+      "<td>"+hi(esc(r.provider))+"</td>"+
+      '<td class="mono" title="'+esc(r.model_id)+'">'+hi(esc(r.display_name))+"</td>"+
       "<td>"+ctxCell(r.context_k)+"</td>"+
       "<td>"+maxOutCell(r.max_output_tokens)+"</td>"+
       "<td>"+boolCell(r.tool_call)+"</td>"+
@@ -535,6 +554,8 @@ function renderRanked(){
       "</tr>";
   }
   tbody.innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
+  var rc = document.getElementById("resultCount");
+  if(rc) rc.textContent = "Mostrando " + rows.length + " de " + DATA.ranked.length + " modelos";
 }
 
 function renderND(){
@@ -621,7 +642,20 @@ function fillFamilies(){
   });
 }
 
-document.getElementById("q").addEventListener("input", function(e){ state.q = e.target.value; renderRanked(); });
+var _qTimer=null;
+document.getElementById("q").addEventListener("input", function(e){
+  state.q = e.target.value;
+  clearTimeout(_qTimer);
+  _qTimer = setTimeout(renderRanked, 150);
+});
+document.getElementById("q").addEventListener("keydown", function(e){
+  if(e.key==="Escape"){ e.target.value=""; state.q=""; renderRanked(); }
+});
+document.addEventListener("keydown", function(e){
+  if(e.key==="/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){
+    e.preventDefault(); document.getElementById("q").focus();
+  }
+});
 document.getElementById("onlyFree").addEventListener("change", function(e){ state.free = e.target.checked; renderRanked(); });
 document.getElementById("onlyTools").addEventListener("change", function(e){ state.tools = e.target.checked; renderRanked(); });
 document.getElementById("onlyReasoning").addEventListener("change", function(e){ state.reasoning = e.target.checked; if(state.reasoning){ state.noReasoning=false; document.getElementById("noReasoning").checked=false; } renderRanked(); });
