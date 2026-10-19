@@ -25,6 +25,7 @@ body {
 header { margin-bottom: 24px; }
 h1 { margin: 0 0 8px; font-size: 24px; color: var(--accent); }
 .subtitle { color: var(--muted); margin: 0; }
+.ts-header { color: var(--muted); font-size: 12px; margin: 6px 0 0; text-align: right; }
 
 .kpis {
   display: grid;
@@ -181,6 +182,7 @@ footer.site-footer a:hover { color: var(--accent); }
 <header>
   <h1>🧠 Benchmark Consolidado Multi-Provider</h1>
   <p class="subtitle">Ranking por custo × benefício — todos os providers do Hermes • atualizado automaticamente</p>
+  <div class="ts-header">Atualizado em <span id="tsAtualizado">—</span></div>
 </header>
 
 <section class="kpis" id="kpis"></section>
@@ -285,7 +287,6 @@ footer.site-footer a:hover { color: var(--accent); }
 </details>
 
 <footer class="site-footer">
-  <div style="margin-bottom:6px">Atualizado em <span id="tsAtualizado">—</span></div>
   <a href="https://inovatudo.com" target="_blank" rel="noopener">inovatudo.com</a>
 </footer>
 
@@ -406,6 +407,7 @@ function applyPreset(name){
   state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
   state.ctx=0; state.aa=0; state.cxb=0;
   state.provider=""; state.family=""; state.modal="";
+  state.q="";  // preset limpar tambem zera o campo de busca
   state.minSpeed=0; state.maxTtft=null;
   state.sortKey="cxb_score"; state.sortDir=-1;
   // aplica preset
@@ -421,7 +423,8 @@ function applyPreset(name){
     if(p.sortKey) state.sortKey = p.sortKey;
     if(p.sortDir) state.sortDir = p.sortDir;
   }
-  // sincroniza UI — TODOS os checkboxes/dropdowns
+  // sincroniza UI — TODOS os checkboxes/dropdowns + campo de busca
+  document.getElementById("q").value = state.q;
   document.getElementById("onlyFree").checked = state.free;
   document.getElementById("onlyTools").checked = state.tools;
   document.getElementById("onlyReasoning").checked = state.reasoning;
@@ -683,7 +686,9 @@ renderND();
 function renderTimestamp(){
   var el = document.getElementById('tsAtualizado');
   if(!el) return;
-  var ts = (DATA && DATA.generated_at) ? DATA.generated_at : null;
+  var ts = (DATA && DATA.generated_at) ? DATA.generated_at
+    : (DATA && DATA.provider_health && DATA.provider_health.generated_at) ? DATA.provider_health.generated_at
+    : null;
   el.textContent = ts ? new Date(ts).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}) : new Date().toLocaleString('pt-BR');
 }
 renderTimestamp();
