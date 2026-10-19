@@ -438,29 +438,7 @@ var PRESETS = {
   agentic: { agentic:true, tools:true, sortKey:"agentic_index", sortDir:-1 }
 };
 
-function applyPreset(name){
-  // reset filtros — TODOS os campos, incluindo os que faltavam antes
-  state.free=state.tools=state.reasoning=state.noReasoning=false;
-  state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
-  state.ctx=0; state.aa=0; state.cxb=0;
-  state.provider=""; state.family=""; state.modal="";
-  state.q="";  // preset limpar tambem zera o campo de busca
-  state.minSpeed=0; state.maxTtft=null;
-  state.sortKey="cxb_score"; state.sortDir=-1;
-  // aplica preset
-  var p = PRESETS[name];
-  if(p){
-    if(p.free) state.free = true;
-    if(p.tools) state.tools = true;
-    if(p.coding) state.coding = true;
-    if(p.agentic) state.agentic = true;
-    if(p.minCtx) state.ctx = p.minCtx;
-    if(p.minSpeed) state.minSpeed = p.minSpeed;
-    if(p.modal) state.modal = p.modal;
-    if(p.sortKey) state.sortKey = p.sortKey;
-    if(p.sortDir) state.sortDir = p.sortDir;
-  }
-  // sincroniza UI — TODOS os checkboxes/dropdowns + campo de busca
+function syncAllUI(){
   document.getElementById("q").value = state.q;
   document.getElementById("onlyFree").checked = state.free;
   document.getElementById("onlyTools").checked = state.tools;
@@ -483,9 +461,34 @@ function applyPreset(name){
   document.getElementById("maxPriceIn").value = state.maxPriceIn || "";
   document.getElementById("providerMultiMode").checked = state.provMulti;
   document.getElementById("providerMulti").style.display = state.provMulti ? "block" : "none";
-  renderProviderMulti();  // redesenha checkboxes
-  state.selProviders = [];  // reset seleção
+  renderProviderMulti();
   syncProviderChecks();
+}
+
+function applyPreset(name){
+  // reset filtros — TODOS os campos, incluindo os que faltavam antes
+  state.free=state.tools=state.reasoning=state.noReasoning=false;
+  state.mult=state.struct=state.cache=state.coding=state.agentic=state.openw=false;
+  state.ctx=0; state.aa=0; state.cxb=0;
+  state.provider=""; state.family=""; state.modal="";
+  state.q="";  // preset limpar tambem zera o campo de busca
+  state.minSpeed=0; state.maxTtft=null;
+  state.sortKey="cxb_score"; state.sortDir=-1;
+  // aplica preset
+  var p = PRESETS[name];
+  if(p){
+    if(p.free) state.free = true;
+    if(p.tools) state.tools = true;
+    if(p.coding) state.coding = true;
+    if(p.agentic) state.agentic = true;
+    if(p.minCtx) state.ctx = p.minCtx;
+    if(p.minSpeed) state.minSpeed = p.minSpeed;
+    if(p.modal) state.modal = p.modal;
+    if(p.sortKey) state.sortKey = p.sortKey;
+    if(p.sortDir) state.sortDir = p.sortDir;
+  }
+  state.selProviders = [];  // reset seleção
+  syncAllUI();
   // marca botão ativo (limpar = NENHUM ativo)
   var btns = document.querySelectorAll(".preset-btn");
   for(var i=0;i<btns.length;i++){
@@ -494,6 +497,82 @@ function applyPreset(name){
     btns[i].setAttribute("aria-pressed", on?"true":"false");
   }
   renderRanked();
+}
+
+function stateToHash(){
+  var p = [];
+  if(state.q) p.push("q="+encodeURIComponent(state.q));
+  if(state.sortKey && state.sortKey!=="cxb_score") p.push("sort="+encodeURIComponent(state.sortKey));
+  if(state.sortDir===1) p.push("dir=asc");
+  if(state.free) p.push("free=1");
+  if(state.tools) p.push("tools=1");
+  if(state.reasoning) p.push("reas=1");
+  if(state.noReasoning) p.push("nreas=1");
+  if(state.mult) p.push("mult=1");
+  if(state.struct) p.push("struct=1");
+  if(state.cache) p.push("cache=1");
+  if(state.coding) p.push("coding=1");
+  if(state.agentic) p.push("agentic=1");
+  if(state.openw) p.push("openw=1");
+  if(state.ctx) p.push("ctx="+state.ctx);
+  if(state.aa) p.push("aa="+state.aa);
+  if(state.cxb) p.push("cxb="+state.cxb);
+  if(state.modal) p.push("modal="+encodeURIComponent(state.modal));
+  if(state.provider) p.push("prov="+encodeURIComponent(state.provider));
+  if(state.provMulti && state.selProviders.length) p.push("provs="+encodeURIComponent(state.selProviders.join(",")));
+  if(state.family) p.push("family="+encodeURIComponent(state.family));
+  if(state.minSpeed) p.push("speed="+state.minSpeed);
+  if(state.maxTtft!=null) p.push("ttft="+state.maxTtft);
+  if(state.maxPriceIn!=null) p.push("price="+state.maxPriceIn);
+  return p.join("&");
+}
+function writeHash(){
+  // replaceState: sem spam de historico por tecla (render ja e debounced na busca)
+  var h = stateToHash();
+  try{
+    if(h) history.replaceState(null, "", "#"+h);
+    else if(location.hash) history.replaceState(null, "", location.pathname + location.search);
+  }catch(e){}
+}
+function restoreFromHash(){
+  if((location.hash||"").length > 1){
+    var parts = location.hash.slice(1).split("&");
+    function get(k){
+      for(var i=0;i<parts.length;i++){
+        var eq = parts[i].indexOf("=");
+        if(eq>=0 && parts[i].slice(0,eq)===k) return decodeURIComponent(parts[i].slice(eq+1));
+      }
+      return null;
+    }
+    var v;
+    if((v=get("q"))!=null) state.q = v;
+    if((v=get("sort"))!=null) state.sortKey = v;
+    if(get("dir")==="asc") state.sortDir = 1;
+    if(get("free")) state.free = true;
+    if(get("tools")) state.tools = true;
+    if(get("reas")) state.reasoning = true;
+    if(get("nreas")) state.noReasoning = true;
+    if(get("mult")) state.mult = true;
+    if(get("struct")) state.struct = true;
+    if(get("cache")) state.cache = true;
+    if(get("coding")) state.coding = true;
+    if(get("agentic")) state.agentic = true;
+    if(get("openw")) state.openw = true;
+    if((v=get("ctx"))!=null) state.ctx = parseInt(v,10)||0;
+    if((v=get("aa"))!=null) state.aa = parseInt(v,10)||0;
+    if((v=get("cxb"))!=null) state.cxb = parseFloat(v)||0;
+    if((v=get("modal"))!=null) state.modal = v;
+    if((v=get("prov"))!=null) state.provider = v;
+    if((v=get("provs"))!=null){
+      state.provMulti = true;
+      state.selProviders = v.split(",").filter(function(x){ return x; });
+    }
+    if((v=get("family"))!=null) state.family = v;
+    if((v=get("speed"))!=null) state.minSpeed = parseFloat(v)||0;
+    if((v=get("ttft"))!=null){ var t = parseFloat(v); state.maxTtft = isNaN(t)?null:t; }
+    if((v=get("price"))!=null){ var pr = parseFloat(v); state.maxPriceIn = isNaN(pr)?null:pr; }
+  }
+  syncAllUI();
 }
 
 function hi(t){
@@ -584,6 +663,7 @@ function renderRanked(){
   tbody.innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--muted)">nenhum modelo passa nos filtros</td></tr>';
   var rc = document.getElementById("resultCount");
   if(rc) rc.textContent = "Mostrando " + rows.length + " de " + DATA.ranked.length + " modelos";
+  writeHash();
 }
 
 function renderND(){
@@ -847,6 +927,7 @@ renderKPIs();
 
 fillProviders();
 fillFamilies();
+restoreFromHash();
 updateSortIndicators();
 renderRanked();
 renderND();
