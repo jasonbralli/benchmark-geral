@@ -7,15 +7,15 @@
 <title>Benchmark Consolidado Multi-Provider — Custo × Benefício</title>
 <style>
 :root {
-  --bg: #0b0f14;
-  --card: #11161d;
-  --border: #1f2733;
+  --bg: #0a0e15;
+  --card: #101724;
+  --border: #1f2b3d;
   --text: #e6edf3;
-  --muted: #8b98a9;
-  --accent: #4cc2ff;
-  --free: #2ea043;
-  --paid: #cf8e3a;
-  --warn: #d64545;
+  --muted: #94a3b8;
+  --accent: #58a6ff;
+  --free: #3fb950;
+  --paid: #d29922;
+  --warn: #f85149;
 }
 * { box-sizing: border-box; }
 body {
@@ -64,7 +64,7 @@ table {
   border-radius: 8px; overflow: hidden;
   font-size: 13px;
 }
-thead { background: #161c25; }
+thead { background: #131a28; }
 th, td {
   padding: 10px 12px; text-align: left;
   border-bottom: 1px solid var(--border);
@@ -77,25 +77,25 @@ th.sorted-desc { color: var(--accent); }
 th .sort-arrow { display: inline-block; margin-left: 4px; font-size: 10px; font-weight: 700; }
 th.sorted-asc  .sort-arrow::after { content: " ▲"; }
 th.sorted-desc .sort-arrow::after { content: " ▼"; }
-tbody tr:hover { background: rgba(76,194,255,.04); }
+tbody tr:hover { background: rgba(88,166,255,.04); }
 
 .badge {
   display: inline-block; padding: 2px 8px; border-radius: 10px;
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
 }
-.badge.free { background: rgba(46,160,67,.15); color: var(--free); border: 1px solid var(--free); }
-.badge.paid { background: rgba(207,142,58,.15); color: var(--paid); border: 1px solid var(--paid); }
-.badge.nd   { background: rgba(139,152,169,.12); color: var(--muted); border: 1px solid var(--border); }
+.badge.free { background: rgba(63,185,80,.15); color: var(--free); border: 1px solid var(--free); }
+.badge.paid { background: rgba(210,153,34,.15); color: var(--paid); border: 1px solid var(--paid); }
+.badge.nd   { background: rgba(148,163,184,.12); color: var(--muted); border: 1px solid var(--border); }
 
 /* Coluna unificada Custo: efetivo + tabela de referência + badge de fonte */
 .custo { line-height: 1.2; }
 .custo .custo-efetivo { font-weight: 600; }
 .custo .custo-tabela  { font-size: 11px; color: var(--muted); }
-.badge.src { margin-left: 4px; padding: 1px 5px; font-size: 10px; background: rgba(139,152,169,.15); color: var(--muted); border: 1px solid var(--border); }
+.badge.src { margin-left: 4px; padding: 1px 5px; font-size: 10px; background: rgba(148,163,184,.15); color: var(--muted); border: 1px solid var(--border); }
 
 .rank { font-weight: 600; color: var(--muted); }
 .score { font-weight: 700; color: var(--accent); }
-.stars { color: #f2c94c; letter-spacing: 1px; }
+.stars { color: #e3b341; letter-spacing: 1px; }
 .mono  { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
 .bool-true  { color: var(--free); }
 .bool-false { color: var(--muted); }
@@ -104,11 +104,11 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 /* chips de modalidade (v2.5) */
 .chip {
   display: inline-block; padding: 1px 6px; margin-right: 3px;
-  background: rgba(76,194,255,.12); color: var(--accent);
+  background: rgba(88,166,255,.12); color: var(--accent);
   border: 1px solid var(--border); border-radius: 10px;
   font-size: 10px; font-weight: 600; text-transform: lowercase;
 }
-.chip.out { background: rgba(46,160,67,.12); color: var(--free); }
+.chip.out { background: rgba(63,185,80,.12); color: var(--free); }
 .num-cell { font-variant-numeric: tabular-nums; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
 .metric-best { color: var(--free); font-weight: 700; }
 
@@ -121,7 +121,7 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 }
 .preset-btn:hover { color: var(--accent); border-color: var(--accent); }
 .preset-btn.active {
-  background: rgba(76,194,255,.15); color: var(--accent); border-color: var(--accent);
+  background: rgba(88,166,255,.15); color: var(--accent); border-color: var(--accent);
 }
 
 /* v2.5.1 — Model column truncate + filters em grupos */
@@ -181,7 +181,7 @@ footer.site-footer a:hover { color: var(--accent); }
 /* v2.6 — UX/a11y */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .result-count { font-size: 12px; color: var(--muted); margin: -6px 0 12px; }
-mark { background: rgba(76,194,255,.25); color: inherit; padding: 0 1px; border-radius: 2px; }
+mark { background: rgba(88,166,255,.25); color: inherit; padding: 0 1px; border-radius: 2px; }
 
 /* v2.7 — toolbar + colunas + CSV */
 .table-tools { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin: -6px 0 12px; }
