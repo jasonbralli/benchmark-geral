@@ -152,7 +152,8 @@ def build_dashboard(
 
     payload = _payload(models_ranked, models_nd)
     injected = tpl.replace(MARKER, json.dumps(payload, ensure_ascii=False))
-    Path(output_path).write_text(injected, encoding="utf-8")
+    # newline="\n" garante LF — paridade byte-a-byte com o blob gh-pages (autocrlf)
+    Path(output_path).write_text(injected, encoding="utf-8", newline="\n")
     logger.info(
         "Dashboard consolidado escrito: %s (ranked=%d, N/D=%d)",
         output_path,
