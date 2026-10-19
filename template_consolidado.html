@@ -93,7 +93,7 @@ tbody tr:hover { background: rgba(76,194,255,.04); }
 .custo .custo-tabela  { font-size: 11px; color: var(--muted); }
 .badge.src { margin-left: 4px; padding: 1px 5px; font-size: 10px; background: rgba(139,152,169,.15); color: var(--muted); border: 1px solid var(--border); }
 
-.rank { font-weight: 700; color: var(--accent); }
+.rank { font-weight: 600; color: var(--muted); }
 .score { font-weight: 700; color: var(--accent); }
 .stars { color: #f2c94c; letter-spacing: 1px; }
 .mono  { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
@@ -202,6 +202,14 @@ mark { background: rgba(76,194,255,.25); color: inherit; padding: 0 1px; border-
 .col-opt { color: var(--muted); cursor: pointer; white-space: nowrap; }
 .col-opt input { margin-right: 3px; }
 .col-reset { color: var(--accent); font-size: 11px; text-decoration: none; margin-left: auto; }
+
+/* v3 aprovado — zebra + modal-ico + filtros avançados recolhidos */
+#tblRanked tbody tr:nth-child(even) { background: rgba(255,255,255,.015); }
+.modal-ico { color: var(--muted); margin-right: 3px; font-size: 12px; }
+.adv-filters { width: 100%; }
+.adv-filters summary { cursor: pointer; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; user-select: none; }
+.adv-filters summary:hover { color: var(--accent); }
+.adv-filters[open] summary { margin-bottom: 10px; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -232,7 +240,8 @@ mark { background: rgba(76,194,255,.25); color: inherit; padding: 0 1px; border-
     <input type="search" id="q" placeholder="🔍 buscar modelo ou provider..." aria-label="Buscar modelo ou provider" title="Atalho: / foca a busca • Esc limpa">
   </div>
 
-  <div class="filters-row">
+  <details class="adv-filters"><summary>▸ Filtros avançados</summary>
+<div class="filters-row">
     <fieldset>
       <legend>Capacidade</legend>
       <label><input type="checkbox" id="onlyTools"> tool_call</label>
@@ -272,6 +281,7 @@ mark { background: rgba(76,194,255,.25); color: inherit; padding: 0 1px; border-
       <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
     </fieldset>
   </div>
+</details>
 </section>
 
 <h2>🏆 Ranking — Custo × Benefício</h2>
@@ -361,19 +371,22 @@ function maxOutCell(v){
   return '<span class="num-cell">'+(v>=1000000?(v/1000000).toFixed(1)+"M":v>=1000?(v/1000).toFixed(0)+"K":v)+'</span>';
 }
 function modalCell(list){
-  // CORREÇÃO v2.7.1: mostrar multimodalidade real (apenas icones não-text)
-  // 'text' não é chip visível — só indicamos capacidade extra
+  // v3: icones sem caixinha (menos ruido colorido) + contagem quando repete
   if(!list || !list.length) return '<span class="nd-text">—</span>';
-  var out = "";
-  var nonText = 0;
-  for(var i=0;i<list.length && i<3;i++){
-    var m = list[i];
-    if(m === "text") continue;  // pular explicitamente texto
-    nonText++;
-    var icon = m==="image"?"🖼":m==="audio"?"🎙":m==="video"?"🎬":m==="file"?"📎":m;
-    out += '<span class="chip out" title="'+esc(m)+'">'+icon+'</span>';
+  var counts = {}, order = [];
+  for(var i=0;i<list.length;i++){
+    var x = list[i];
+    if(x==="text") continue;
+    if(counts[x]==null){ counts[x]=0; order.push(x); }
+    counts[x]++;
   }
-  if(!nonText) return '<span class="nd-text">—</span>';  // só texto = nada a mostrar
+  if(!order.length) return '<span class="nd-text">text</span>';
+  var out = "";
+  for(var j=0;j<order.length;j++){
+    var k = order[j];
+    var icon = k==="image"?"🖼":k==="audio"?"🎤":k==="video"?"🎬":k==="file"?"📎":k;
+    out += '<span class="modal-ico" title="'+esc(k)+'">'+icon+(counts[k]>1?("×"+counts[k]):"")+"</span>";
+  }
   return out;
 }
 
