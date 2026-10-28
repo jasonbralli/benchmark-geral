@@ -102,7 +102,7 @@ def enrich_unified(models: list[UnifiedModel], aa_api_map: dict[str, float] | No
                     idx = aa_api_map.get(dn_norm)
                 except Exception:
                     idx = None
-            if idx is not None:
+            if idx is not None and 0.0 <= float(idx) <= 100.0:
                 m.aa_index = float(idx)
                 # Propaga métricas ricas (speed/ttft/e2e/coding/agentic)
                 if lookup_metrics_fn is not None and metrics_map:
