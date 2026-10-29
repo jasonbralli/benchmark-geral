@@ -15,6 +15,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# No Windows deste host o `git` do PATH resolve para /mingw64/bin/git (quebrado:
+# WinError 5 Acesso negado). Usa o git funcional do Program Files.
+GIT = "C:/Program Files/Git/bin/git.exe"
+
 
 def _run(cmd, **kwargs):
     return subprocess.run(
@@ -52,7 +56,7 @@ def main():
         return 1
 
     # Git add: tracked com mudanças. index.html é gitignored (artefato de gh-pages).
-    git_add_result = _run(["git", "add", "-u"], cwd=str(PROJETO_DIR))
+    git_add_result = _run([GIT, "add", "-u"], cwd=str(PROJETO_DIR))
 
     if git_add_result.returncode != 0:
         print(f"Erro no git add: {git_add_result.stderr.strip()[:300]}")
@@ -60,7 +64,7 @@ def main():
 
     # Commit em main (histórico + código). index.html é artefato gitignored em main.
     commit_result = _run(
-        ["git", "commit", "-m", f"dashboard {data}"],
+        [GIT, "commit", "-m", f"dashboard {data}"],
         cwd=str(PROJETO_DIR),
     )
 
@@ -73,7 +77,7 @@ def main():
             return 1
 
     # Push main (histórico/código) — se falhar com "up to date", ok
-    push_main = _run(["git", "push", "origin", "main"], cwd=str(PROJETO_DIR))
+    push_main = _run([GIT, "push", "origin", "main"], cwd=str(PROJETO_DIR))
     if push_main.returncode != 0:
         msg = push_main.stderr.strip()[:300]
         if "up to date" not in msg and "up-to-date" not in msg:
@@ -85,7 +89,7 @@ def main():
     # Estratégia: cria tree temporária com index.html, commit orphan, push --force.
     # Isto evita herdar o histórico de main (que tem scripts/data/código irrelevantes).
     # 1) Cria blob do index.html
-    blob = _run(["git", "hash-object", "-w", str(index_path)], cwd=str(PROJETO_DIR))
+    blob = _run([GIT, "hash-object", "-w", str(index_path)], cwd=str(PROJETO_DIR))
     if blob.returncode != 0:
         print(f"Erro hash-object: {blob.stderr.strip()[:200]}")
         return 1
@@ -97,7 +101,7 @@ def main():
     # com nome sujo.
     tree_input = f"100644 blob {blob_sha}\tindex.html\n".encode("utf-8")
     tree = subprocess.run(
-        ["git", "mktree"],
+        [GIT, "mktree"],
         input=tree_input,
         capture_output=True,
         cwd=str(PROJETO_DIR),
@@ -109,7 +113,7 @@ def main():
 
     # 3) Commit orphan com o tree (sem parent = histórico novo)
     commit_orphan = _run(
-        ["git", "commit-tree", tree_sha, "-m", f"gh-pages: dashboard {data}"],
+        [GIT, "commit-tree", tree_sha, "-m", f"gh-pages: dashboard {data}"],
         cwd=str(PROJETO_DIR),
     )
     if commit_orphan.returncode != 0:
@@ -120,7 +124,7 @@ def main():
     # 4) Force-push do orphan commit para gh-pages (--force-with-lease p/ não
     # sobrescrever remoto que tenha avançado fora deste cron).
     push_gh = _run(
-        ["git", "push", "--force-with-lease", "origin", f"{orphan_sha}:refs/heads/gh-pages"],
+        [GIT, "push", "--force-with-lease", "origin", f"{orphan_sha}:refs/heads/gh-pages"],
         cwd=str(PROJETO_DIR),
     )
     if push_gh.returncode != 0:
