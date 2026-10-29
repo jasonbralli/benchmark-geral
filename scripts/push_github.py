@@ -63,18 +63,20 @@ def main():
         return 1
 
     # Commit em main (histórico + código). index.html é artefato gitignored em main.
-    commit_result = _run(
-        [GIT, "commit", "-m", f"dashboard {data}"],
-        cwd=str(PROJETO_DIR),
-    )
-
-    if commit_result.returncode != 0:
-        saida = commit_result.stdout + commit_result.stderr
-        if "nothing to commit" in saida:
-            print("Sem mudanças no main — seguindo p/ gh-pages mesmo assim.")
-        else:
-            print(f"Erro no git commit: {commit_result.stderr.strip()[:300]}")
+    # Só comita se houver algo stageado; caso contrário segue direto p/ gh-pages
+    # (o objetivo eh renovar o Pages mesmo sem mudanca no main).
+    staged = _run([GIT, "diff", "--cached", "--quiet"], cwd=str(PROJETO_DIR))
+    if staged.returncode != 0:
+        commit_result = _run(
+            [GIT, "commit", "-m", f"dashboard {data}"],
+            cwd=str(PROJETO_DIR),
+        )
+        if commit_result.returncode != 0:
+            saida = (commit_result.stdout or "") + (commit_result.stderr or "")
+            print(f"Erro no git commit: {saida.strip()[:300]}")
             return 1
+    else:
+        print("Sem mudanças no main — seguindo p/ gh-pages mesmo assim.")
 
     # Push main (histórico/código) — se falhar com "up to date", ok
     push_main = _run([GIT, "push", "origin", "main"], cwd=str(PROJETO_DIR))
