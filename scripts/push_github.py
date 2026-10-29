@@ -85,6 +85,12 @@ def main():
             return 1
     print("Push OK: origin main")
 
+    # Atualiza ref remoto gh-pages p/ o --force-with-lease ter lease contra o qual
+    # comparar (sem tracking branch local o git recusa o push por "stale info").
+    fetch_gh = _run([GIT, "fetch", "origin", "gh-pages"], cwd=str(PROJETO_DIR))
+    if fetch_gh.returncode != 0:
+        print(f"Aviso: fetch gh-pages falhou ({fetch_gh.stderr.strip()[:200]}); seguindo mesmo assim.")
+
     # gh-pages: snapshot orphan contendo APENAS index.html na raiz.
     # Estratégia: cria tree temporária com index.html, commit orphan, push --force.
     # Isto evita herdar o histórico de main (que tem scripts/data/código irrelevantes).
