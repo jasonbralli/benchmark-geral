@@ -94,6 +94,9 @@ tbody tr:hover { background: rgba(88,166,255,.04); }
 .badge.src { margin-left: 4px; padding: 1px 5px; font-size: 10px; background: rgba(148,163,184,.15); color: var(--muted); border: 1px solid var(--border); }
 
 .rank { font-weight: 600; color: var(--muted); }
+.rank.live { color: var(--free); font-weight: 700; }
+.rank.dead { color: var(--warn); font-weight: 700; }
+.rank.untested { color: var(--muted); opacity: 0.6; }
 .score { font-weight: 700; color: var(--accent); }
 .stars { color: #e3b341; letter-spacing: 1px; }
 .mono  { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
@@ -432,6 +435,14 @@ function renderKPIs(){
     var sub = allOk ? provs.length+" providers ✓" : "pior: "+worst+" ("+minUp+"%)";
     html += '<div class="kpi"><div class="kpi-label">🏥 Providers Saúde</div><div class="kpi-value" style="'+cls+'">'+avgUp+'%</div><div class="kpi-sub">'+sub+'</div></div>';
   }
+  // Liveness NIM: resumo diário de modelos vivos/mortos
+  var lv = DATA.liveness_summary;
+  if(lv){
+    var lvOk = lv.filter(function(x){return x.alive;}).length;
+    var lvDead = lv.length - lvOk;
+    var cls = lvDead === 0 ? "color:#2e8b57" : "color:#c0392b";
+    html += '<div class="kpi"><div class="kpi-label">🩺 Liveness NIM (hoje)</div><div class="kpi-value" style="'+cls+'">'+lvOk+' vivos / '+lvDead+' mortos</div><div class="kpi-sub">'+lv.total+' testados — rec: '+lv.recommended+'</div></div>';
+  }
   document.getElementById("kpis").innerHTML = html;
 }
 
@@ -656,7 +667,7 @@ function renderRanked(){
   for(var i=0;i<rows.length;i++){
     var r = rows[i];
     html += "<tr>"+
-      '<td class="rank">'+(i+1)+"</td>"+
+      '<td class="rank '+(r.liveness==="ok"?"live":r.liveness==="dead"?"dead":"untested")+'">'+(i+1)+"</td>"+
       "<td>"+hi(esc(r.provider))+"</td>"+
       '<td class="mono" title="'+esc(r.model_id)+'">'+hi(esc(r.display_name))+"</td>"+
       "<td>"+ctxCell(r.context_k)+"</td>"+

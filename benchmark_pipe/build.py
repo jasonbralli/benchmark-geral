@@ -48,6 +48,28 @@ def _load_provider_health() -> dict | None:
         return None
 
 
+def _load_liveness() -> dict[str, str]:
+    """Le data/liveness_daily.json e mapeia model_id -> 'ok'|'dead'|None.
+
+    Best-effort: ausente/ilegivel = todos None (dashboard nao quebra).
+    So modelos do catálogo NIM testados pelo liveness recebem marca.
+    """
+    p = ROOT / "data" / "liveness_daily.json"
+    if not p.exists():
+        return {}
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    out: dict[str, str] = {}
+    for r in d.get("results", []) or []:
+        mid = r.get("model_id")
+        if not mid:
+            continue
+        out[mid] = "ok" if r.get("alive") else "dead"
+    return out
+
+
 def _median(xs: list[float]) -> float | None:
     """Mediana de uma lista de floats; None se vazia."""
     if not xs:
@@ -61,7 +83,34 @@ def _median(xs: list[float]) -> float | None:
 
 
 def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -> dict:
+    _LIVENESS = _load_liveness()
+
+    def _LIVENESS_SUMMARY() -> dict:
+        ok = [mid for mid, s in _LIVENESS.items() if s == "ok"]
+        dead = [mid for mid, s in _LIVENESS.items() if s == "dead"]
+        try:
+            d = json.loads(
+                (ROOT / "data" / "liveness_daily.json").read_text(encoding="utf-8")
+            )
+            recommended = d.get("recommended")
+            total = d.get("total_candidates", len(_LIVENESS))
+        except Exception:
+            recommended = None
+            total = len(_LIVENESS)
+        return {
+            "alive": ok,
+            "dead": dead,
+            "alive_count": len(ok),
+            "dead_count": len(dead),
+            "total": total,
+            "recommended": recommended,
+        }
+
     def row(m: UnifiedModel, rank: int | None) -> dict:
+        # liveness: tenta model_id completo, depois canonical_id (remove sufixo :free etc.)
+        _lv = _LIVENESS.get(m.model_id)
+        if _lv is None and getattr(m, "canonical_id", None):
+            _lv = _LIVENESS.get(m.canonical_id)
         stars = aa_to_stars(m.aa_index)
         return {
             "rank": rank,
@@ -99,11 +148,14 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "variant": m.variant,
             "aliases": m.aliases,
             "divergences": m.divergences,
+            # liveness diário (prova real de modelo vivo/morto)
+            "liveness": _lv,
         }
 
     return {
         "ranked": [row(m, i + 1) for i, m in enumerate(models_ranked)],
         "non_ranked": [row(m, None) for m in models_nd],
+        "liveness_summary": _LIVENESS_SUMMARY(),
         "kpis": {
             "total_ranked": len(models_ranked),
             "total_inventory": len(models_ranked) + len(models_nd),

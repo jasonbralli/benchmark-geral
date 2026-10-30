@@ -253,8 +253,11 @@ def main() -> int:
     #     silencioso (stdout limpo) — alerta só em anomalia (0 vivos/novos mortos).
     logger.info("Passo 1.5: liveness ping modelos NIM free...")
     try:
-        from nim_pipeline.liveness import run_liveness, anomalies
-        alerts.extend(anomalies(run_liveness()))
+        from nim_pipeline.liveness import run_liveness, anomalies, build_summary
+        lv = run_liveness()
+        alerts.extend(anomalies(lv))
+        # Resumo DIÁRIO de liveness no stdout → Hermes entrega no Telegram
+        print(build_summary(lv))
     except Exception as e:  # noqa: BLE001
         alerts.append(f"🩺 liveness falhou (não bloqueia): {e}")
 
