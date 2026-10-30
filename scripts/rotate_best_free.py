@@ -167,6 +167,24 @@ def monitor(top: int = DEFAULT_TOP) -> dict:
             result["problems"].append(
                 f"{t['provider']}/{t['model']}: health ruim ({t['health']})"
             )
+
+    # 2.5.1 Liveness do dia (nim_pipeline/liveness.py) — prova real de modelo
+    #     vivo/morto por MODEL (health é por PROVIDER: provider up ≠ model vivo).
+    #     Best-effort: sem liveness de hoje, nenhuma marca é adicionada.
+    try:
+        from nim_pipeline.liveness import liveness_map, ping_label
+        _lv = liveness_map()
+    except Exception:  # noqa: BLE001
+        _lv = {}
+    for t in result["current"]:
+        r = _lv.get(t["model"])
+        if r is not None:
+            t["liveness"] = ping_label(r)
+            if not r.get("alive"):
+                result["problems"].append(
+                    f"{t['provider']}/{t['model']}: liveness morto hoje "
+                    f"({r.get('status')})"
+                )
     return result
 
 
@@ -176,7 +194,8 @@ def build_alert(res: dict) -> str:
     # Chain atual (manual)
     lines.append("\n<b>Chain atual (manual):</b>")
     for i, t in enumerate(res["current"], 1):
-        lines.append(f"{i}. {t['provider']} → <code>{t['model']}</code> · {t['health']}")
+        lv_s = f" · {t['liveness']}" if t.get("liveness") else ""
+        lines.append(f"{i}. {t['provider']} → <code>{t['model']}</code> · {t['health']}{lv_s}")
     # Recomendação CxB
     rec = res["recommended"]
     if rec:

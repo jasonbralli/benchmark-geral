@@ -246,6 +246,18 @@ def main() -> int:
             probe_res["alerts"], probe_cfg, probe_res["aggregate"],
         ))
 
+    # 1.5 LIVENESS — ping diário nos modelos NIM free (nim_pipeline/liveness.py).
+    #     Identifica vivos/mortos (410/404) ANTES do trabalho pesado e grava
+    #     data/liveness_daily.json (cache diário; consultável com --status).
+    #     Best-effort: falha vira alerta, não derruba a curadoria. Dia normal é
+    #     silencioso (stdout limpo) — alerta só em anomalia (0 vivos/novos mortos).
+    logger.info("Passo 1.5: liveness ping modelos NIM free...")
+    try:
+        from nim_pipeline.liveness import run_liveness, anomalies
+        alerts.extend(anomalies(run_liveness()))
+    except Exception as e:  # noqa: BLE001
+        alerts.append(f"🩺 liveness falhou (não bloqueia): {e}")
+
     # 2. REFRESH CACHES — models.dev / OpenRouter / AA
     logger.info("Passo 2: refresh caches (--refresh)...")
     # Forçamos refresh das APIs (modelos.dev, OpenRouter, AA) de forma leve.
