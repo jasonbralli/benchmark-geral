@@ -283,6 +283,22 @@ def run_liveness(
             raise RuntimeError("Nem catálogo NIM nem models.dev disponíveis") from e
 
     cands = select_candidates(ids, metas)
+
+    # Também testar modelos NVIDIA free do consolidated que podem não estar
+    # no catálogo ao vivo (IDs diferentes, versões desatualizadas, etc.).
+    # Isso garante que todo modelo NVIDIA free conhecido seja testado.
+    try:
+        cons = json.loads(
+            (ROOT / "data" / "consolidated_models.json").read_text(encoding="utf-8")
+        )
+        for m in cons.get("ranked", []):
+            if m.get("provider") == "nvidia" and m.get("is_free"):
+                mid = m.get("model_id") or m.get("canonical_id")
+                if mid and mid not in cands:
+                    cands.append(mid)
+    except Exception:  # noqa: BLE001 — consolidated pode não existir ainda
+        pass
+
     logger.info("Candidatos ao ping: %d/%d", len(cands), len(ids))
     prev_alive = {r.get("model_id") for r in (prev or {}).get("results", [])
                   if r.get("alive")}
