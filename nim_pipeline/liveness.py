@@ -207,7 +207,11 @@ def load_metadata() -> dict[str, dict]:
 
 
 def select_candidates(catalog_ids: list[str], metas: dict[str, dict]) -> list[str]:
-    """Portas estáticas do plano (tipo chat/instruct + free) sobre o catálogo."""
+    """Portas estáticas: tipo chat/instruct + (NVIDIA qualquer custo OU free tier de qualquer provider).
+
+    Objetivo: identificar modelos vivos ANTES de iniciar o trabalho, para
+    saber para onde migrar se o server NVIDIA estiver fora do ar.
+    """
     from nim_pipeline.filter import is_excluded
     out: list[str] = []
     for mid in catalog_ids:
@@ -222,13 +226,17 @@ def select_candidates(catalog_ids: list[str], metas: dict[str, dict]) -> list[st
         if meta and is_excluded(blob):
             continue  # embeddings/guard/rerank/VL-only/specialistas
         if meta:
-            cost = meta.get("cost") or {}
-            if (cost.get("input") or 0) > 0 or (cost.get("output") or 0) > 0:
-                continue  # pago conhecido → fora do free tier
+            # Tipo chat/instruct (texto em entrada e saída)
             mods = meta.get("modalities") or {}
             if mods and ("text" not in mods.get("input", [])
                          or "text" not in mods.get("output", [])):
                 continue  # sem texto in/out → não é chat geral
+            # Escopo: NVIDIA (qualquer preço) OU free tier (qualquer provider)
+            is_nvidia = mid.startswith("nvidia/")
+            cost = meta.get("cost") or {}
+            is_free = (cost.get("input") or 0) == 0 and (cost.get("output") or 0) == 0
+            if not (is_nvidia or is_free):
+                continue  # não é NVIDIA nem free tier → fora do escopo
         out.append(mid)
     return out
 
@@ -284,18 +292,25 @@ def run_liveness(
 
     cands = select_candidates(ids, metas)
 
-    # Também testar modelos NVIDIA free do consolidated que podem não estar
-    # no catálogo ao vivo (IDs diferentes, versões desatualizadas, etc.).
-    # Isso garante que todo modelo NVIDIA free conhecido seja testado.
+    # Também testar modelos NVIDIA (qualquer custo) + free tiers de qualquer
+    # provider do consolidated que podem não estar no catálogo ao vivo
+    # (IDs diferentes, versões desatualizadas, etc.).
+    # Escopo: NVIDIA (qualquer preço) OU free tier (qualquer provider).
     try:
         cons = json.loads(
             (ROOT / "data" / "consolidated_models.json").read_text(encoding="utf-8")
         )
         for m in cons.get("ranked", []):
-            if m.get("provider") == "nvidia" and m.get("is_free"):
-                mid = m.get("model_id") or m.get("canonical_id")
-                if mid and mid not in cands:
-                    cands.append(mid)
+            mid = m.get("model_id") or m.get("canonical_id")
+            if not mid:
+                continue
+            prov = m.get("provider", "")
+            is_nvidia = prov == "nvidia"
+            is_free = bool(m.get("is_free"))
+            if not (is_nvidia or is_free):
+                continue
+            if mid not in cands:
+                cands.append(mid)
     except Exception:  # noqa: BLE001 — consolidated pode não existir ainda
         pass
 

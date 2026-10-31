@@ -282,6 +282,12 @@ mark { background: rgba(88,166,255,.25); color: inherit; padding: 0 1px; border-
       <label><input type="checkbox" id="providerMultiMode"> multi-seleção</label>
       <label>família <select id="fFamily"><option value="">todos</option></select></label>
       <label>modalidade <select id="fModal"><option value="">todas</option><option value="image">🖼 image-in</option><option value="audio">🎙 audio-in</option><option value="video">🎬 video-in</option><option value="file">📎 file-in</option><option value="img-out">🎨 image-out</option></select></label>
+      <fieldset style="margin:4px 0 0 0;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);font-size:11px;">
+        <legend style="font-size:10px;">Liveness</legend>
+        <label style="margin-right:10px"><input type="radio" name="liveness" value=""> todos</label>
+        <label style="margin-right:10px"><input type="radio" name="liveness" value="ok"> <span style="color:#2e8b57">● vivos</span></label>
+        <label style="margin-right:10px"><input type="radio" name="liveness" value="dead"> <span style="color:#c0392b">● mortos</span></label>
+      </fieldset>
     </fieldset>
   </div>
 </details>
@@ -440,8 +446,12 @@ function renderKPIs(){
   if(lv){
     var lvOk = lv.alive_count || 0;
     var lvDead = lv.dead_count || 0;
-    var cls = lvDead === 0 ? "color:#2e8b57" : "color:#c0392b";
-    html += '<div class="kpi"><div class="kpi-label">🩺 Liveness NIM (hoje)</div><div class="kpi-value" style="'+cls+'">'+lvOk+' vivos / '+lvDead+' mortos</div><div class="kpi-sub">'+lv.total+' testados — rec: '+lv.recommended+'</div></div>';
+    html += '<div class="kpi"><div class="kpi-label">🩺 Liveness NIM (hoje)</div>';
+    html += '<div class="kpi-value">';
+    html += '<span style="color:#2e8b57;font-weight:bold">'+lvOk+' vivos</span> ';
+    html += '<span style="color:#c0392b;font-weight:bold">'+lvDead+' mortos</span>';
+    html += '</div>';
+    html += '<div class="kpi-sub">'+lv.total+' testados — rec: '+esc(lv.recommended||'—')+'</div></div>';
   }
   document.getElementById("kpis").innerHTML = html;
 }
@@ -450,6 +460,7 @@ function renderKPIs(){
 var state = { q:"", free:false, tools:false, reasoning:false, noReasoning:false, mult:false, struct:false, cache:false, ctx:0, aa:0, cxb:0, provider:"", family:"",
   coding:false, agentic:false, openw:false, minSpeed:0, maxTtft:null, modal:"",
   maxPriceIn:null, provMulti:false, selProviders:[],
+  liveness:"",  // ""=todos | "ok"=apenas vivos | "dead"=apenas mortos
   sortKey:"cxb_score", sortDir:-1 };
 
 var PRESETS = {
@@ -486,6 +497,11 @@ function syncAllUI(){
   document.getElementById("providerMultiMode").checked = state.provMulti;
   document.getElementById("providerMulti").style.display = state.provMulti ? "block" : "none";
   renderProviderMulti();
+  // Liveness radio sync
+  var radios = document.querySelectorAll('input[name="liveness"]');
+  for(var ri=0;ri<radios.length;ri++){
+    radios[ri].checked = (radios[ri].value === state.liveness);
+  }
   syncProviderChecks();
 }
 
@@ -548,6 +564,7 @@ function stateToHash(){
   if(state.minSpeed) p.push("speed="+state.minSpeed);
   if(state.maxTtft!=null) p.push("ttft="+state.maxTtft);
   if(state.maxPriceIn!=null) p.push("price="+state.maxPriceIn);
+  if(state.liveness) p.push("lv="+encodeURIComponent(state.liveness));
   return p.join("&");
 }
 function writeHash(){
@@ -595,6 +612,7 @@ function restoreFromHash(){
     if((v=get("speed"))!=null) state.minSpeed = parseFloat(v)||0;
     if((v=get("ttft"))!=null){ var t = parseFloat(v); state.maxTtft = isNaN(t)?null:t; }
     if((v=get("price"))!=null){ var pr = parseFloat(v); state.maxPriceIn = isNaN(pr)?null:pr; }
+    if((v=get("lv"))!=null){ state.liveness = v; }
   }
   syncAllUI();
 }
@@ -649,6 +667,9 @@ function renderRanked(){
          (r.model_id||"").toLowerCase().indexOf(q)<0 &&
          (r.provider||"").toLowerCase().indexOf(q)<0) return false;
     }
+    // Filtro liveness: apenas vivos / apenas mortos / todos
+    if(state.liveness === "ok" && r.liveness !== "ok") return false;
+    if(state.liveness === "dead" && r.liveness !== "dead") return false;
     return true;
   });
   rows.sort(function(a,b){
@@ -823,6 +844,11 @@ document.getElementById("maxPriceIn").addEventListener("change", function(e){ va
 // Filtro preço máximo
 
 document.getElementById("fFamily").addEventListener("change", function(e){ state.family = e.target.value; renderRanked(); });
+
+// Liveness radio buttons
+document.querySelectorAll('input[name="liveness"]').forEach(function(rb){
+  rb.addEventListener("change", function(e){ state.liveness = e.target.value; renderRanked(); });
+});
 
 // preset buttons
 Array.prototype.forEach.call(document.querySelectorAll(".preset-btn"), function(btn){

@@ -1,0 +1,922 @@
+{
+  "date": "2026-10-30",
+  "generated_at": "2026-10-31T01:34:09.060889+00:00",
+  "source": "integrate.api.nvidia.com/v1/models + models.dev",
+  "total_catalog": 85,
+  "total_candidates": 111,
+  "alive_count": 18,
+  "dead_count": 93,
+  "recommended": "nvidia/nemotron-3-ultra-550b-a55b",
+  "new_dead": [],
+  "new_alive": [
+    "stepfun-ai/step-5-preview"
+  ],
+  "results": [
+    {
+      "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 862,
+      "total_ms": 862,
+      "score": 58.2
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 901,
+      "total_ms": 902,
+      "score": 58.2
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 668,
+      "total_ms": 668,
+      "score": 57.2
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 824,
+      "total_ms": 825,
+      "score": 56.2
+    },
+    {
+      "model_id": "nvidia/nemotron-parse-2.0",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 774,
+      "total_ms": 774,
+      "score": 53.5
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-bolt-e4b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 793,
+      "total_ms": 793,
+      "score": 53.4
+    },
+    {
+      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 9566,
+      "total_ms": 9568,
+      "score": 39.4
+    },
+    {
+      "model_id": "poolside/laguna-xs-2.1",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 595,
+      "total_ms": 595,
+      "score": 27.4
+    },
+    {
+      "model_id": "minimaxai/minimax-m3.1-flash",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 690,
+      "total_ms": 691,
+      "score": 27.2
+    },
+    {
+      "model_id": "meta/llama-guard-4-12b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 695,
+      "total_ms": 695,
+      "score": 26.7
+    },
+    {
+      "model_id": "meta/muse-glimmer-30b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 784,
+      "total_ms": 784,
+      "score": 26.3
+    },
+    {
+      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 959,
+      "total_ms": 960,
+      "score": 25.9
+    },
+    {
+      "model_id": "nvidia/ising-calibration-1.5-31b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 765,
+      "total_ms": 765,
+      "score": 23.5
+    },
+    {
+      "model_id": "openai/gpt-oss-20b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 2181,
+      "total_ms": 2182,
+      "score": 23.5
+    },
+    {
+      "model_id": "mistralai/mistral-large-4-1t-a52b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 805,
+      "total_ms": 805,
+      "score": 23.4
+    },
+    {
+      "model_id": "stepfun-ai/step-5-preview",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1070,
+      "total_ms": 1071,
+      "score": 22.9
+    },
+    {
+      "model_id": "google/diffusiongemma-26b-a4b-it",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 13836,
+      "total_ms": 13837,
+      "score": 8.5
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemoguard-8b-topic-control",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": null,
+      "total_ms": 540,
+      "score": 5.0
+    },
+    {
+      "model_id": "01-ai/yi-large",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "adept/fuyu-8b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "ai21labs/jamba-1.5-large-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "aisingapore/sea-lion-7b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "bigcode/starcoder2-15b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "databricks/dbrx-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "deepseek-ai/deepseek-coder-6.7b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "deepseek-ai/deepseek-v4.1-flash",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/codegemma-1.1-7b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/codegemma-7b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/deplot",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-2b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-3-12b-it",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-3-4b-it",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-4-31b-it",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/recurrentgemma-2b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "ibm/granite-3.0-3b-a800m-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "ibm/granite-3.0-8b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "ibm/granite-34b-code-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "ibm/granite-8b-code-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "meta/codellama-70b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "meta/llama-3.2-11b-vision-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "meta/llama2-70b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "microsoft/kosmos-2",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "microsoft/phi-3-vision-128k-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "microsoft/phi-3.5-moe-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "mistralai/codestral-22b-instruct-v0.1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "mistralai/mistral-large",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "mistralai/mistral-large-2-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "mistralai/mixtral-8x22b-v0.1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "moonshotai/kimi-k2.6",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nv-mistralai/mistral-nemo-12b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/ai-synthetic-video-detector",
+      "alive": false,
+      "status": "server",
+      "http_code": 500,
+      "error": "Internal Server Error",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/embed-qa-4",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemoguard-8b-content-safety",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemotron-51b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.2-nemoretriever-1b-vlm-embed-v1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-3.2-nv-embedqa-1b-v1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama3-chatqa-1.5-70b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/mistral-nemo-minitron-8b-8k-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3-embed-1b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3-super-120b-a12b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-embed-1b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-embed-8b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-4-340b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-4-340b-reward",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-nano-3-30b-a3b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-parse",
+      "alive": false,
+      "status": "bad_request",
+      "http_code": 400,
+      "error": "Bad Request",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/neva-22b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nv-embedqa-mistral-7b-v2",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nvclip",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/riva-translate-4b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/riva-translate-4b-instruct-v2",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/vila",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "snowflake/arctic-embed-l",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "writer/palmyra-creative-122b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "writer/palmyra-fin-70b-32k",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "writer/palmyra-med-70b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "writer/palmyra-med-70b-32k",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "z-ai/glm-5.3-flash",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
+      "score": -1.0
+    },
+    {
+      "model_id": "zyphra/zamba2-7b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "minimaxai/minimax-m3",
+      "alive": false,
+      "status": "gone",
+      "http_code": 410,
+      "error": "Gone",
+      "score": -1.0
+    },
+    {
+      "model_id": "thinkingmachines/inkling-small:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-super-vl:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "thinkingmachines/inkling:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "z-ai/glm-5.2",
+      "alive": false,
+      "status": "gone",
+      "http_code": 410,
+      "error": "Gone",
+      "score": -1.0
+    },
+    {
+      "model_id": "dots-studio/dots-3-note-preview:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "z-ai/glm-5.3",
+      "alive": false,
+      "status": "gone",
+      "http_code": 410,
+      "error": "Gone",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/gemma-4-31b-it:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "stepfun/step-3.7-flash",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "reflection/beam-1.0-501b-a23b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "openrouter/free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/cosmos-reason2-8b",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-lightning:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "poolside/laguna-s-2.1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "upstage/solar-mini4",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "poolside/laguna-s-2.1:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "poolside/laguna-xs-2.1:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "recursive/flint-v1.0:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "xingchen-agi/xing4.0-29b-a4b:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "cohere/north-mini-code:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "liquid/lfm-2.5-2.6b:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-content-safety:free",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-content-safety",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/lyria-3-clip-preview",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "google/lyria-3-pro-preview",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "mistralai/mistral-7b-instruct-v0.3",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    }
+  ]
+}
