@@ -438,8 +438,8 @@ function renderKPIs(){
   // Liveness NIM: resumo diário de modelos vivos/mortos
   var lv = DATA.liveness_summary;
   if(lv){
-    var lvOk = lv.filter(function(x){return x.alive;}).length;
-    var lvDead = lv.length - lvOk;
+    var lvOk = lv.alive_count || 0;
+    var lvDead = lv.dead_count || 0;
     var cls = lvDead === 0 ? "color:#2e8b57" : "color:#c0392b";
     html += '<div class="kpi"><div class="kpi-label">🩺 Liveness NIM (hoje)</div><div class="kpi-value" style="'+cls+'">'+lvOk+' vivos / '+lvDead+' mortos</div><div class="kpi-sub">'+lv.total+' testados — rec: '+lv.recommended+'</div></div>';
   }
