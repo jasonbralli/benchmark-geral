@@ -1,169 +1,140 @@
 {
-  "date": "2026-10-30",
-  "generated_at": "2026-10-31T01:34:09.060889+00:00",
+  "date": "2026-10-31",
+  "generated_at": "2026-10-31T10:32:43.018223+00:00",
   "source": "integrate.api.nvidia.com/v1/models + models.dev",
   "total_catalog": 85,
   "total_candidates": 111,
-  "alive_count": 18,
-  "dead_count": 93,
-  "recommended": "nvidia/nemotron-3-ultra-550b-a55b",
+  "alive_count": 15,
+  "dead_count": 96,
+  "recommended": "nvidia/nemotron-3.5-super-vl-120b-a12b",
   "new_dead": [],
-  "new_alive": [
-    "stepfun-ai/step-5-preview"
-  ],
+  "new_alive": [],
   "results": [
-    {
-      "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 862,
-      "total_ms": 862,
-      "score": 58.2
-    },
     {
       "model_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 901,
-      "total_ms": 902,
-      "score": 58.2
+      "ttft_ms": 942,
+      "total_ms": 942,
+      "score": 58.1
+    },
+    {
+      "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1016,
+      "total_ms": 1017,
+      "score": 57.9
     },
     {
       "model_id": "nvidia/nemotron-3.5-lightning-30b-a3b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 668,
-      "total_ms": 668,
-      "score": 57.2
+      "ttft_ms": 750,
+      "total_ms": 751,
+      "score": 57.1
     },
     {
       "model_id": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 824,
-      "total_ms": 825,
-      "score": 56.2
-    },
-    {
-      "model_id": "nvidia/nemotron-parse-2.0",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 774,
-      "total_ms": 774,
-      "score": 53.5
-    },
-    {
-      "model_id": "nvidia/nemotron-3.5-bolt-e4b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 793,
-      "total_ms": 793,
-      "score": 53.4
+      "ttft_ms": 1250,
+      "total_ms": 1250,
+      "score": 55.3
     },
     {
       "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 9566,
-      "total_ms": 9568,
-      "score": 39.4
+      "ttft_ms": 1876,
+      "total_ms": 1876,
+      "score": 54.8
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-bolt-e4b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 718,
+      "total_ms": 718,
+      "score": 53.6
     },
     {
       "model_id": "poolside/laguna-xs-2.1",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 595,
-      "total_ms": 595,
-      "score": 27.4
+      "ttft_ms": 799,
+      "total_ms": 799,
+      "score": 27.0
     },
     {
       "model_id": "minimaxai/minimax-m3.1-flash",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 690,
-      "total_ms": 691,
-      "score": 27.2
+      "ttft_ms": 816,
+      "total_ms": 816,
+      "score": 26.9
     },
     {
       "model_id": "meta/llama-guard-4-12b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 695,
-      "total_ms": 695,
-      "score": 26.7
-    },
-    {
-      "model_id": "meta/muse-glimmer-30b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 784,
-      "total_ms": 784,
-      "score": 26.3
-    },
-    {
-      "model_id": "meta/llama-3.2-90b-vision-instruct",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 959,
-      "total_ms": 960,
-      "score": 25.9
-    },
-    {
-      "model_id": "nvidia/ising-calibration-1.5-31b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 765,
-      "total_ms": 765,
-      "score": 23.5
-    },
-    {
-      "model_id": "openai/gpt-oss-20b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 2181,
-      "total_ms": 2182,
-      "score": 23.5
-    },
-    {
-      "model_id": "mistralai/mistral-large-4-1t-a52b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 805,
-      "total_ms": 805,
-      "score": 23.4
-    },
-    {
-      "model_id": "stepfun-ai/step-5-preview",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1070,
-      "total_ms": 1071,
-      "score": 22.9
+      "ttft_ms": 828,
+      "total_ms": 828,
+      "score": 26.4
     },
     {
       "model_id": "google/diffusiongemma-26b-a4b-it",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 13836,
-      "total_ms": 13837,
-      "score": 8.5
+      "ttft_ms": 1103,
+      "total_ms": 1104,
+      "score": 26.3
+    },
+    {
+      "model_id": "openai/gpt-oss-20b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1053,
+      "total_ms": 1054,
+      "score": 25.8
+    },
+    {
+      "model_id": "meta/muse-glimmer-30b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1222,
+      "total_ms": 1396,
+      "score": 25.4
+    },
+    {
+      "model_id": "nvidia/ising-calibration-1.5-31b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 631,
+      "total_ms": 631,
+      "score": 23.7
+    },
+    {
+      "model_id": "mistralai/mistral-large-4-1t-a52b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 837,
+      "total_ms": 837,
+      "score": 23.3
     },
     {
       "model_id": "nvidia/llama-3.1-nemoguard-8b-topic-control",
@@ -171,7 +142,7 @@
       "status": "ok",
       "http_code": 200,
       "ttft_ms": null,
-      "total_ms": 540,
+      "total_ms": 803,
       "score": 5.0
     },
     {
@@ -348,6 +319,14 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
       "score": -1.0
     },
     {
@@ -575,6 +554,14 @@
       "score": -1.0
     },
     {
+      "model_id": "nvidia/nemotron-parse-2.0",
+      "alive": false,
+      "status": "server",
+      "http_code": 502,
+      "error": "Bad Gateway",
+      "score": -1.0
+    },
+    {
       "model_id": "nvidia/neva-22b",
       "alive": false,
       "status": "not_found",
@@ -628,6 +615,14 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "stepfun-ai/step-5-preview",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
       "score": -1.0
     },
     {
