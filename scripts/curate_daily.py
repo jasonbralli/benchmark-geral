@@ -83,6 +83,11 @@ PROVIDER_HEALTH_JSON = _PROVIDERS_HOME / "data" / "provider_health.json"
 DROP_THRESHOLD_PCT = 5.0  # alerta se modelos caírem >5% vs ontem
 MIN_MODELS = 50  # sanity check
 
+# Interpreter do pipeline: `py` (PSF Python Manager, 3.13 com deps instalados).
+# sys.executable = Hermes 3.14.7 é RECRIADO a cada `hermes update` e perde
+# todos os pip pkgs → run_consolidated morre lá (exit 2). Py launcher é estável.
+_PIPE = ["py", "-3.13"]
+
 # Filtro para modelos obsoletos — removidos pelo provider
 REMOVED_PROVIDERS = {"opencode-free"}  # opencode-free foi removido do Hermes
 
@@ -267,7 +272,7 @@ def main() -> int:
     # run_consolidated.py --refresh faz isso, mas com build. Queremos só
     # refresh aqui, build vem depois.
     code_refresh, _, err_refresh = _run_cmd(
-        [sys.executable, "scripts/run_consolidated.py", "--refresh", "--json", str(CONSOLIDATED)],
+        [*_PIPE, "scripts/run_consolidated.py", "--refresh", "--json", str(CONSOLIDATED)],
         check=False,
         timeout=300,
     )
@@ -275,7 +280,7 @@ def main() -> int:
         # fallback: tentar com use-cache se refresh falhar (offline mode)
         logger.warning("Refresh falhou (%s), tentando --use-cache", err_refresh[-200:])
         code_cache, _, err_cache = _run_cmd(
-            [sys.executable, "scripts/run_consolidated.py", "--use-cache", "--json", str(CONSOLIDATED)],
+            [*_PIPE, "scripts/run_consolidated.py", "--use-cache", "--json", str(CONSOLIDATED)],
             check=False,
             timeout=300,
         )
