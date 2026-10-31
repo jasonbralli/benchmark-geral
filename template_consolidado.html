@@ -608,7 +608,8 @@ function hi(t){
 }
 
 function renderRanked(){
-  var rows = DATA.ranked.filter(function(r){
+  try {
+    var rows = DATA.ranked.filter(function(r){
     if(state.free && !r.is_free) return false;
     if(state.tools && !r.tool_call) return false;
     if(state.reasoning && !r.reasoning) return false;
@@ -688,6 +689,13 @@ function renderRanked(){
   var rc = document.getElementById("resultCount");
   if(rc) rc.textContent = "Mostrando " + rows.length + " de " + DATA.ranked.length + " modelos";
   writeHash();
+  } catch(e) {
+    console.error('renderRanked erro:', e);
+    var tbody = document.querySelector('#tblRanked tbody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="15" style="color:#c0392b;text-align:center;padding:24px">Erro ao renderizar modelos: '+String(e).substring(0,200)+'</td></tr>';
+    var rc = document.getElementById("resultCount");
+    if(rc) rc.textContent = "Erro ao carregar";
+  }
 }
 
 function renderND(){
@@ -947,15 +955,21 @@ function initCols(){
   });
 }
 
-renderKPIs();
+try { renderKPIs(); } catch(e) { console.error('renderKPIs falhou:', e); }
 
-fillProviders();
-fillFamilies();
-restoreFromHash();
-updateSortIndicators();
-renderRanked();
-renderND();
-initCols();
+try { fillProviders(); } catch(e) { console.error('fillProviders falhou:', e); }
+try { fillFamilies(); } catch(e) { console.error('fillFamilies falhou:', e); }
+try { restoreFromHash(); } catch(e) { console.error('restoreFromHash falhou:', e); }
+try { updateSortIndicators(); } catch(e) { console.error('updateSortIndicators falhou:', e); }
+try { renderRanked(); } catch(e) {
+  console.error('renderRanked falhou:', e);
+  var tbody = document.querySelector('#tblRanked tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="15" style="color:#c0392b;text-align:center;padding:24px">Erro ao renderizar modelos: '+String(e).substring(0,200)+'</td></tr>';
+  var rc = document.getElementById("resultCount");
+  if(rc) rc.textContent = "Erro ao carregar";
+}
+try { renderND(); } catch(e) { console.error('renderND falhou:', e); }
+try { initCols(); } catch(e) { console.error('initCols falhou:', e); }
 function renderTimestamp(){
   var el = document.getElementById('tsAtualizado');
   if(!el) return;
