@@ -159,6 +159,7 @@ def monitor(top: int = DEFAULT_TOP) -> dict:
         "problems": [],
     }
     # Tiers da chain atual com health ruim → problema informativo
+    bad_pairs: set[tuple[str, str]] = set()
     for t in result["current"]:
         h = health.get(t["provider"]) or {}
         if h.get("last_ok") is False or (
@@ -167,6 +168,7 @@ def monitor(top: int = DEFAULT_TOP) -> dict:
             result["problems"].append(
                 f"{t['provider']}/{t['model']}: health ruim ({t['health']})"
             )
+            bad_pairs.add((t["provider"], t["model"]))
 
     # 2.5.1 Liveness do dia (nim_pipeline/liveness.py) — prova real de modelo
     #     vivo/morto por MODEL (health é por PROVIDER: provider up ≠ model vivo).
@@ -185,6 +187,14 @@ def monitor(top: int = DEFAULT_TOP) -> dict:
                     f"{t['provider']}/{t['model']}: liveness morto hoje "
                     f"({r.get('status')})"
                 )
+                bad_pairs.add((t["provider"], t["model"]))
+
+    # Filtrar da recomendação CxB os modelos que aparecem em Atenção
+    # (health ruim ou liveness morto). Recomendação só após a verificação.
+    result["recommended"] = [
+        t for t in result["recommended"]
+        if (t["provider"], t["model"]) not in bad_pairs
+    ]
     return result
 
 
@@ -196,7 +206,13 @@ def build_alert(res: dict) -> str:
     for i, t in enumerate(res["current"], 1):
         lv_s = f" · {t['liveness']}" if t.get("liveness") else ""
         lines.append(f"{i}. {t['provider']} → <code>{t['model']}</code> · {t['health']}{lv_s}")
-    # Recomendação CxB
+    # Problemas primeiro (verificação antes da recomendação)
+    if res["problems"]:
+        lines.append("\n⚠️ <b>Atenção:</b>")
+        for p in res["problems"]:
+            lines.append(f"• {p}")
+    # Recomendação CxB — só após a verificação; modelos em Atenção já foram
+    # filtrados do recommended em monitor().
     rec = res["recommended"]
     if rec:
         lines.append("\n<b>Recomendação CxB (top free):</b>")
@@ -204,11 +220,6 @@ def build_alert(res: dict) -> str:
             lines.append(
                 f"• {t['provider']}/{t['model']} (CxB {t['cxb_score']:.1f})"
             )
-    # Problemas
-    if res["problems"]:
-        lines.append("\n⚠️ <b>Atenção:</b>")
-        for p in res["problems"]:
-            lines.append(f"• {p}")
     return "\n".join(lines)
 
 
