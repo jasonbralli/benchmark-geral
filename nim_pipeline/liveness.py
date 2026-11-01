@@ -64,6 +64,7 @@ NIM_MODELS_URL = "https://integrate.api.nvidia.com/v1/models"
 NIM_CHAT_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
 HERMES_ENV = Path(os.environ.get("LOCALAPPDATA", "")) / "hermes" / ".env"
 OUT_PATH = ROOT / "data" / "liveness_daily.json"
+CONSOLIDATED_PATH = ROOT / "data" / "consolidated_models.json"
 
 TIMEOUT_S = 25.0   # porta rígida do plano: falha rápido, não trava
 WORKERS = 4        # pings paralelos limitados (plano: ~4 por vez)
@@ -78,6 +79,29 @@ _HTTP_STATUS = {
     429: "quota",
 }
 DEAD_STATUSES = {"gone", "not_found"}  # 410/404 — o alvo do anti-frustração
+
+# Endpoint de chat/completions por provider e esquema de auth.
+# Nem todos exigem chave (Kilo é público, verificado ao vivo). Nous requer
+# chave que pode não estar disponível — nesses casos o modelo free é liberado
+# pelo catálogo do próprio provider (fallback abaixo).
+CHAT_ENDPOINTS: dict[str, tuple[str, str | None]] = {
+    # (URL do chat/completions, esquema de auth: "Bearer" | None)
+    "nvidia": (NIM_CHAT_URL, "Bearer"),
+    "kilocode": ("https://api.kilo.ai/api/gateway/chat/completions", None),
+    "nous": ("https://inference-api.nousresearch.com/v1/chat/completions", "Bearer"),
+}
+
+
+def _chat_url(provider: str) -> str:
+    return CHAT_ENDPOINTS.get(provider, (NIM_CHAT_URL, "Bearer"))[0]
+
+
+def _chat_headers(provider: str, api_key: str | None) -> dict[str, str]:
+    scheme = CHAT_ENDPOINTS.get(provider, (NIM_CHAT_URL, "Bearer"))[1]
+    headers: dict[str, str] = {}
+    if scheme == "Bearer" and api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    return headers
 
 
 def read_api_key() -> str:
@@ -102,8 +126,13 @@ def _post(req: urllib.request.Request, timeout: float):
     return urllib.request.urlopen(req, timeout=timeout)
 
 
-def ping_model(model_id: str, api_key: str, timeout: float = TIMEOUT_S) -> dict:
-    """Ping mínimo de liveness em 1 modelo.
+def ping_model(
+    model_id: str,
+    api_key: str | None,
+    provider: str = "nvidia",
+    timeout: float = TIMEOUT_S,
+) -> dict:
+    """Ping mínimo de liveness em 1 modelo, no endpoint do próprio provider.
 
     Requisição única chat/completions, max_tokens=1, stream=true — mede o
     TTFT (1º chunk SSE de conteúdo). Classifica sem nunca expor a key.
@@ -116,12 +145,12 @@ def ping_model(model_id: str, api_key: str, timeout: float = TIMEOUT_S) -> dict:
         "stream": True,
     }).encode("utf-8")
     req = urllib.request.Request(
-        NIM_CHAT_URL,
+        _chat_url(provider),
         data=body,
         headers={
-            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "User-Agent": "benchmark-geral-liveness/1.0",
+            **_chat_headers(provider, api_key),
         },
         method="POST",
     )
@@ -189,7 +218,7 @@ def load_metadata() -> dict[str, dict]:
         logger.warning("models.dev indisponível (%s) — portas estáticas relaxadas", e)
     try:
         cons = json.loads(
-            (ROOT / "data" / "consolidated_models.json").read_text(encoding="utf-8")
+            (CONSOLIDATED_PATH).read_text(encoding="utf-8")
         )
         for m in cons.get("ranked", []):
             mid = m.get("model_id")
@@ -290,17 +319,23 @@ def run_liveness(
         if not ids:
             raise RuntimeError("Nem catálogo NIM nem models.dev disponíveis") from e
 
-    cands = select_candidates(ids, metas)
-
-    # Também testar modelos NVIDIA (qualquer custo) + free tiers de qualquer
-    # provider do consolidated que podem não estar no catálogo ao vivo
-    # (IDs diferentes, versões desatualizadas, etc.).
-    # Escopo: NVIDIA (qualquer preço) OU free tier (qualquer provider).
+    # Carrega consolidated uma única vez (metadados + conjunto free).
+    cons = None
     try:
         cons = json.loads(
-            (ROOT / "data" / "consolidated_models.json").read_text(encoding="utf-8")
+            (CONSOLIDATED_PATH).read_text(encoding="utf-8")
         )
-        for m in cons.get("ranked", []):
+    except Exception:
+        cons = None
+
+    cands = select_candidates(ids, metas)
+    provider_of: dict[str, str] = {mid: "nvidia" for mid in cands}
+
+    # Também testar modelos NVIDIA (qualquer custo) + free tiers de qualquer
+    # provider do consolidated que podem não estar no catálogo ao vivo.
+    # Escopo: NVIDIA (qualquer preço) OU free tier (qualquer provider).
+    if cons:
+        for m in cons.get("ranked", []) + cons.get("non_ranked", []):
             mid = m.get("model_id") or m.get("canonical_id")
             if not mid:
                 continue
@@ -311,16 +346,40 @@ def run_liveness(
                 continue
             if mid not in cands:
                 cands.append(mid)
-    except Exception:  # noqa: BLE001 — consolidated pode não existir ainda
-        pass
+                provider_of[mid] = prov
+            elif prov and provider_of.get(mid) == "nvidia":
+                provider_of[mid] = prov  # prefere provider real do consolidated
+
+    # Modelos confirmados como free (preço 0) no consolidated. Usados como
+    # fallback de liveness para provedores sem chave de ping (ex.: Nous),
+    # onde o catálogo do próprio provider já garante disponibilidade do
+    # free tier.
+    cons_free: set[str] = {
+        m.get("model_id")
+        for m in (cons or {}).get("ranked", []) + (cons or {}).get("non_ranked", [])
+        if m.get("is_free") and m.get("model_id")
+    }
 
     logger.info("Candidatos ao ping: %d/%d", len(cands), len(ids))
     prev_alive = {r.get("model_id") for r in (prev or {}).get("results", [])
                   if r.get("alive")}
 
+    def _ping_one(mid: str) -> dict:
+        return ping(mid, key, provider=provider_of.get(mid, "nvidia"), timeout=timeout)
+
     results: list[dict] = []
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        for res in ex.map(lambda m: ping(m, key, timeout), cands):
+        for res in ex.map(_ping_one, cands):
+            # Fallback free: provedores sem auth de ping (ex.: Nous) não podem
+            # ser verificados em tempo real; modelos confirmados como free no
+            # catálogo do próprio provider são considerados disponíveis.
+            if (not res.get("alive")
+                    and provider_of.get(res["model_id"]) != "nvidia"
+                    and res["model_id"] in cons_free):
+                res["alive"] = True
+                res["status"] = "free"
+                res["http_code"] = None
+                res["error"] = "free-tier confirmado no catálogo do provider (sem ping de auth)"
             res["score"] = score_model(res, metas.get(res["model_id"]),
                                        res["model_id"] in prev_alive)
             results.append(res)

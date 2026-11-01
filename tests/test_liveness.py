@@ -73,26 +73,26 @@ def test_ping_ok_stream_captures_ttft(env_key, monkeypatch):
     lines = [b"data: {\"choices\":[{\"delta\":{\"content\":\"a\"}}]}\n",
              b"data: [DONE]\n"]
     monkeypatch.setattr(lv, "_post", lambda req, t: _FakeResp(lines))
-    r = lv.ping_model("m/a", "k")
+    r = lv.ping_model("m/a", "k", "nvidia")
     assert r["alive"] is True and r["status"] == "ok" and r["http_code"] == 200
     assert r["ttft_ms"] is not None and r["total_ms"] >= 0
 
 
 def test_ping_410_gone(env_key, monkeypatch):
     monkeypatch.setattr(lv, "_post", lambda req, t: (_ for _ in ()).throw(_http_error(410)))
-    r = lv.ping_model("m/a", "k")
+    r = lv.ping_model("m/a", "k", "nvidia")
     assert r["alive"] is False and r["status"] == "gone" and r["http_code"] == 410
 
 
 def test_ping_404_not_found(env_key, monkeypatch):
     monkeypatch.setattr(lv, "_post", lambda req, t: (_ for _ in ()).throw(_http_error(404)))
-    r = lv.ping_model("m/a", "k")
+    r = lv.ping_model("m/a", "k", "nvidia")
     assert r["status"] == "not_found" and r["alive"] is False
 
 
 def test_ping_429_quota(env_key, monkeypatch):
     monkeypatch.setattr(lv, "_post", lambda req, t: (_ for _ in ()).throw(_http_error(429)))
-    r = lv.ping_model("m/a", "k")
+    r = lv.ping_model("m/a", "k", "nvidia")
     assert r["status"] == "quota" and r["alive"] is False
 
 
@@ -100,7 +100,7 @@ def test_ping_network_error(env_key, monkeypatch):
     def boom(req, t):
         raise urllib.error.URLError("conn refused")
     monkeypatch.setattr(lv, "_post", boom)
-    r = lv.ping_model("m/a", "k")
+    r = lv.ping_model("m/a", "k", "nvidia")
     assert r["status"] == "network" and r["alive"] is False
 
 
@@ -114,7 +114,7 @@ def test_ping_request_body_shape(env_key, monkeypatch):
         return _FakeResp([b"data: [DONE]\n"])
 
     monkeypatch.setattr(lv, "_post", fake)
-    lv.ping_model("m/a", "k")
+    lv.ping_model("m/a", "k", "nvidia")
     b = captured["body"]
     assert b["max_tokens"] == 1 and b["stream"] is True and b["temperature"] == 0
     assert captured["auth"] == "Bearer k"  # header presente, key nunca impressa
@@ -170,7 +170,7 @@ def test_run_liveness_cache_same_day_no_reping(env_key, monkeypatch, tmp_out):
                        encoding="utf-8")
     calls = []
 
-    def fake_ping(mid, key, timeout):
+    def fake_ping(mid, key, provider="nvidia", timeout=25.0):
         calls.append(mid)
         return {"model_id": mid, "alive": True, "status": "ok", "http_code": 200,
                 "ttft_ms": 100, "total_ms": 120}
@@ -184,8 +184,10 @@ def test_run_liveness_cache_same_day_no_reping(env_key, monkeypatch, tmp_out):
 def test_run_liveness_force_repings_and_persists(env_key, monkeypatch, tmp_out, tmp_path):
     monkeypatch.setattr(lv, "fetch_catalog_ids", lambda key: ["m/one", "m/two"])
     monkeypatch.setattr(lv, "load_metadata", lambda: {})
+    monkeypatch.setattr(lv, "CONSOLIDATED_PATH", tmp_path / "empty_cons.json")
+    (tmp_path / "empty_cons.json").write_text(json.dumps({"ranked": [], "non_ranked": []}), encoding="utf-8")
 
-    def fake_ping(mid, key, timeout):
+    def fake_ping(mid, key, provider="nvidia", timeout=25.0):
         alive = mid == "m/one"
         return {"model_id": mid, "alive": alive, "status": "ok" if alive else "gone",
                 "http_code": 200 if alive else 410, "ttft_ms": 100 if alive else None,
@@ -201,13 +203,15 @@ def test_run_liveness_force_repings_and_persists(env_key, monkeypatch, tmp_out, 
 
 # ---------------------------------------------------------------- anomalias / resumo
 
-def test_anomalies_new_dead_detected(monkeypatch, tmp_out):
+def test_anomalies_new_dead_detected(monkeypatch, tmp_out, tmp_path):
     yesterday_ok = {"date": "2000-01-01", "alive_count": 2, "results": [
         {"model_id": "m/one", "alive": True}, {"model_id": "m/two", "alive": True}]}
     monkeypatch.setattr(lv, "fetch_catalog_ids", lambda key: ["m/one", "m/two"])
     monkeypatch.setattr(lv, "load_metadata", lambda: {})
+    monkeypatch.setattr(lv, "CONSOLIDATED_PATH", tmp_path / "empty_cons.json")
+    (tmp_path / "empty_cons.json").write_text(json.dumps({"ranked": [], "non_ranked": []}), encoding="utf-8")
 
-    def fake_ping(mid, key, timeout):
+    def fake_ping(mid, key, provider="nvidia", timeout=25.0):
         dead = mid == "m/two"
         return {"model_id": mid, "alive": not dead, "status": "gone" if dead else "ok",
                 "http_code": 410 if dead else 200, "ttft_ms": 100, "total_ms": 150}

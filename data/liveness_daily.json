@@ -1,17 +1,41 @@
 {
   "date": "2026-11-01",
-  "generated_at": "2026-11-01T11:12:55.920087+00:00",
+  "generated_at": "2026-11-01T14:44:56.976816+00:00",
   "source": "integrate.api.nvidia.com/v1/models + models.dev",
   "total_catalog": 85,
-  "total_candidates": 109,
-  "alive_count": 15,
-  "dead_count": 94,
+  "total_candidates": 114,
+  "alive_count": 41,
+  "dead_count": 73,
   "recommended": "nvidia/nemotron-3.5-super-vl-120b-a12b",
   "new_dead": [],
   "new_alive": [
-    "nvidia/nemotron-parse-2.0",
-    "stepfun-ai/step-5-preview",
-    "meta/llama-3.2-90b-vision-instruct"
+    "nvidia/nemotron-3.5-super-vl:free",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "nvidia/nemotron-3.5-lightning:free",
+    "nvidia/nemotron-3.5-content-safety:free",
+    "cohere/north-mini-code:free",
+    "nvidia/ising-calibration-1.5-31b",
+    "reflection/beam-free",
+    "stealth/glyph-cluster",
+    "kilo-auto/free",
+    "dots-studio/dots-3-note-preview:free",
+    "thinkingmachines/inkling-small:free",
+    "thinkingmachines/inkling:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "google/gemma-4-31b-it:free",
+    "openrouter/free",
+    "poolside/laguna-s-2.1",
+    "ornith/ornith-1.5-122b",
+    "stepfun/step-3.7-flash",
+    "xingchen-agi/xing4.0-29b-a4b:free",
+    "inclusionai/ling-3.1-flash-1019-free",
+    "reflection/beam-1.0-501b-a23b",
+    "liquid/lfm-2.5-2.6b:free",
+    "recursive/flint-v1.0:free",
+    "upstage/solar-mini4",
+    "google/lyria-3-clip-preview",
+    "google/lyria-3-pro-preview"
   ],
   "results": [
     {
@@ -19,135 +43,219 @@
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 934,
-      "total_ms": 934,
-      "score": 58.1
+      "ttft_ms": 921,
+      "total_ms": 922,
+      "score": 58.2
     },
     {
       "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1016,
-      "total_ms": 1016,
-      "score": 57.9
+      "ttft_ms": 975,
+      "total_ms": 975,
+      "score": 58.0
     },
     {
       "model_id": "nvidia/nemotron-3.5-lightning-30b-a3b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 749,
-      "total_ms": 749,
-      "score": 57.1
+      "ttft_ms": 651,
+      "total_ms": 651,
+      "score": 57.3
     },
     {
       "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 756,
-      "total_ms": 756,
-      "score": 57.0
+      "ttft_ms": 1076,
+      "total_ms": 1077,
+      "score": 56.4
     },
     {
       "model_id": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 2109,
-      "total_ms": 2109,
-      "score": 53.6
+      "ttft_ms": 848,
+      "total_ms": 848,
+      "score": 56.1
     },
     {
       "model_id": "nvidia/nemotron-3.5-bolt-e4b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 860,
-      "total_ms": 861,
-      "score": 53.3
+      "ttft_ms": 720,
+      "total_ms": 720,
+      "score": 53.6
     },
     {
       "model_id": "nvidia/nemotron-parse-2.0",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 801,
-      "total_ms": 801,
-      "score": 48.4
+      "ttft_ms": 807,
+      "total_ms": 807,
+      "score": 53.4
     },
     {
-      "model_id": "poolside/laguna-xs-2.1",
+      "model_id": "nvidia/nemotron-3.5-super-vl:free",
       "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 736,
-      "total_ms": 736,
-      "score": 27.1
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 30.0
     },
     {
-      "model_id": "meta/llama-guard-4-12b",
+      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
       "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 728,
-      "total_ms": 729,
-      "score": 26.6
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 30.0
     },
     {
-      "model_id": "google/diffusiongemma-26b-a4b-it",
+      "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
       "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1565,
-      "total_ms": 1565,
-      "score": 25.4
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 30.0
     },
     {
-      "model_id": "meta/muse-glimmer-30b",
+      "model_id": "nvidia/nemotron-3.5-lightning:free",
       "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1360,
-      "total_ms": 1569,
-      "score": 25.1
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 30.0
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-content-safety:free",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 30.0
     },
     {
       "model_id": "minimaxai/minimax-m3.1-flash",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 2298,
-      "total_ms": 2301,
-      "score": 24.0
+      "ttft_ms": 1090,
+      "total_ms": 1090,
+      "score": 26.4
     },
     {
-      "model_id": "stepfun-ai/step-5-preview",
+      "model_id": "meta/llama-guard-4-12b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 789,
-      "total_ms": 789,
-      "score": 23.4
+      "ttft_ms": 841,
+      "total_ms": 841,
+      "score": 26.4
     },
     {
-      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "model_id": "google/diffusiongemma-26b-a4b-it",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 2109,
-      "total_ms": 2109,
-      "score": 18.6
+      "ttft_ms": 1817,
+      "total_ms": 1817,
+      "score": 24.9
+    },
+    {
+      "model_id": "meta/muse-glimmer-30b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1987,
+      "total_ms": 2245,
+      "score": 23.9
     },
     {
       "model_id": "mistralai/mistral-large-4-1t-a52b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 3192,
-      "total_ms": 3193,
-      "score": 18.6
+      "ttft_ms": 1170,
+      "total_ms": 1170,
+      "score": 22.7
+    },
+    {
+      "model_id": "cohere/north-mini-code:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1145,
+      "total_ms": 1145,
+      "score": 17.7
+    },
+    {
+      "model_id": "nvidia/ising-calibration-1.5-31b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1187,
+      "total_ms": 1187,
+      "score": 17.6
+    },
+    {
+      "model_id": "reflection/beam-free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1443,
+      "total_ms": 1443,
+      "score": 17.1
+    },
+    {
+      "model_id": "stealth/glyph-cluster",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1434,
+      "total_ms": 1435,
+      "score": 17.1
+    },
+    {
+      "model_id": "kilo-auto/free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 2017,
+      "total_ms": 2018,
+      "score": 16.0
+    },
+    {
+      "model_id": "dots-studio/dots-3-note-preview:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 2818,
+      "total_ms": 2837,
+      "score": 14.4
+    },
+    {
+      "model_id": "poolside/laguna-xs-2.1",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 8.6
+    },
+    {
+      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 18610,
+      "total_ms": 18611,
+      "score": 7.8
     },
     {
       "model_id": "01-ai/yi-large",
@@ -422,14 +530,6 @@
       "score": -1.0
     },
     {
-      "model_id": "nvidia/ising-calibration-1.5-31b",
-      "alive": false,
-      "status": "network",
-      "http_code": null,
-      "error": "The read operation timed out",
-      "score": -1.0
-    },
-    {
       "model_id": "nvidia/llama-3.1-nemoguard-8b-content-safety",
       "alive": false,
       "status": "network",
@@ -590,22 +690,6 @@
       "score": -1.0
     },
     {
-      "model_id": "nvidia/riva-translate-4b-instruct",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "nvidia/riva-translate-4b-instruct-v2",
-      "alive": false,
-      "status": "network",
-      "http_code": null,
-      "error": "The read operation timed out",
-      "score": -1.0
-    },
-    {
       "model_id": "nvidia/vila",
       "alive": false,
       "status": "not_found",
@@ -627,6 +711,14 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "stepfun-ai/step-5-preview",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
       "score": -1.0
     },
     {
@@ -678,36 +770,20 @@
       "score": -1.0
     },
     {
-      "model_id": "minimaxai/minimax-m3",
-      "alive": false,
-      "status": "gone",
-      "http_code": 410,
-      "error": "Gone",
-      "score": -1.0
-    },
-    {
       "model_id": "thinkingmachines/inkling-small:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "nvidia/nemotron-3.5-super-vl:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "thinkingmachines/inkling:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "z-ai/glm-5.2",
@@ -715,14 +791,6 @@
       "status": "gone",
       "http_code": 410,
       "error": "Gone",
-      "score": -1.0
-    },
-    {
-      "model_id": "dots-studio/dots-3-note-preview:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
       "score": -1.0
     },
     {
@@ -735,59 +803,35 @@
     },
     {
       "model_id": "google/gemma-4-26b-a4b-it:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "google/gemma-4-31b-it:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
-      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "model_id": "minimaxai/minimax-m3",
       "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "stepfun/step-3.7-flash",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "reflection/beam-1.0-501b-a23b",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
+      "status": "gone",
+      "http_code": 410,
+      "error": "Gone",
       "score": -1.0
     },
     {
       "model_id": "openrouter/free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "nvidia/cosmos-reason2-8b",
@@ -798,68 +842,60 @@
       "score": -1.0
     },
     {
-      "model_id": "nvidia/nemotron-3.5-lightning:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
       "model_id": "poolside/laguna-s-2.1",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
-      "model_id": "upstage/solar-mini4",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "model_id": "ornith/ornith-1.5-122b",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
-      "model_id": "recursive/flint-v1.0:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "model_id": "stepfun/step-3.7-flash",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "xingchen-agi/xing4.0-29b-a4b:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
-      "model_id": "cohere/north-mini-code:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "model_id": "inclusionai/ling-3.1-flash-1019-free",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
+    },
+    {
+      "model_id": "reflection/beam-1.0-501b-a23b",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "liquid/lfm-2.5-2.6b:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "nvidia/nemotron-3.5-content-safety:free",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "nvidia/nemotron-3.5-content-safety",
@@ -870,20 +906,36 @@
       "score": -1.0
     },
     {
+      "model_id": "recursive/flint-v1.0:free",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
+    },
+    {
+      "model_id": "upstage/solar-mini4",
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
+    },
+    {
       "model_id": "google/lyria-3-clip-preview",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "google/lyria-3-pro-preview",
-      "alive": false,
-      "status": "not_found",
-      "http_code": 404,
-      "error": "Not Found",
-      "score": -1.0
+      "alive": true,
+      "status": "free",
+      "http_code": null,
+      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
+      "score": 0.0
     },
     {
       "model_id": "mistralai/mistral-7b-instruct-v0.3",
@@ -891,6 +943,22 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/riva-translate-4b-instruct",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "score": -1.0
+    },
+    {
+      "model_id": "nvidia/riva-translate-4b-instruct-v2",
+      "alive": false,
+      "status": "network",
+      "http_code": null,
+      "error": "The read operation timed out",
       "score": -1.0
     },
     {
