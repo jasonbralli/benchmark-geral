@@ -162,13 +162,25 @@ def derive_is_free(
     model_id: str,
     price_in: float | None,
     price_out: float | None,
+    live_free_ids: set[str] | None = None,
 ) -> bool:
-    """Resolve 'free' sem depender de tag do provider."""
+    """Resolve 'free' sem depender de tag do provider.
+
+    Ordem de decisão (primeira que bater vence):
+      1) provider 100% gratuito por política (nvidia, opencode-free)
+      2) Nous Portal: ID anunciado como freeRecommendedModels
+      3) conjunto dinâmico de IDs com preço 0 no catálogo live do provider
+      4) sufixo ':free' (colon) ou '-free' (hyphen, ex.: Kilo Code beam-free)
+      5) price_in == price_out == 0 (preço próprio do provider)
+    """
     if provider in ALL_FREE_PROVIDERS:
         return True
     if provider == "nous" and model_id.lower() in _NOUS_FREE_IDS:
         return True
-    if model_id.endswith(":free"):
+    if live_free_ids and model_id.lower() in live_free_ids:
+        return True
+    low = model_id.lower()
+    if low.endswith(":free") or low.endswith("-free"):
         return True
     if price_in is not None and price_in == 0 and price_out == 0:
         return True
@@ -418,7 +430,11 @@ def normalize_openrouter(
     return out
 
 
-def passthrough_ids(provider: str, ids: set[str] | list[str]) -> list[UnifiedModel]:
+def passthrough_ids(
+    provider: str,
+    ids: set[str] | list[str],
+    live_free_ids: set[str] | None = None,
+) -> list[UnifiedModel]:
     """Providers sem fonte de metadados: gera entries N/D (visíveis, não drop)."""
     out: list[UnifiedModel] = []
     for mid in sorted(set(ids)):
@@ -428,7 +444,7 @@ def passthrough_ids(provider: str, ids: set[str] | list[str]) -> list[UnifiedMod
             display_name=mid,
             source="hermes-cache-only",
         )
-        um.is_free = derive_is_free(provider, mid, None, None)
+        um.is_free = derive_is_free(provider, mid, None, None, live_free_ids)
         apply_canonical(um)
         out.append(um)
     return out
@@ -439,6 +455,7 @@ def passthrough_ids_enriched(
     ids: set[str] | list[str],
     meta_index: dict[str, dict[str, Any]],
     hermes_inventory: dict[str, set[str]] | None = None,
+    live_free_ids: set[str] | None = None,
 ) -> list[UnifiedModel]:
     """Passthrough IDs com cross-join de metadados do models_dev_cache.
 
@@ -486,7 +503,7 @@ def passthrough_ids_enriched(
                 display_name=mid,
                 source="hermes-cache-only",
             )
-            um.is_free = derive_is_free(provider, mid, None, None)
+            um.is_free = derive_is_free(provider, mid, None, None, live_free_ids)
             apply_canonical(um)
             out.append(um)
             continue
@@ -520,7 +537,7 @@ def passthrough_ids_enriched(
             knowledge_cutoff=meta.get("knowledge"),
             attachment=bool(meta["attachment"]) if "attachment" in meta else None,
         )
-        um.is_free = derive_is_free(provider, mid, None, None)
+        um.is_free = derive_is_free(provider, mid, None, None, live_free_ids)
         apply_canonical(um)
         out.append(um)
     return out

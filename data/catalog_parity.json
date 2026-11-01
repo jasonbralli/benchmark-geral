@@ -1,0 +1,44 @@
+{
+  "missing": 0,
+  "free_mismatch": 0,
+  "extra": 7,
+  "by_provider": {
+    "kilocode": {
+      "missing": [],
+      "free_mismatch": [],
+      "extra": [
+        "google/gemini-3-pro-preview",
+        "kilo-auto/custom/efficient"
+      ],
+      "live_total": 379,
+      "shown_total": 372,
+      "live_free_total": 17,
+      "shown_free_total": 17
+    },
+    "nous": {
+      "missing": [],
+      "free_mismatch": [],
+      "extra": [
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-xs-2.1"
+      ],
+      "live_total": 375,
+      "shown_total": 6,
+      "live_free_total": 4,
+      "shown_free_total": 6
+    },
+    "nvidia": {
+      "missing": [],
+      "free_mismatch": [],
+      "extra": [
+        "minimaxai/minimax-m3",
+        "z-ai/glm-5.2",
+        "z-ai/glm-5.3"
+      ],
+      "live_total": 85,
+      "shown_total": 87,
+      "live_free_total": 0,
+      "shown_free_total": 87
+    }
+  }
+}

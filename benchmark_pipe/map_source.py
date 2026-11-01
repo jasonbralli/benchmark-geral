@@ -50,6 +50,154 @@ NOUS_RECOMMENDED_DISK_CACHE = _get_nous_recommended_cache()
 NOUS_RECOMMENDED_API = "https://portal.nousresearch.com/api/nous/recommended-models"
 OPENROUTER_API = "https://openrouter.ai/api/v1/models"
 
+# Catálogos live dos providers sem fonte nativa de metadados no models.dev nvidia
+# (Kilo Code, Nous Portal). Usados para: (a) preço real -> is_free confiável,
+# (b) ctx/tool_call/reasoning para modelos que faltam no models.dev (ex.: Ornith).
+from .catalog import fetch_catalog, catalog_ids, is_zero_priced, KILO_API, NOUS_API  # noqa: E402
+
+NOUS_METADATA_CACHE = Path(__file__).parent.parent / "data" / "nous_models_raw.json"
+KILO_METADATA_CACHE = Path(__file__).parent.parent / "data" / "kilo_models_raw.json"
+
+
+def fetch_nous_metadata(use_cache: bool = True) -> dict[str, dict[str, Any]]:
+    """Catálogo live do Nous Portal: {model_id: metadado funcional}.
+
+    Campos úteis: id, name, context_length, pricing, architecture, supported_parameters,
+    reasoning. Preço vem do provider (fonte de verdade p/ is_free do Nous).
+    """
+    items = fetch_catalog("nous", use_cache=use_cache)
+    out: dict[str, dict[str, Any]] = {}
+    for it in items:
+        mid = it.get("id")
+        if not mid:
+            continue
+        pricing = it.get("pricing") or {}
+        arch = it.get("architecture") or {}
+        out[mid] = {
+            "id": mid,
+            "name": it.get("name") or mid,
+            "context_length": it.get("context_length"),
+            "price_in": _to_usd_m(pricing.get("prompt")),
+            "price_out": _to_usd_m(pricing.get("completion")),
+            "modalities_in": arch.get("input_modalities") or [],
+            "modalities_out": arch.get("output_modalities") or [],
+            "tool_call": "tools" in (it.get("supported_parameters") or []),
+            "reasoning": "reasoning" in (it.get("supported_parameters") or []),
+            "attachment": bool(it.get("isCustomLlm")) or "image" in (arch.get("input_modalities") or []),
+        }
+    logger.info("Nous metadata live: %d modelos", len(out))
+    return out
+
+
+def fetch_kilocode_metadata(use_cache: bool = True) -> dict[str, dict[str, Any]]:
+    """Catálogo live do Kilo Code: {model_id: metadado funcional}."""
+    items = fetch_catalog("kilocode", use_cache=use_cache)
+    out: dict[str, dict[str, Any]] = {}
+    for it in items:
+        mid = it.get("id")
+        if not mid:
+            continue
+        pricing = it.get("pricing") or {}
+        arch = it.get("architecture") or {}
+        out[mid] = {
+            "id": mid,
+            "name": it.get("name") or mid,
+            "context_length": it.get("context_length"),
+            "price_in": _to_usd_m(pricing.get("prompt")),
+            "price_out": _to_usd_m(pricing.get("completion")),
+            "modalities_in": arch.get("input_modalities") or [],
+            "modalities_out": arch.get("output_modalities") or [],
+            "tool_call": "tools" in (it.get("supported_parameters") or []),
+            "reasoning": "reasoning" in (it.get("supported_parameters") or []),
+            "attachment": "image" in (arch.get("input_modalities") or []),
+        }
+    logger.info("Kilo metadata live: %d modelos", len(out))
+    return out
+
+
+def _to_usd_m(tok_price: str | float | None) -> float | None:
+    if tok_price is None:
+        return None
+    try:
+        return round(float(tok_price) * 1_000_000, 6)
+    except (TypeError, ValueError):
+        return None
+
+
+def _family_key(model_id: str) -> str:
+    """Nome base da família: remove sufixos de variante/versão/parametro.
+
+    mistralai/mistral-large-4-1t-a52b -> mistral-large-4
+    ornith-ai/ornith-1.5-122b -> ornith-1-5-122b
+    """
+    import re as _re
+
+    s = model_id.split("/")[-1].lower().split("@")[0]
+    token = _re.compile(
+        r"[-_.](?:1t|a\d+b|b\d+a\d+b|m\d+b|\d{1,2}b|v\d+(?:\.\d+)*|instruct|chat|it|preview|latest|free|tuned)$",
+        _re.I,
+    )
+    for _ in range(5):
+        new = token.sub("", s)
+        if new == s:
+            break
+        s = new
+    return _re.sub(r"[-_.]+", "-", s).strip("-")
+
+
+def resolve_nvidia_family(
+    model_id: str,
+    models_dev_index: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Resolve metadados de um modelo NVIDIA ausente do bloco nvidia do models.dev
+    por correspondência de família (nome base) entre TODOS os providers do
+    models.dev_cache.
+
+    Usa MODO (valor mais frequente) de ctx e tool_call entre os candidatos da
+    família, em vez de exigir unanimidade — provedores distintos podem expor
+    janelas de contexto diferentes para o mesmo modelo lógico.
+
+    Retorna meta dict (sem preço — preço NVIDIA é por-conta) ou None.
+    """
+    if "/" not in model_id:
+        return None
+    fkey = _family_key(model_id)
+    cands = [
+        m for mid, m in models_dev_index.items()
+        if isinstance(mid, str) and isinstance(m, dict) and _family_key(mid) == fkey
+    ]
+    if not cands:
+        return None
+
+    def _mode(vals):
+        from collections import Counter as _C
+        common = _C(v for v in vals if v is not None).most_common(1)
+        return common[0][0] if common else None
+
+    ctxs = [((m.get("limit") or {}).get("context")) for m in cands
+            if isinstance(m.get("limit"), dict) and (m.get("limit") or {}).get("context")]
+    tools = [m.get("tool_call") for m in cands if "tool_call" in m]
+    ctx = _mode(ctxs)
+    tool = _mode(tools)
+    if ctx is None and tool is None:
+        return None
+
+    meta: dict[str, Any] = {}
+    for m in cands:
+        for k, v in m.items():
+            if k == "cost":
+                continue
+            if k not in meta or meta[k] in (None, "", [], {}):
+                meta[k] = v
+    meta["limit"] = {"context": ctx} if ctx is not None else {}
+    if tool is not None:
+        meta["tool_call"] = tool
+    meta["_family_candidates"] = len(cands)
+    return meta
+
+
+
+
 def fetch_nous_free_ids(use_cache: bool = True) -> set[str]:
     """Retorna IDs free do Nous Portal (freeRecommendedModels).
 

@@ -89,8 +89,14 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     from benchmark_pipe.build import build_dashboard
     from benchmark_pipe.enrich import enrich_unified
     from benchmark_pipe.extract import extract_provider_models
-    from benchmark_pipe.map_source import build_metadata_index
+    from benchmark_pipe.map_source import (
+        build_metadata_index,
+        fetch_kilocode_metadata,
+        fetch_nous_metadata,
+        resolve_nvidia_family,
+    )
     from benchmark_pipe.normalize import normalize_nvidia, normalize_openrouter
+    from benchmark_pipe.reconcile import format_report, reconcile
     from benchmark_pipe.score import score_models
 
     if not inventory:
@@ -120,30 +126,106 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     except Exception as e:  # noqa: BLE001
         logger.warning("fetch_nous_free_ids falhou (%s); Nous seguirá sem tier free", e)
 
+    # Metadados live dos providers sem fonte nativa (Nous, Kilo Code).
+    # Fonte de preço real -> is_free confiável; ctx/tool_call para modelos
+    # ausentes do models.dev (ex.: Ornith no Nous).
+    kilo_free_ids: set[str] = set()
+    nous_free_ids_live: set[str] = set()
+    try:
+        nous_meta = fetch_nous_metadata(use_cache=use_cache)
+        kilo_meta = fetch_kilocode_metadata(use_cache=use_cache)
+        for mid, m in kilo_meta.items():
+            if m.get("price_in") == 0 and m.get("price_out") == 0:
+                kilo_free_ids.add(mid)
+        for mid, m in nous_meta.items():
+            if m.get("price_in") == 0 and m.get("price_out") == 0:
+                nous_free_ids_live.add(mid)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("metadata live falhou (%s); Nous/Kilo seguem sem preço real", e)
+        nous_meta = {}
+        kilo_meta = {}
+
     metadata = build_metadata_index(inventory, use_cache=use_cache)
 
-    # Cross-join de metadados: índice global reutilizado p/ missing NVIDIA
+    # Cross-join de metadados: índice global (models.dev) + metadados live
+    # de Nous/Kilo Code (preço real + campos funcionais).
     from benchmark_pipe.map_source import _load_models_dev_index
     models_dev_index = _load_models_dev_index()
+    merged_meta = dict(models_dev_index)
+    merged_meta.update(nous_meta)
+    merged_meta.update(kilo_meta)
 
     # Providers com fonte -> normaliza (com merge Hermes IDs × metadados)
     all_models = []
     nv_raw = metadata.get("nvidia", [])
     nvidia_models = normalize_nvidia(nv_raw, hermes_inventory=inventory)
     # Single source of IDs = Hermes cache. IDs do Hermes sem metadados em
-    # models_dev (antigos/deprecados) viram passthrough N/D — nunca drop.
+    # models_dev (antigos/deprecados) tentam resolução por família (ex.:
+    # mistralai/mistral-large-4-1t-a52b -> família mistral-large-4) e,
+    # falhando, viram passthrough N/D — nunca drop.
     nv_meta_ids = {m.model_id for m in nvidia_models}
     nvidia_missing = set(inventory.get("nvidia", set())) - nv_meta_ids
     all_models += nvidia_models
-    all_models += passthrough_ids_enriched("nvidia", nvidia_missing, models_dev_index, hermes_inventory=inventory)
+    nvidia_resolved: list = []
+    for mid in sorted(nvidia_missing):
+        fam = resolve_nvidia_family(mid, models_dev_index)
+        if fam:
+            from benchmark_pipe.normalize import (
+                UnifiedModel,
+                apply_canonical,
+                derive_is_free,
+            )
+            limit = fam.get("limit") or {}
+            ctx = limit.get("context")
+            modalities = fam.get("modalities") or {}
+            um = UnifiedModel(
+                provider="nvidia",
+                model_id=mid,
+                display_name=fam.get("name") or mid,
+                context_k=(ctx // 1024) if isinstance(ctx, int) else None,
+                tool_call=fam.get("tool_call"),
+                reasoning=fam.get("reasoning"),
+                multimodal=fam.get("attachment")
+                or "image" in (modalities.get("input") or []),
+                open_weights=fam.get("open_weights"),
+                family=fam.get("family"),
+                structured_output=fam.get("structured_output"),
+                price_in=None,
+                price_out=None,
+                is_free=derive_is_free("nvidia", mid, None, None),
+                source="models.dev-family",
+                release_date=fam.get("release_date"),
+                modalities_in=fam.get("modalities_in"),
+                modalities_out=fam.get("modalities_out"),
+                max_output_tokens=limit.get("output"),
+                knowledge_cutoff=fam.get("knowledge"),
+                attachment=fam.get("attachment"),
+            )
+            apply_canonical(um)
+            nvidia_resolved.append(um)
+    all_models += nvidia_resolved
+    nvidia_still_missing = nvidia_missing - {m.model_id for m in nvidia_resolved}
+    all_models += passthrough_ids_enriched(
+        "nvidia", nvidia_still_missing, models_dev_index, hermes_inventory=inventory
+    )
 
     or_raw = metadata.get("openrouter", [])
     all_models += normalize_openrouter(or_raw, meta_index=models_dev_index)
 
-    # Providers sem fonte -> passthrough com cross-join de metadados
+    # Providers sem fonte -> passthrough com metadados live (preço real p/ is_free)
     no_source = [p for p in inventory if p not in ("nvidia", "openrouter")]
+    live_free = {
+        "kilocode": kilo_free_ids,
+        "nous": nous_free_ids_live,
+    }
     for prov in no_source:
-        all_models += passthrough_ids_enriched(prov, inventory[prov], models_dev_index, hermes_inventory=inventory)
+        all_models += passthrough_ids_enriched(
+            prov,
+            inventory[prov],
+            merged_meta,
+            hermes_inventory=inventory,
+            live_free_ids=live_free.get(prov),
+        )
 
     # Dedup intra-provider (provider + canonical + variant) antes do enrich
     from benchmark_pipe.normalize import dedup_models
@@ -163,6 +245,23 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
     )
 
     out = build_dashboard(ranked, non_ranked)
+
+    # Guarda de paridade: compara o dashboard com os catálogos live. Qualquer
+    # divergência (modelo do provider sem display, preço 0 fora do filtro FREE)
+    # é registrada em data/catalog_parity.json e lançada como alerta no cron.
+    try:
+        from benchmark_pipe.catalog import fetch_all
+        live_catalogs = fetch_all(use_cache=use_cache)
+        parity = reconcile(all_models, live_catalogs, hermes_inventory=inventory)
+        parity_path = Path("data") / "catalog_parity.json"
+        parity_path.parent.mkdir(parents=True, exist_ok=True)
+        parity_path.write_text(
+            json.dumps(parity, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        for line in format_report(parity):
+            logger.info("paridade: %s", line)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("reconciliação de catálogo falhou (não bloqueia): %s", e)
 
     if out_json is not None:
         payload = {

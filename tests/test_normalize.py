@@ -179,6 +179,41 @@ def test_passthrough_marks_nvidia_free_but_not_openrouter():
     assert out2[0].source == "hermes-cache-only"
 
 
+
+def test_free_hyphen_suffix_kilocode():
+    """Kilo Code usa '-free' (hyphen) em vez de ':free' (colon)."""
+    assert derive_is_free("kilocode", "reflection/beam-free", None, None) is True
+    assert derive_is_free("kilocode", "inclusionai/ling-3.1-flash-1019-free", None, None) is True
+
+
+def test_free_hyphen_suffix_not_confused_with_paid():
+    """'-free' só no final do ID; '-free-preview' não conta como free tag,
+    mas também não é pago só por isso — cabe ao preço/live_free_ids."""
+    assert derive_is_free("kilocode", "google/gemini-3-pro-image-preview", None, None) is False
+
+
+def test_live_free_ids_override_marks_free():
+    """Conjunto live (preço 0 do catálogo) marca free mesmo sem sufixo."""
+    assert derive_is_free("kilocode", "reflection/beam-free", None, None,
+                          live_free_ids={"reflection/beam-free"}) is True
+    assert derive_is_free("kilocode", "inclusionai/ling-3.1-flash", None, None,
+                          live_free_ids={"inclusionai/ling-3.1-flash"}) is True
+
+
+def test_live_free_ids_wins_over_paid_price():
+    """Se o catálogo live diz que é free, vence sobre preço pago."""
+    assert derive_is_free("kilocode", "x/y", 0.5, 1.5,
+                          live_free_ids={"x/y"}) is True
+
+
+def test_passthrough_kilocode_free_via_live():
+    out = passthrough_ids("kilocode", {"reflection/beam-free", "anthropic/claude-5"},
+                          live_free_ids={"reflection/beam-free"})
+    free_ids = {m.model_id for m in out if m.is_free}
+    paid_ids = {m.model_id for m in out if not m.is_free}
+    assert free_ids == {"reflection/beam-free"}
+    assert paid_ids == {"anthropic/claude-5"}
+
 # ---------- dedup intra-provider (regressões do relato) ----------
 
 def test_dedup_deepseek_intra_nvidia_collapses():
