@@ -48,8 +48,8 @@ def _load_provider_health() -> dict | None:
         return None
 
 
-def _load_liveness() -> dict[str, str]:
-    """Le data/liveness_daily.json e mapeia model_id -> 'ok'|'dead'|None.
+def _load_liveness() -> dict[str, dict]:
+    """Le data/liveness_daily.json e mapeia model_id -> {"status": "ok"|"dead", "ttft_ms": int|None}.
 
     Best-effort: ausente/ilegivel = todos None (dashboard nao quebra).
     So modelos do catálogo NIM testados pelo liveness recebem marca.
@@ -61,12 +61,15 @@ def _load_liveness() -> dict[str, str]:
         d = json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         return {}
-    out: dict[str, str] = {}
+    out: dict[str, dict] = {}
     for r in d.get("results", []) or []:
         mid = r.get("model_id")
         if not mid:
             continue
-        out[mid] = "ok" if r.get("alive") else "dead"
+        out[mid] = {
+            "status": "ok" if r.get("alive") else "dead",
+            "ttft_ms": r.get("ttft_ms"),
+        }
     return out
 
 
@@ -86,8 +89,8 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
     _LIVENESS = _load_liveness()
 
     def _LIVENESS_SUMMARY() -> dict:
-        ok = [mid for mid, s in _LIVENESS.items() if s == "ok"]
-        dead = [mid for mid, s in _LIVENESS.items() if s == "dead"]
+        ok = [mid for mid, v in _LIVENESS.items() if v.get("status") == "ok"]
+        dead = [mid for mid, v in _LIVENESS.items() if v.get("status") == "dead"]
         try:
             d = json.loads(
                 (ROOT / "data" / "liveness_daily.json").read_text(encoding="utf-8")
@@ -111,6 +114,10 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
         _lv = _LIVENESS.get(m.model_id)
         if _lv is None and getattr(m, "canonical_id", None):
             _lv = _LIVENESS.get(m.canonical_id)
+        lv_status = _lv.get("status") if _lv else None
+        # TTFT real medido no ping de liveness (ms -> s) sobrepoe a estimativa AA
+        lv_ttft_ms = _lv.get("ttft_ms") if _lv else None
+        ttft_s = (lv_ttft_ms / 1000.0) if lv_ttft_ms is not None else m.ttft_s
         stars = aa_to_stars(m.aa_index)
         return {
             "rank": rank,
@@ -135,7 +142,7 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "release_date": m.release_date,
             # v2.5: métricas AA e capabilities
             "speed_tps": m.speed_tps,
-            "ttft_s": m.ttft_s,
+            "ttft_s": ttft_s,
             "e2e_s": m.e2e_s,
             "coding_index": m.coding_index,
             "agentic_index": m.agentic_index,
@@ -149,7 +156,7 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "aliases": m.aliases,
             "divergences": m.divergences,
             # liveness diário (prova real de modelo vivo/morto)
-            "liveness": _lv,
+            "liveness": lv_status,
         }
 
     return {
