@@ -115,9 +115,24 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
         if _lv is None and getattr(m, "canonical_id", None):
             _lv = _LIVENESS.get(m.canonical_id)
         lv_status = _lv.get("status") if _lv else None
-        # TTFT real medido no ping de liveness (ms -> s) sobrepoe a estimativa AA
+        # TTFT real medido no ping de liveness (ms -> s) sobrepoe a estimativa AA.
+        # INVARIANTE: modelo vivo ("ok") sempre tem TTFT medido; se não há medição
+        # nem do liveness nem do AA, fica N/D e o modelo não é "ok".
         lv_ttft_ms = _lv.get("ttft_ms") if _lv else None
-        ttft_s = (lv_ttft_ms / 1000.0) if lv_ttft_ms is not None else m.ttft_s
+        ttft_source = None
+        if lv_ttft_ms is not None:
+            ttft_s = lv_ttft_ms / 1000.0
+            ttft_source = "liveness"
+        elif m.ttft_s is not None:
+            ttft_s = m.ttft_s
+            ttft_source = "aa"
+        else:
+            ttft_s = None
+            # Modelo sem medição de lugar nenhum não pode ser "ok" (vivo sem TTFT
+            # é incoerente; a liveness já o classifica "unverified" quando há
+            # confirmação no catálogo live).
+            if lv_status == "ok":
+                lv_status = "unverified"
         stars = aa_to_stars(m.aa_index)
         return {
             "rank": rank,
@@ -157,6 +172,8 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "divergences": m.divergences,
             # liveness diário (prova real de modelo vivo/morto)
             "liveness": lv_status,
+            "liveness_measured": bool(lv_status == "ok"),
+            "ttft_source": ttft_source,
         }
 
     return {

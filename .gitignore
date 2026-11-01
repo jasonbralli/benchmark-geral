@@ -43,3 +43,7 @@ index.html
 CLAUDE.md
 AGENTS.md
 data/liveness_daily.json
+# Caches de catálogo live (regenerados pelo liveness/catálogo)
+data/kilo_models_raw.json
+data/nous_models_raw.json
+data/openrouter_liveness_raw.json

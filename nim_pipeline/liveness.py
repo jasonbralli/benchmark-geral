@@ -89,7 +89,147 @@ CHAT_ENDPOINTS: dict[str, tuple[str, str | None]] = {
     "nvidia": (NIM_CHAT_URL, "Bearer"),
     "kilocode": ("https://api.kilo.ai/api/gateway/chat/completions", None),
     "nous": ("https://inference-api.nousresearch.com/v1/chat/completions", "Bearer"),
+    "openrouter": ("https://openrouter.ai/api/v1/chat/completions", "Bearer"),
 }
+
+# Chave do catálogo live por provider — usada para resolver o ID REAL de ping.
+PROVIDER_CATALOG_KEY: dict[str, str] = {
+    "kilocode": "kilocode",
+    "nous": "nous",
+    "nvidia": "nvidia-nim",
+    "openrouter": "openrouter",
+}
+
+# Env var com a chave de cada provider (lida do env e do .env do Hermes).
+PROVIDER_KEY_ENV: dict[str, str] = {
+    "kilocode": "KILOCODE_API_KEY",
+    "nous": "NOUS_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+}
+
+# Provider usado como rota ALTERNATIVA de medição quando a rota direta do
+# provider exige autenticação/pagamento que não temos (ex.: free do Nous
+# protegido por x402). A variante canônica do mesmo modelo é medida no
+# OpenRouter e o resultado fica com measured_via="openrouter" — a origem
+# da medição é sempre explícita, nunca implícita.
+FALLBACK_ROUTE_PROVIDERS: dict[str, str] = {"nous": "openrouter"}
+
+# Status transitórios: valem RETRY (o provider está saturado, não o modelo morto).
+TRANSIENT_STATUSES = {"quota", "server", "network"}
+RETRY_ATTEMPTS = 3
+RETRY_BACKOFF_S = (3.0, 9.0)
+SLEEP = time.sleep
+
+# Sufixos de variante que o mesmo modelo lógico pode assumir entre o
+# consolidated e o catálogo live do provider (ex.: "ornith/ornith-1.5-122b"
+# no dashboard vs "ornith/ornith-1.5-122b:free" no catálogo Nous).
+_VARIANT_SUFFIXES = (":free", "-free")
+
+
+def _norm_id(mid: str) -> str:
+    """ID normalizado (minúsculo, sem sufixo de variante)."""
+    s = (mid or "").strip().lower()
+    for suf in _VARIANT_SUFFIXES:
+        if s.endswith(suf):
+            return s[: -len(suf)]
+    return s
+
+
+def resolve_ping_id(model_id: str, provider: str, live_ids: set[str]) -> str:
+    """Resolve o ID REAL do modelo no catálogo live do provider.
+
+    O consolidated guarda IDs canônicos (ex.: "ornith/ornith-1.5-122b")
+    enquanto o provider publica variantes (ex.: "ornith/ornith-1.5-122b:free").
+    Sem essa resolução o ping recebia 404 e o modelo era liberado pelo
+    fallback SEM medição —表现为 vivo sem TTFT.
+
+    Ordem: id exato no catálogo -> id canônico -> variantes :free / -free.
+    Se nada casar, devolve o id original (o ping decide).
+    """
+    if not live_ids:
+        return model_id
+    if model_id in live_ids:
+        return model_id
+    norm_to_live = {_norm_id(i): i for i in live_ids}
+    hit = norm_to_live.get(_norm_id(model_id))
+    if hit:
+        return hit
+    base = _norm_id(model_id)
+    for suf in _VARIANT_SUFFIXES:
+        cand = f"{base}{suf}"
+        if cand in live_ids:
+            return cand
+    return model_id
+
+
+def _read_env_value(name: str) -> str | None:
+    """Lê um valor do env e, depois, do .env do Hermes. Nunca imprime."""
+    v = (os.environ.get(name) or "").strip()
+    if v:
+        return v
+    try:
+        if HERMES_ENV.exists():
+            for line in HERMES_ENV.read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith(name + "="):
+                    return line.split("=", 1)[1].strip().strip('"').strip("'") or None
+    except OSError:
+        pass
+    return None
+
+
+def read_provider_key(provider: str) -> str | None:
+    """Chave de API do provider para o ping (nunca exposta em log/JSON).
+
+    Kilo Code aceita ping sem chave (gateway público) mas a chave própria
+    evita o rate-limit anônimo. Nous exige chave; sem ela o modelo free
+    fica bloqueado (x402) e o ping é registrado como bloqueio real.
+    """
+    if provider == "nvidia":
+        try:
+            return read_api_key()
+        except RuntimeError:
+            return None
+    if provider in PROVIDER_KEY_ENV:
+        key = _read_env_value(PROVIDER_KEY_ENV[provider])
+        if key:
+            return key
+    if provider == "nous":
+        # Token OAuth do pool de credenciais do Hermes (quando válido).
+        try:
+            auth = Path(os.environ.get("LOCALAPPDATA", "")) / "hermes" / "auth.json"
+            if auth.exists():
+                d = json.loads(auth.read_text(encoding="utf-8"))
+                nous = ((d.get("providers") or {}).get("nous") or {})
+                tok = nous.get("access_token")
+                if tok:
+                    return tok
+        except Exception:  # noqa: BLE001 — best-effort
+            pass
+    return None
+
+
+def fetch_live_catalog(provider: str) -> tuple[set[str], set[str]]:
+    """(ids do catálogo live, ids free normalizados) do provider.
+
+    Best-effort: em falha de rede devolve conjuntos vazios (o ping segue
+    com o id original).
+    """
+    key = PROVIDER_CATALOG_KEY.get(provider)
+    if not key:
+        return set(), set()
+    try:
+        from benchmark_pipe.catalog import catalog_ids, fetch_catalog, is_zero_priced
+    except Exception:  # noqa: BLE001
+        return set(), set()
+    try:
+        items = fetch_catalog(key, use_cache=False, timeout=20)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("catálogo live %s indisponível (%s)", provider, e)
+        return set(), set()
+    ids = catalog_ids(items)
+    free = {_norm_id(str(i["id"])) for i in items
+            if isinstance(i, dict) and i.get("id") and is_zero_priced(i)}
+    return ids, free
 
 
 def _chat_url(provider: str) -> str:
@@ -165,10 +305,12 @@ def ping_model(
                         ttft_ms = (time.monotonic() - t0) * 1000.0
         total_ms = (time.monotonic() - t0) * 1000.0
         return {
-            "model_id": model_id, "alive": True, "status": "ok",
+            "model_id": model_id, "alive": True,
+            "status": "ok" if ttft_ms is not None else "ok_empty",
             "http_code": 200,
             "ttft_ms": round(ttft_ms) if ttft_ms is not None else None,
             "total_ms": round(total_ms),
+            "measured": ttft_ms is not None,
         }
     except urllib.error.HTTPError as e:
         e.close()
@@ -182,6 +324,34 @@ def ping_model(
             "model_id": model_id, "alive": False, "status": "network",
             "http_code": None, "error": str(e)[:120],
         }
+
+
+def ping_with_retry(
+    model_id: str,
+    api_key: str | None,
+    provider: str = "nvidia",
+    timeout: float = TIMEOUT_S,
+    attempts: int = RETRY_ATTEMPTS,
+    ping_fn: Callable | None = None,
+) -> dict:
+    """Ping com repetição em status TRANSITÓRIOS (429/5xx/rede).
+
+    Sem isso, o rate-limit do gateway compartilhado (ex.: Kilo Code
+    respondendo 429 TOKEN_LIMIT_EXCEEDED sob carga) derrubava o modelo
+    como se ele estivesse morto — e ele voltava sem TTFT medido.
+    """
+    fn = ping_fn or ping_model
+    res = fn(model_id, api_key, provider=provider, timeout=timeout)
+    used = 1
+    while (not res.get("alive")
+           and res.get("status") in TRANSIENT_STATUSES
+           and used < attempts):
+        delay = RETRY_BACKOFF_S[min(used - 1, len(RETRY_BACKOFF_S) - 1)]
+        SLEEP(delay)
+        res = fn(model_id, api_key, provider=provider, timeout=timeout)
+        used += 1
+    res["attempts"] = used
+    return res
 
 
 def fetch_catalog_ids(api_key: str) -> list[str]:
@@ -364,22 +534,79 @@ def run_liveness(
     prev_alive = {r.get("model_id") for r in (prev or {}).get("results", [])
                   if r.get("alive")}
 
+    # Provider fallback (rota alternativa de medição) por provider primário.
+    fallback_provider_of: dict[str, str] = dict(FALLBACK_ROUTE_PROVIDERS)
+
+    # Catálogos live por provider: resolvem o ID REAL de ping (o consolidated
+    # guarda o id canônico; o provider publica a variante, ex.: ":free") e
+    # dizem quais modelos são free de fato (preço 0/0 no catálogo).
+    live_ids_by_provider: dict[str, set[str]] = {}
+    live_free_by_provider: dict[str, set[str]] = {}
+    all_providers = ({provider_of.get(m, "nvidia") for m in cands}
+                     | set(fallback_provider_of.values()))
+    for prov in sorted(all_providers):
+        lids, lfree = fetch_live_catalog(prov)
+        live_ids_by_provider[prov] = lids
+        live_free_by_provider[prov] = lfree
+        logger.info("catálogo live %s: %d ids (%d free)", prov, len(lids), len(lfree))
+
+    provider_keys: dict[str, str | None] = {}
+    for prov in all_providers:
+        provider_keys[prov] = read_provider_key(prov)
+
     def _ping_one(mid: str) -> dict:
-        return ping(mid, key, provider=provider_of.get(mid, "nvidia"), timeout=timeout)
+        prov = provider_of.get(mid, "nvidia")
+        ping_id = resolve_ping_id(mid, prov, live_ids_by_provider.get(prov) or set())
+        # A chave é SEMPRE a do provider alvo: a key da NVIDIA NUNCA é
+        # enviada a endpoints de terceiros (Kilo/Nous/OpenRouter).
+        res = ping_with_retry(ping_id, provider_keys.get(prov),
+                              provider=prov, timeout=timeout, ping_fn=ping)
+        res["model_id"] = mid            # id do consolidated (chave do dashboard)
+        res["provider"] = prov
+        res["pinged_id"] = ping_id       # id realmente enviado ao provider
+        res["measured"] = bool(res.get("ttft_ms") is not None)
+        res["status_before"] = res.get("status")
+
+        # Rota alternativa: se a rota primária falhou por auth/pagamento e o
+        # mesmo modelo existe (variante canônica) no provider alternativo,
+        # mede lá. A origem fica explícita em measured_via.
+        if not res.get("alive") and res.get("status") in ("auth", "forbidden", "bad_request"):
+            alt = fallback_provider_of.get(prov)
+            if alt and provider_keys.get(alt):
+                alt_id = resolve_ping_id(mid, alt, live_ids_by_provider.get(alt) or set())
+                alt_res = ping_with_retry(alt_id, provider_keys.get(alt),
+                                          provider=alt, timeout=timeout, ping_fn=ping)
+                if alt_res.get("alive") and alt_res.get("ttft_ms") is not None:
+                    alt_res["model_id"] = mid
+                    alt_res["provider"] = prov
+                    alt_res["pinged_id"] = alt_id
+                    alt_res["measured"] = True
+                    alt_res["measured_via"] = alt
+                    alt_res["primary_status"] = res.get("status")
+                    alt_res["primary_http_code"] = res.get("http_code")
+                    return alt_res
+                # alternativa falhou: guarda o detalhe como diagnóstico
+                res["fallback_status"] = alt_res.get("status")
+                res["fallback_http_code"] = alt_res.get("http_code")
+        return res
 
     results: list[dict] = []
     with ThreadPoolExecutor(max_workers=workers) as ex:
         for res in ex.map(_ping_one, cands):
-            # Fallback free: provedores sem auth de ping (ex.: Nous) não podem
-            # ser verificados em tempo real; modelos confirmados como free no
-            # catálogo do próprio provider são considerados disponíveis.
+            # Fallback free: SEM ping de auth (o provider exige pagamento/x402
+            # ou credencial que não temos), o modelo é confirmado free pelo
+            # CATÁLOGO LIVE do próprio provider. Marcado como "unverified"
+            # (NÃO "ok"): não houve medição de TTFT, e o dashboard mostra a
+            # diferença explicitamente em vez de fingir um tempo de resposta.
+            prov = provider_of.get(res.get("model_id", ""), "nvidia")
             if (not res.get("alive")
-                    and provider_of.get(res["model_id"]) != "nvidia"
-                    and res["model_id"] in cons_free):
+                    and prov != "nvidia"
+                    and _norm_id(res.get("model_id", "")) in live_free_by_provider.get(prov, set())):
                 res["alive"] = True
-                res["status"] = "free"
-                res["http_code"] = None
-                res["error"] = "free-tier confirmado no catálogo do provider (sem ping de auth)"
+                res["status"] = "unverified"
+                res["measured"] = False
+                res["error"] = (f"free-tier confirmado no catálogo live do provider "
+                                f"(sem medição de TTFT: {res.get('status_before') or 'sem auth'})")
             res["score"] = score_model(res, metas.get(res["model_id"]),
                                        res["model_id"] in prev_alive)
             results.append(res)

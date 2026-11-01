@@ -97,6 +97,7 @@ tbody tr:hover { background: rgba(88,166,255,.04); }
 .rank.live { color: var(--free); font-weight: 700; }
 .rank.dead { color: var(--warn); font-weight: 700; }
 .rank.untested { color: var(--muted); opacity: 0.6; }
+.rank.unverified { color: var(--paid); font-weight: 700; }
 .score { font-weight: 700; color: var(--accent); }
 .stars { color: #e3b341; letter-spacing: 1px; }
 .mono  { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
@@ -287,6 +288,7 @@ mark { background: rgba(88,166,255,.25); color: inherit; padding: 0 1px; border-
         <label style="margin-right:10px"><input type="radio" name="liveness" value=""> todos</label>
         <label style="margin-right:10px"><input type="radio" name="liveness" value="ok"> <span style="color:#2e8b57">● vivos</span></label>
         <label style="margin-right:10px"><input type="radio" name="liveness" value="dead"> <span style="color:#c0392b">● mortos</span></label>
+        <label style="margin-right:10px"><input type="radio" name="liveness" value="unverified"> <span style="color:#d2992b">● sem medição</span></label>
       </fieldset>
     </fieldset>
   </div>
@@ -374,7 +376,13 @@ function numCell(v, unit, decimals){
   return '<span class="num-cell">'+n+(unit?'<span style="color:var(--muted);font-size:10px">'+unit+'</span>':'')+'</span>';
 }
 function speedCell(v){ return numCell(v, " t/s", v!=null&&v<10?2:0); }
-function ttftCell(v){ return numCell(v, "s", 1); }
+function ttftCell(v, src){
+  var cell = numCell(v, "s", 1);
+  if(v==null) return cell + '<span class="badge src" title="TTFT não medido (sem rota de ping disponível)">?</span>';
+  var badge = src==="liveness" ? '<span class="badge src" title="Medido no ping de hoje (liveness)">●</span>'
+             : src==="aa" ? '<span class="badge src" title="Estimativa AA Data API">○</span>'
+             : '';
+  return cell + badge;
 function maxOutCell(v){
   if(v==null) return '<span class="nd-text">N/D</span>';
   return '<span class="num-cell">'+(v>=1000000?(v/1000000).toFixed(1)+"M":v>=1000?(v/1000).toFixed(0)+"K":v)+'</span>';
@@ -449,6 +457,7 @@ function renderKPIs(){
     html += '<div class="kpi"><div class="kpi-label">🩺 Liveness NIM (hoje)</div>';
     html += '<div class="kpi-value">';
     html += '<span style="color:#2e8b57;font-weight:bold">'+lvOk+' vivos</span> ';
+    html += '<span style="color:#d2992b;font-weight:bold">'+(lv.unverified_count||0)+' sem medição</span> ';
     html += '<span style="color:#c0392b;font-weight:bold">'+lvDead+' mortos</span>';
     html += '</div>';
     html += '<div class="kpi-sub">'+lv.total+' testados — rec: '+esc(lv.recommended||'—')+'</div></div>';
@@ -667,9 +676,10 @@ function renderRanked(){
          (r.model_id||"").toLowerCase().indexOf(q)<0 &&
          (r.provider||"").toLowerCase().indexOf(q)<0) return false;
     }
-    // Filtro liveness: apenas vivos / apenas mortos / todos
+    // Filtro liveness: vivos / mortos / sem medição / todos
     if(state.liveness === "ok" && r.liveness !== "ok") return false;
     if(state.liveness === "dead" && r.liveness !== "dead") return false;
+    if(state.liveness === "unverified" && r.liveness !== "unverified") return false;
     return true;
   });
   rows.sort(function(a,b){
@@ -689,7 +699,7 @@ function renderRanked(){
   for(var i=0;i<rows.length;i++){
     var r = rows[i];
     html += "<tr>"+
-      '<td class="rank '+(r.liveness==="ok"?"live":r.liveness==="dead"?"dead":"untested")+'">'+(i+1)+"</td>"+
+      '<td class="rank '+(r.liveness==="ok"?"live":r.liveness==="dead"?"dead":r.liveness==="unverified"?"unverified":"untested")+'">'+(i+1)+"</td>"+
       "<td>"+hi(esc(r.provider))+"</td>"+
       '<td class="mono" title="'+esc(r.model_id)+'">'+hi(esc(r.display_name))+"</td>"+
       "<td>"+ctxCell(r.context_k)+"</td>"+
@@ -698,7 +708,7 @@ function renderRanked(){
       "<td>"+boolCell(r.reasoning)+"</td>"+
       "<td>"+modalCell(r.modalities_out)+"</td>"+
       "<td>"+speedCell(r.speed_tps)+"</td>"+
-      "<td>"+ttftCell(r.ttft_s)+"</td>"+
+      "<td>"+ttftCell(r.ttft_s, r.ttft_source)+"</td>"+
       "<td>"+numCell(r.coding_index, "", 1)+"</td>"+
       "<td>"+numCell(r.agentic_index, "", 1)+"</td>"+
       "<td>"+custoCell(r)+"</td>"+

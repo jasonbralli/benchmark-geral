@@ -1,41 +1,27 @@
 {
   "date": "2026-11-01",
-  "generated_at": "2026-11-01T14:44:56.976816+00:00",
+  "generated_at": "2026-11-01T18:41:36.660651+00:00",
   "source": "integrate.api.nvidia.com/v1/models + models.dev",
   "total_catalog": 85,
   "total_candidates": 114,
   "alive_count": 41,
   "dead_count": 73,
   "recommended": "nvidia/nemotron-3.5-super-vl-120b-a12b",
-  "new_dead": [],
+  "new_dead": [
+    {
+      "model_id": "poolside/laguna-xs-2.1",
+      "status": "not_found",
+      "http_code": 404
+    },
+    {
+      "model_id": "poolside/laguna-s-2.1",
+      "status": "not_found",
+      "http_code": 404
+    }
+  ],
   "new_alive": [
-    "nvidia/nemotron-3.5-super-vl:free",
-    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-    "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "nvidia/nemotron-3.5-lightning:free",
-    "nvidia/nemotron-3.5-content-safety:free",
-    "cohere/north-mini-code:free",
-    "nvidia/ising-calibration-1.5-31b",
-    "reflection/beam-free",
-    "stealth/glyph-cluster",
-    "kilo-auto/free",
-    "dots-studio/dots-3-note-preview:free",
-    "thinkingmachines/inkling-small:free",
-    "thinkingmachines/inkling:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "google/gemma-4-31b-it:free",
-    "openrouter/free",
-    "poolside/laguna-s-2.1",
-    "ornith/ornith-1.5-122b",
-    "stepfun/step-3.7-flash",
-    "xingchen-agi/xing4.0-29b-a4b:free",
-    "inclusionai/ling-3.1-flash-1019-free",
-    "reflection/beam-1.0-501b-a23b",
-    "liquid/lfm-2.5-2.6b:free",
-    "recursive/flint-v1.0:free",
-    "upstage/solar-mini4",
-    "google/lyria-3-clip-preview",
-    "google/lyria-3-pro-preview"
+    "nvidia/riva-translate-4b-instruct-v2",
+    "nvidia/llama-3.1-nemoguard-8b-topic-control"
   ],
   "results": [
     {
@@ -43,147 +29,310 @@
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 921,
-      "total_ms": 922,
-      "score": 58.2
+      "ttft_ms": 995,
+      "total_ms": 995,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "status_before": "ok",
+      "score": 58.0
     },
     {
       "model_id": "nvidia/nemotron-3-ultra-550b-a55b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 975,
-      "total_ms": 975,
-      "score": 58.0
+      "ttft_ms": 1043,
+      "total_ms": 1043,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3-ultra-550b-a55b",
+      "status_before": "ok",
+      "score": 57.9
     },
     {
       "model_id": "nvidia/nemotron-3.5-lightning-30b-a3b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 651,
-      "total_ms": 651,
-      "score": 57.3
+      "ttft_ms": 760,
+      "total_ms": 760,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "status_before": "ok",
+      "score": 57.1
     },
     {
       "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1076,
-      "total_ms": 1077,
-      "score": 56.4
+      "ttft_ms": 775,
+      "total_ms": 775,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "status_before": "ok",
+      "score": 57.0
     },
     {
       "model_id": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 848,
-      "total_ms": 848,
+      "ttft_ms": 847,
+      "total_ms": 847,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
+      "status_before": "ok",
       "score": 56.1
-    },
-    {
-      "model_id": "nvidia/nemotron-3.5-bolt-e4b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 720,
-      "total_ms": 720,
-      "score": 53.6
     },
     {
       "model_id": "nvidia/nemotron-parse-2.0",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 807,
-      "total_ms": 807,
-      "score": 53.4
-    },
-    {
-      "model_id": "nvidia/nemotron-3.5-super-vl:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 30.0
-    },
-    {
-      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 30.0
-    },
-    {
-      "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 30.0
+      "ttft_ms": 666,
+      "total_ms": 667,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-parse-2.0",
+      "status_before": "ok",
+      "score": 53.7
     },
     {
       "model_id": "nvidia/nemotron-3.5-lightning:free",
       "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 30.0
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 806,
+      "total_ms": 819,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "nvidia/nemotron-3.5-lightning:free",
+      "status_before": "ok",
+      "score": 53.4
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-bolt-e4b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 841,
+      "total_ms": 841,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-bolt-e4b",
+      "status_before": "ok",
+      "score": 53.3
+    },
+    {
+      "model_id": "nvidia/nemotron-3.5-super-vl:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 966,
+      "total_ms": 967,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "nvidia/nemotron-3.5-super-vl:free",
+      "status_before": "ok",
+      "score": 53.1
+    },
+    {
+      "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 930,
+      "total_ms": 933,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "status_before": "ok",
+      "score": 53.1
+    },
+    {
+      "model_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1061,
+      "total_ms": 1065,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "status_before": "ok",
+      "score": 52.9
     },
     {
       "model_id": "nvidia/nemotron-3.5-content-safety:free",
       "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 30.0
-    },
-    {
-      "model_id": "minimaxai/minimax-m3.1-flash",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1090,
-      "total_ms": 1090,
-      "score": 26.4
+      "status": "unverified",
+      "http_code": 404,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: not_found)",
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "nvidia/nemotron-3.5-content-safety:free",
+      "measured": false,
+      "status_before": "not_found",
+      "score": 35.0
     },
     {
       "model_id": "meta/llama-guard-4-12b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 841,
-      "total_ms": 841,
+      "ttft_ms": 845,
+      "total_ms": 845,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/llama-guard-4-12b",
+      "status_before": "ok",
       "score": 26.4
     },
     {
-      "model_id": "google/diffusiongemma-26b-a4b-it",
+      "model_id": "minimaxai/minimax-m3.1-flash",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1817,
-      "total_ms": 1817,
-      "score": 24.9
+      "ttft_ms": 1441,
+      "total_ms": 1444,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "minimaxai/minimax-m3.1-flash",
+      "status_before": "ok",
+      "score": 25.7
     },
     {
       "model_id": "meta/muse-glimmer-30b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1987,
-      "total_ms": 2245,
-      "score": 23.9
+      "ttft_ms": 1938,
+      "total_ms": 2211,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/muse-glimmer-30b",
+      "status_before": "ok",
+      "score": 24.0
+    },
+    {
+      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1997,
+      "total_ms": 1997,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/llama-3.2-90b-vision-instruct",
+      "status_before": "ok",
+      "score": 23.8
+    },
+    {
+      "model_id": "openrouter/free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 640,
+      "total_ms": 643,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "openrouter/free",
+      "status_before": "ok",
+      "score": 23.7
     },
     {
       "model_id": "mistralai/mistral-large-4-1t-a52b",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1170,
-      "total_ms": 1170,
+      "ttft_ms": 798,
+      "total_ms": 798,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/mistral-large-4-1t-a52b",
+      "status_before": "ok",
+      "score": 23.4
+    },
+    {
+      "model_id": "reflection/beam-1.0-501b-a23b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 819,
+      "total_ms": 819,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "reflection/beam-1.0-501b-a23b",
+      "measured_via": "openrouter",
+      "primary_status": "bad_request",
+      "primary_http_code": 400,
+      "score": 23.4
+    },
+    {
+      "model_id": "liquid/lfm-2.5-2.6b:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 819,
+      "total_ms": 823,
+      "measured": true,
+      "attempts": 3,
+      "provider": "openrouter",
+      "pinged_id": "liquid/lfm-2.5-2.6b:free",
+      "status_before": "ok",
+      "score": 23.4
+    },
+    {
+      "model_id": "xingchen-agi/xing4.0-29b-a4b:free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1032,
+      "total_ms": 1037,
+      "measured": true,
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "xingchen-agi/xing4.0-29b-a4b:free",
+      "status_before": "ok",
+      "score": 22.9
+    },
+    {
+      "model_id": "upstage/solar-mini4",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1146,
+      "total_ms": 1149,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "upstage/solar-mini4",
+      "measured_via": "openrouter",
+      "primary_status": "bad_request",
+      "primary_http_code": 400,
       "score": 22.7
     },
     {
@@ -191,71 +340,248 @@
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1145,
-      "total_ms": 1145,
-      "score": 17.7
-    },
-    {
-      "model_id": "nvidia/ising-calibration-1.5-31b",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1187,
-      "total_ms": 1187,
-      "score": 17.6
+      "ttft_ms": 1205,
+      "total_ms": 1206,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "cohere/north-mini-code:free",
+      "status_before": "ok",
+      "score": 22.6
     },
     {
       "model_id": "reflection/beam-free",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 1443,
-      "total_ms": 1443,
-      "score": 17.1
-    },
-    {
-      "model_id": "stealth/glyph-cluster",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 1434,
-      "total_ms": 1435,
-      "score": 17.1
-    },
-    {
-      "model_id": "kilo-auto/free",
-      "alive": true,
-      "status": "ok",
-      "http_code": 200,
-      "ttft_ms": 2017,
-      "total_ms": 2018,
-      "score": 16.0
+      "ttft_ms": 1358,
+      "total_ms": 1358,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "reflection/beam-free",
+      "status_before": "ok",
+      "score": 22.3
     },
     {
       "model_id": "dots-studio/dots-3-note-preview:free",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 2818,
-      "total_ms": 2837,
-      "score": 14.4
+      "ttft_ms": 1546,
+      "total_ms": 1546,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "dots-studio/dots-3-note-preview:free",
+      "status_before": "ok",
+      "score": 21.9
     },
     {
-      "model_id": "poolside/laguna-xs-2.1",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 8.6
-    },
-    {
-      "model_id": "meta/llama-3.2-90b-vision-instruct",
+      "model_id": "stealth/glyph-cluster",
       "alive": true,
       "status": "ok",
       "http_code": 200,
-      "ttft_ms": 18610,
-      "total_ms": 18611,
-      "score": 7.8
+      "ttft_ms": 1700,
+      "total_ms": 1700,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "stealth/glyph-cluster",
+      "status_before": "ok",
+      "score": 21.6
+    },
+    {
+      "model_id": "inclusionai/ling-3.1-flash-1019-free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 1757,
+      "total_ms": 1757,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "inclusionai/ling-3.1-flash-1019-free",
+      "status_before": "ok",
+      "score": 21.5
+    },
+    {
+      "model_id": "kilo-auto/free",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 2166,
+      "total_ms": 2166,
+      "measured": true,
+      "attempts": 1,
+      "provider": "kilocode",
+      "pinged_id": "kilo-auto/free",
+      "status_before": "ok",
+      "score": 20.7
+    },
+    {
+      "model_id": "google/diffusiongemma-26b-a4b-it",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 4114,
+      "total_ms": 4114,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/diffusiongemma-26b-a4b-it",
+      "status_before": "ok",
+      "score": 20.3
+    },
+    {
+      "model_id": "nvidia/ising-calibration-1.5-31b",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 2834,
+      "total_ms": 2834,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/ising-calibration-1.5-31b",
+      "status_before": "ok",
+      "score": 19.3
+    },
+    {
+      "model_id": "stepfun/step-3.7-flash",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 3144,
+      "total_ms": 3146,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "stepfun/step-3.7-flash",
+      "measured_via": "openrouter",
+      "primary_status": "bad_request",
+      "primary_http_code": 400,
+      "score": 18.7
+    },
+    {
+      "model_id": "nvidia/riva-translate-4b-instruct-v2",
+      "alive": true,
+      "status": "ok",
+      "http_code": 200,
+      "ttft_ms": 686,
+      "total_ms": 686,
+      "measured": true,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/riva-translate-4b-instruct-v2",
+      "status_before": "ok",
+      "score": 18.6
+    },
+    {
+      "model_id": "thinkingmachines/inkling-small:free",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 403,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: forbidden)",
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "thinkingmachines/inkling-small:free",
+      "measured": false,
+      "status_before": "forbidden",
+      "score": 5.0
+    },
+    {
+      "model_id": "thinkingmachines/inkling:free",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 403,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: forbidden)",
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "thinkingmachines/inkling:free",
+      "measured": false,
+      "status_before": "forbidden",
+      "score": 5.0
+    },
+    {
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 429,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: quota)",
+      "attempts": 3,
+      "provider": "openrouter",
+      "pinged_id": "google/gemma-4-26b-a4b-it:free",
+      "measured": false,
+      "status_before": "quota",
+      "score": 5.0
+    },
+    {
+      "model_id": "google/gemma-4-31b-it:free",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 429,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: quota)",
+      "attempts": 3,
+      "provider": "openrouter",
+      "pinged_id": "google/gemma-4-31b-it:free",
+      "measured": false,
+      "status_before": "quota",
+      "score": 5.0
+    },
+    {
+      "model_id": "ornith/ornith-1.5-122b",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 400,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: bad_request)",
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "ornith/ornith-1.5-122b:free",
+      "measured": false,
+      "status_before": "bad_request",
+      "fallback_status": "bad_request",
+      "fallback_http_code": 400,
+      "score": 5.0
+    },
+    {
+      "model_id": "recursive/flint-v1.0:free",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 503,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: server)",
+      "attempts": 3,
+      "provider": "kilocode",
+      "pinged_id": "recursive/flint-v1.0:free",
+      "measured": false,
+      "status_before": "server",
+      "score": 5.0
+    },
+    {
+      "model_id": "google/lyria-3-clip-preview",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 400,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: bad_request)",
+      "attempts": 1,
+      "provider": "openrouter",
+      "pinged_id": "google/lyria-3-clip-preview",
+      "measured": false,
+      "status_before": "bad_request",
+      "score": 5.0
+    },
+    {
+      "model_id": "google/lyria-3-pro-preview",
+      "alive": true,
+      "status": "unverified",
+      "http_code": 502,
+      "error": "free-tier confirmado no catálogo live do provider (sem medição de TTFT: server)",
+      "attempts": 3,
+      "provider": "openrouter",
+      "pinged_id": "google/lyria-3-pro-preview",
+      "measured": false,
+      "status_before": "server",
+      "score": 5.0
     },
     {
       "model_id": "01-ai/yi-large",
@@ -263,6 +589,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "01-ai/yi-large",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -271,6 +602,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "adept/fuyu-8b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -279,6 +615,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "ai21labs/jamba-1.5-large-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -287,6 +628,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "aisingapore/sea-lion-7b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -295,6 +641,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "bigcode/starcoder2-15b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -303,6 +654,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "databricks/dbrx-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -311,6 +667,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "deepseek-ai/deepseek-coder-6.7b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -319,6 +680,11 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "deepseek-ai/deepseek-v4.1-flash",
+      "measured": false,
+      "status_before": "network",
       "score": -1.0
     },
     {
@@ -327,6 +693,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/codegemma-1.1-7b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -335,6 +706,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/codegemma-7b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -343,6 +719,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/deplot",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -351,6 +732,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/gemma-2b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -359,6 +745,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/gemma-3-12b-it",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -367,6 +758,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/gemma-3-4b-it",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -375,6 +771,11 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "google/gemma-4-31b-it",
+      "measured": false,
+      "status_before": "network",
       "score": -1.0
     },
     {
@@ -383,6 +784,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "google/recurrentgemma-2b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -391,6 +797,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "ibm/granite-3.0-3b-a800m-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -399,6 +810,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "ibm/granite-3.0-8b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -407,6 +823,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "ibm/granite-34b-code-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -415,6 +836,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "ibm/granite-8b-code-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -423,6 +849,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/codellama-70b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -431,6 +862,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/llama-3.2-11b-vision-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -439,6 +875,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "meta/llama2-70b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -447,6 +888,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "microsoft/kosmos-2",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -455,6 +901,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "microsoft/phi-3-vision-128k-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -463,6 +914,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "microsoft/phi-3.5-moe-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -471,6 +927,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/codestral-22b-instruct-v0.1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -479,6 +940,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/mistral-large",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -487,6 +953,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/mistral-large-2-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -495,6 +966,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/mixtral-8x22b-v0.1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -503,6 +979,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "moonshotai/kimi-k2.6",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -511,6 +992,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nv-mistralai/mistral-nemo-12b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -519,6 +1005,11 @@
       "status": "server",
       "http_code": 500,
       "error": "Internal Server Error",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/ai-synthetic-video-detector",
+      "measured": false,
+      "status_before": "server",
       "score": -1.0
     },
     {
@@ -527,6 +1018,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/embed-qa-4",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -535,15 +1031,26 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemoguard-8b-content-safety",
+      "measured": false,
+      "status_before": "network",
       "score": -1.0
     },
     {
       "model_id": "nvidia/llama-3.1-nemoguard-8b-topic-control",
-      "alive": false,
-      "status": "server",
-      "http_code": 502,
-      "error": "Bad Gateway",
-      "score": -1.0
+      "alive": true,
+      "status": "ok_empty",
+      "http_code": 200,
+      "ttft_ms": null,
+      "total_ms": 817,
+      "measured": false,
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemoguard-8b-topic-control",
+      "status_before": "ok_empty",
+      "score": 0.0
     },
     {
       "model_id": "nvidia/llama-3.1-nemotron-51b-instruct",
@@ -551,6 +1058,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemotron-51b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -559,6 +1071,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemotron-70b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -567,6 +1084,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -575,6 +1097,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.2-nemoretriever-1b-vlm-embed-v1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -583,6 +1110,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-3.2-nv-embedqa-1b-v1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -591,6 +1123,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama3-chatqa-1.5-70b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -599,6 +1136,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/mistral-nemo-minitron-8b-8k-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -607,6 +1149,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3-embed-1b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -615,6 +1162,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3-super-120b-a12b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -623,6 +1175,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-embed-1b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -631,6 +1188,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-embed-8b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -639,6 +1201,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-4-340b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -647,6 +1214,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-4-340b-reward",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -655,6 +1227,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-nano-3-30b-a3b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -663,6 +1240,11 @@
       "status": "bad_request",
       "http_code": 400,
       "error": "Bad Request",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-parse",
+      "measured": false,
+      "status_before": "bad_request",
       "score": -1.0
     },
     {
@@ -671,6 +1253,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/neva-22b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -679,6 +1266,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nv-embedqa-mistral-7b-v2",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -687,6 +1279,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nvclip",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -695,6 +1292,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/vila",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -703,6 +1305,24 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "openai/gpt-oss-20b",
+      "measured": false,
+      "status_before": "network",
+      "score": -1.0
+    },
+    {
+      "model_id": "poolside/laguna-xs-2.1",
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "poolside/laguna-xs-2.1",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -711,6 +1331,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "snowflake/arctic-embed-l",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -719,6 +1344,11 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "stepfun-ai/step-5-preview",
+      "measured": false,
+      "status_before": "network",
       "score": -1.0
     },
     {
@@ -727,6 +1357,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "writer/palmyra-creative-122b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -735,6 +1370,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "writer/palmyra-fin-70b-32k",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -743,6 +1383,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "writer/palmyra-med-70b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -751,6 +1396,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "writer/palmyra-med-70b-32k",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -759,6 +1409,11 @@
       "status": "network",
       "http_code": null,
       "error": "The read operation timed out",
+      "attempts": 3,
+      "provider": "nvidia",
+      "pinged_id": "z-ai/glm-5.3-flash",
+      "measured": false,
+      "status_before": "network",
       "score": -1.0
     },
     {
@@ -767,23 +1422,25 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "zyphra/zamba2-7b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
-      "model_id": "thinkingmachines/inkling-small:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "thinkingmachines/inkling:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
+      "model_id": "minimaxai/minimax-m3",
+      "alive": false,
+      "status": "gone",
+      "http_code": 410,
+      "error": "Gone",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "minimaxai/minimax-m3",
+      "measured": false,
+      "status_before": "gone",
+      "score": -1.0
     },
     {
       "model_id": "z-ai/glm-5.2",
@@ -791,6 +1448,11 @@
       "status": "gone",
       "http_code": 410,
       "error": "Gone",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "z-ai/glm-5.2",
+      "measured": false,
+      "status_before": "gone",
       "score": -1.0
     },
     {
@@ -799,39 +1461,12 @@
       "status": "gone",
       "http_code": 410,
       "error": "Gone",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "z-ai/glm-5.3",
+      "measured": false,
+      "status_before": "gone",
       "score": -1.0
-    },
-    {
-      "model_id": "google/gemma-4-26b-a4b-it:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "google/gemma-4-31b-it:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "minimaxai/minimax-m3",
-      "alive": false,
-      "status": "gone",
-      "http_code": 410,
-      "error": "Gone",
-      "score": -1.0
-    },
-    {
-      "model_id": "openrouter/free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
     },
     {
       "model_id": "nvidia/cosmos-reason2-8b",
@@ -839,63 +1474,25 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/cosmos-reason2-8b",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
       "model_id": "poolside/laguna-s-2.1",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "ornith/ornith-1.5-122b",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "stepfun/step-3.7-flash",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "xingchen-agi/xing4.0-29b-a4b:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "inclusionai/ling-3.1-flash-1019-free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "reflection/beam-1.0-501b-a23b",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "liquid/lfm-2.5-2.6b:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
+      "alive": false,
+      "status": "not_found",
+      "http_code": 404,
+      "error": "Not Found",
+      "attempts": 1,
+      "provider": "nous",
+      "pinged_id": "poolside/laguna-s-2.1",
+      "measured": false,
+      "status_before": "not_found",
+      "score": -1.0
     },
     {
       "model_id": "nvidia/nemotron-3.5-content-safety",
@@ -903,39 +1500,12 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/nemotron-3.5-content-safety",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
-    },
-    {
-      "model_id": "recursive/flint-v1.0:free",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "upstage/solar-mini4",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "google/lyria-3-clip-preview",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
-    },
-    {
-      "model_id": "google/lyria-3-pro-preview",
-      "alive": true,
-      "status": "free",
-      "http_code": null,
-      "error": "free-tier confirmado no catálogo do provider (sem ping de auth)",
-      "score": 0.0
     },
     {
       "model_id": "mistralai/mistral-7b-instruct-v0.3",
@@ -943,6 +1513,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "mistralai/mistral-7b-instruct-v0.3",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -951,14 +1526,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
-      "score": -1.0
-    },
-    {
-      "model_id": "nvidia/riva-translate-4b-instruct-v2",
-      "alive": false,
-      "status": "network",
-      "http_code": null,
-      "error": "The read operation timed out",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/riva-translate-4b-instruct",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     },
     {
@@ -967,6 +1539,11 @@
       "status": "not_found",
       "http_code": 404,
       "error": "Not Found",
+      "attempts": 1,
+      "provider": "nvidia",
+      "pinged_id": "nvidia/llama-nemotron-embed-vl-1b-v2",
+      "measured": false,
+      "status_before": "not_found",
       "score": -1.0
     }
   ]

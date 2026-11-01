@@ -49,12 +49,16 @@ DATA_DIR = ROOT / "data"
 KILO_API = "https://api.kilo.ai/api/gateway/models"
 NOUS_API = "https://inference-api.nousresearch.com/v1/models"
 NIM_API = "https://integrate.api.nvidia.com/v1/models"
+OPENROUTER_API = "https://openrouter.ai/api/v1/models"
 
 # provider -> (url, cache)
 PROVIDER_ENDPOINTS: dict[str, tuple[str, Path]] = {
     "kilocode": (KILO_API, DATA_DIR / "kilo_models_raw.json"),
     "nous": (NOUS_API, DATA_DIR / "nous_models_raw.json"),
     "nvidia-nim": (NIM_API, DATA_DIR / "nim_models_raw.json"),
+    # Rota alternativa de MEDIÇÃO (liveness). Cache próprio para não
+    # colidir com o cache do map_source (mesmo formato, escrita separada).
+    "openrouter": (OPENROUTER_API, DATA_DIR / "openrouter_liveness_raw.json"),
 }
 
 
@@ -147,6 +151,7 @@ __all__ = [
     "KILO_API",
     "NOUS_API",
     "NIM_API",
+    "OPENROUTER_API",
     "fetch_catalog",
     "fetch_all",
     "catalog_ids",
