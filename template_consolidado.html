@@ -383,6 +383,7 @@ function ttftCell(v, src){
              : src==="aa" ? '<span class="badge src" title="Estimativa AA Data API">○</span>'
              : '';
   return cell + badge;
+}
 function maxOutCell(v){
   if(v==null) return '<span class="nd-text">N/D</span>';
   return '<span class="num-cell">'+(v>=1000000?(v/1000000).toFixed(1)+"M":v>=1000?(v/1000).toFixed(0)+"K":v)+'</span>';

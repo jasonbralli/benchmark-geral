@@ -1,18 +1,18 @@
 {
-  "ranked_count": 1095,
-  "non_ranked_count": 111,
-  "total": 1206,
+  "ranked_count": 1105,
+  "non_ranked_count": 100,
+  "total": 1205,
   "by_provider": {
     "anthropic": 17,
-    "kilocode": 376,
     "copilot-acp": 17,
     "gemini": 17,
     "novita": 98,
-    "huggingface": 136,
+    "huggingface": 135,
     "nvidia": 87,
     "openrouter": 451,
+    "kilocode": 376,
     "nous": 6,
     "custom:http://localhost:8080/v1#aff94a1a7f730464": 1
   },
-  "captured_at": "2026-11-01T11:13:07.731787+00:00"
+  "captured_at": "2026-11-02T10:36:10.690082+00:00"
 }
