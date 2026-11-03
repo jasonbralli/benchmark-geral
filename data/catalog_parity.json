@@ -10,10 +10,10 @@
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 379,
-      "shown_total": 372,
-      "live_free_total": 17,
-      "shown_free_total": 17
+      "live_total": 377,
+      "shown_total": 370,
+      "live_free_total": 19,
+      "shown_free_total": 19
     },
     "nous": {
       "missing": [],
@@ -22,9 +22,9 @@
         "poolside/laguna-s-2.1",
         "poolside/laguna-xs-2.1"
       ],
-      "live_total": 375,
+      "live_total": 376,
       "shown_total": 6,
-      "live_free_total": 4,
+      "live_free_total": 3,
       "shown_free_total": 6
     },
     "nvidia": {
