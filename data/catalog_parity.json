@@ -12,8 +12,8 @@
       ],
       "live_total": 377,
       "shown_total": 370,
-      "live_free_total": 19,
-      "shown_free_total": 19
+      "live_free_total": 13,
+      "shown_free_total": 13
     },
     "nous": {
       "missing": [],
@@ -22,10 +22,10 @@
         "poolside/laguna-s-2.1",
         "poolside/laguna-xs-2.1"
       ],
-      "live_total": 376,
-      "shown_total": 6,
-      "live_free_total": 3,
-      "shown_free_total": 6
+      "live_total": 381,
+      "shown_total": 7,
+      "live_free_total": 4,
+      "shown_free_total": 7
     },
     "nvidia": {
       "missing": [],
