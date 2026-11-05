@@ -6,13 +6,13 @@
     "anthropic": 17,
     "copilot-acp": 17,
     "gemini": 17,
-    "novita": 99,
+    "novita": 100,
     "huggingface": 127,
-    "nvidia": 87,
+    "nvidia": 86,
     "openrouter": 454,
-    "kilocode": 372,
-    "nous": 7,
+    "kilocode": 374,
+    "nous": 5,
     "custom:http://localhost:8080/v1#aff94a1a7f730464": 1
   },
-  "captured_at": "2026-11-04T10:34:49.498004+00:00"
+  "captured_at": "2026-11-05T10:43:53.200968+00:00"
 }
