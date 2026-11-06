@@ -10,8 +10,8 @@
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 379,
-      "shown_total": 372,
+      "live_total": 378,
+      "shown_total": 371,
       "live_free_total": 13,
       "shown_free_total": 13
     },
@@ -19,7 +19,7 @@
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 384,
+      "live_total": 382,
       "shown_total": 5,
       "live_free_total": 5,
       "shown_free_total": 5
