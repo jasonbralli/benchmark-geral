@@ -9,16 +9,17 @@ Este script só **monitora e alerta**:
   1. Lê a **chain atual** do `config.yaml` (`fallback_providers:`).
   2. Cruza cada tier com o **health real** (uptime/p50/last_ok) e marca
      tiers com health ruim (⚠️).
-  3. Calcula a **recomendação CxB** (top free por CxB, 1 tier por
-     provider, SEM filtro de health) para referência — o que a regra de
-     curadoria apontaria hoje.
+  3. Calcula a **recomendação CxB** aplicando 4 filtros objetivos (ao vivo):
+     só free + vivos (liveness status ok) + CxB > 50 + com AA (aa_index),
+     ordenada pelo melhor Score CxB, top 5.
   4. Gera um alerta HTML para o Telegram (enviado pelo curate_daily).
 
 Fontes:
-  1. **Curadoria CxB** — `data/consolidated_models.json` (is_free, cxb_score).
-  2. **Health real** — `../benchmark-providers/data/provider_health.json`
+  1. Curadoria CxB — data/consolidated_models.json (is_free, cxb_score, aa_index).
+  2. Health real — ../benchmark-providers/data/provider_health.json
      (probe diário: uptime 24h, p50, last_ok).
-  3. **Config do Hermes** — `fallback_providers:` (chain manual atual).
+  3. Liveness diário — data/liveness_daily.json (prova real de modelo vivo).
+  4. Config do Hermes — fallback_providers: (chain manual atual).
 
 Uso:
     python scripts/rotate_best_free.py             # JSON (read-only)
@@ -40,7 +41,7 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
-# provider_health.json — override via PROVIDERS_DATA_DIR (mesmo contrato do build.py)
+# provider_health.json — override via PROVIDERS_DATA_DIR
 PROVIDERS_DATA_DIR = Path(
     os.environ.get("PROVIDERS_DATA_DIR", str(ROOT.parent / "benchmark-providers" / "data"))
 )
@@ -51,10 +52,12 @@ CONFIG_YAML = Path(os.environ.get(
     os.path.join(os.environ.get("LOCALAPPDATA", ""), "hermes", "config.yaml"),
 ))
 
-DEFAULT_TOP = 7      # tiers exibidos na recomendação CxB (espelha a curadoria manual)
+DEFAULT_TOP = 5      # posições exibidas na recomendação CxB (3 a 5, pedido do user)
 MAX_TIERS = 10
 # Uptime abaixo disso (em %) marca o tier com ⚠️ no alerta
 LOW_UPTIME_PCT = 50.0
+# Limite de custo x benefício para entrar na recomendação
+MIN_CXB = 50.0
 
 # Providers que NUNCA entram na recomendação (não são "free provider" de verdade
 # ou são o primário local).
@@ -73,43 +76,68 @@ def load_free_models() -> list[dict]:
     return [m for m in d.get("ranked", []) if m.get("is_free")]
 
 
-def recommend_chain(
-    free_models: list[dict],
-    health: dict,
-    top: int = DEFAULT_TOP,
-) -> list[dict]:
-    """Recomendação CxB: top free por CxB, 1 tier por provider, SEM filtro
-    de health. Health só é anexado (uptime/p50) para o alerta.
+def load_liveness() -> dict:
+    """model_id -> resultado do liveness diário (best-effort, nunca quebra)."""
+    p = ROOT / "data" / "liveness_daily.json"
+    if not p.exists():
+        return {}
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return {r.get("model_id"): r for r in (d.get("results", []) or []) if r.get("model_id")}
 
-    - Um tier por provider: o free de MAIOR CxB daquele provider.
-    - Ordem: CxB desc (melhor score primeiro).
-    - Sem filtro de inventário Hermes (o CxB já é a curadoria; o cache do
-      Hermes é parcial — ex: nous=0 modelos — e filtraria demais).
+
+def recommend_chain(
+    free_models: list,
+    health: dict,
+    liveness: dict | None = None,
+    top: int = DEFAULT_TOP,
+) -> list:
+    """Recomendação CxB — 4 filtros objetivos (mesmo critério usado ao vivo):
+
+    1. só free            -> is_free True  (já filtrado em load_free_models)
+    2. vivos              -> liveness status == "ok" (prova real de hoje)
+    3. CxB > 50           -> cxb_score acima de 50
+    4. com AA             -> aa_index preenchido (não None)
+
+    Ordenação: CxB desc (melhor score primeiro). Retorna até `top` posições.
+    Health e liveness são anexados a cada item apenas para o alerta.
     """
-    best_by_prov: dict[str, dict] = {}
+    lv = liveness or {}
+    chain = []
     for m in sorted(free_models, key=lambda m: -(m.get("cxb_score") or 0)):
         prov = m["provider"]
         if prov in EXCLUDED_PROVIDERS:
             continue
-        if prov not in best_by_prov:
-            best_by_prov[prov] = m
-    chain: list[dict] = []
-    for prov, m in sorted(best_by_prov.items(), key=lambda kv: -(kv[1].get("cxb_score") or 0)):
+        cxb = m.get("cxb_score") or 0.0
+        if cxb <= MIN_CXB:
+            continue
+        aa = m.get("aa_index")
+        if aa is None:
+            continue  # sem medição de Ambiente Apropriado → fica de fora
+        mid = m["model_id"]
+        lv_r = lv.get(mid) or {}
+        if lv_r.get("status") != "ok":
+            continue  # não está comprovadamente vivo hoje
         h = health.get(prov) or {}
         chain.append({
             "provider": prov,
-            "model": m["model_id"],
-            "cxb_score": m.get("cxb_score") or 0.0,
+            "model": mid,
+            "cxb_score": cxb,
+            "aa_index": aa,
             "uptime_pct": h.get("uptime_pct"),
             "p50_ms": h.get("p50_ms"),
             "last_ok": h.get("last_ok"),
+            "liveness": lv_r.get("status"),
+            "ttft_ms": lv_r.get("ttft_ms"),
         })
         if len(chain) >= top:
             break
     return chain
 
 
-def parse_current_chain(text: str) -> list[tuple[str, str]]:
+def parse_current_chain(text: str) -> list:
     """Extrai (provider, model) do bloco fallback_providers atual."""
     m = re.search(
         r"^fallback_providers:\n((?:\s+-\s+provider:.*\n\s+model:.*\n?)+)",
@@ -142,59 +170,52 @@ def _health_line(prov: str, health: dict) -> str:
     return ("⚠️ " if warn else "") + base
 
 
+def _liveness_label(model_id: str, liveness: dict) -> str:
+    """Marca de liveness do modelo p/ a chain atual (exibida no alerta)."""
+    r = liveness.get(model_id) or {}
+    status = r.get("status")
+    alive = r.get("alive")
+    if status == "ok" and alive:
+        return "🩺 vivo"
+    if r:
+        return "🔴 morto"
+    return ""
+
+
 def monitor(top: int = DEFAULT_TOP) -> dict:
-    """Read-only: chain atual + health por tier + recomendação CxB."""
+    """Read-only: chain atual + health/liveness por tier + recomendação CxB (4 filtros)."""
     health = load_health()
     free_models = load_free_models()
+    liveness = load_liveness()
     cfg_text = CONFIG_YAML.read_text(encoding="utf-8")
     current = parse_current_chain(cfg_text)
 
     result = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "current": [
-            {"provider": p, "model": m, "health": _health_line(p, health)}
+            {
+                "provider": p,
+                "model": m,
+                "health": _health_line(p, health),
+                "liveness": _liveness_label(m, liveness),
+            }
             for p, m in current
         ],
-        "recommended": recommend_chain(free_models, health, top=top),
+        "recommended": recommend_chain(free_models, health, liveness, top=top),
         "problems": [],
     }
-    # Tiers da chain atual com health ruim → problema informativo
-    bad_pairs: set[tuple[str, str]] = set()
+    # Tiers da chain atual com health ruim ou liveness morto → problema informativo
     for t in result["current"]:
         h = health.get(t["provider"]) or {}
-        if h.get("last_ok") is False or (
+        health_ruim = h.get("last_ok") is False or (
             h.get("uptime_pct") is not None and h["uptime_pct"] < LOW_UPTIME_PCT
-        ):
+        )
+        lv_morto = t.get("liveness") == "🔴 morto"
+        if health_ruim or lv_morto:
             result["problems"].append(
                 f"{t['provider']}/{t['model']}: health ruim ({t['health']})"
+                + (f" · liveness morto" if lv_morto else "")
             )
-            bad_pairs.add((t["provider"], t["model"]))
-
-    # 2.5.1 Liveness do dia (nim_pipeline/liveness.py) — prova real de modelo
-    #     vivo/morto por MODEL (health é por PROVIDER: provider up ≠ model vivo).
-    #     Best-effort: sem liveness de hoje, nenhuma marca é adicionada.
-    try:
-        from nim_pipeline.liveness import liveness_map, ping_label
-        _lv = liveness_map()
-    except Exception:  # noqa: BLE001
-        _lv = {}
-    for t in result["current"]:
-        r = _lv.get(t["model"])
-        if r is not None:
-            t["liveness"] = ping_label(r)
-            if not r.get("alive"):
-                result["problems"].append(
-                    f"{t['provider']}/{t['model']}: liveness morto hoje "
-                    f"({r.get('status')})"
-                )
-                bad_pairs.add((t["provider"], t["model"]))
-
-    # Filtrar da recomendação CxB os modelos que aparecem em Atenção
-    # (health ruim ou liveness morto). Recomendação só após a verificação.
-    result["recommended"] = [
-        t for t in result["recommended"]
-        if (t["provider"], t["model"]) not in bad_pairs
-    ]
     return result
 
 
@@ -211,14 +232,15 @@ def build_alert(res: dict) -> str:
         lines.append("\n⚠️ <b>Atenção:</b>")
         for p in res["problems"]:
             lines.append(f"• {p}")
-    # Recomendação CxB — só após a verificação; modelos em Atenção já foram
-    # filtrados do recommended em monitor().
+    # Recomendação CxB — já pré-filtrada pelos 4 filtros em recommend_chain().
     rec = res["recommended"]
     if rec:
         lines.append("\n<b>Recomendação CxB (top free):</b>")
         for t in rec:
+            aa = t.get("aa_index")
+            aa_s = f"{aa:.1f}" if isinstance(aa, (int, float)) else "–"
             lines.append(
-                f"• {t['provider']}/{t['model']} (CxB {t['cxb_score']:.1f})"
+                f"• {t['provider']}/{t['model']} (CxB {t['cxb_score']:.1f}, AA {aa_s})"
             )
     return "\n".join(lines)
 

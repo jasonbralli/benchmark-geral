@@ -1,7 +1,8 @@
 """tests/test_rotate_best_free.py — suite do MONITOR de fallback free.
 
 O script é READ-ONLY (rotação é 100% manual). Cobre:
-- recommend_chain: 1 tier/provider, ordem CxB desc, top, SEM filtro de health
+- recommend_chain: 4 filtros (free + vivo/liveness ok + CxB > 50 + com AA),
+  ordem CxB desc, top.
 - parse_current_chain: extração da chain manual do config.yaml
 - _health_line: marca health ruim com ⚠️
 - build_alert: texto HTML com chain atual + recomendação CxB + problemas
@@ -23,14 +24,19 @@ rot = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(rot)
 
 
-def _free(cxb: float, prov: str, model_id: str) -> dict:
+def _free(cxb: float, prov: str, model_id: str, aa: float = 10.0) -> dict:
     return {
         "provider": prov,
         "model_id": model_id,
         "canonical_id": model_id,
         "is_free": True,
         "cxb_score": cxb,
+        "aa_index": aa,
     }
+
+
+def _lv(model_id: str, status: str = "ok", alive: bool = True) -> dict:
+    return {"model_id": model_id, "status": status, "alive": alive, "ttft_ms": 500}
 
 
 HEALTH = {
@@ -41,57 +47,107 @@ HEALTH = {
     "novita": {"last_ok": False, "uptime_pct": 0.0, "p50_ms": 277.0},
 }
 
+LIVENESS = {
+    "inkling:free": _lv("inkling:free"),
+    "outra:free": _lv("outra:free"),
+    "a:free": _lv("a:free"),
+    "b:free": _lv("b:free"),
+    "c:free": _lv("c:free"),
+    "x:free": _lv("x:free"),
+    "ling:free": _lv("ling:free"),
+    "local:free": _lv("local:free"),
+    "sem_aa:free": _lv("sem_aa:free"),
+    "morto:free": _lv("morto:free", status="not_found", alive=False),
+    "nao_ok:free": _lv("nao_ok:free", status="unverified", alive=True),
+}
 
-def test_recommend_one_tier_per_provider():
-    # mesmo modelo em 2 providers → 1 tier por provider (melhor CxB de cada)
+
+def test_recommend_top_by_cxb_desc():
     models = [
-        _free(60.0, "kilocode", "inkling:free"),
-        _free(55.0, "openrouter", "inkling:free"),
-        _free(58.0, "kilocode", "outra:free"),  # mesmo provider, CxB menor
-    ]
-    chain = rot.recommend_chain(models, HEALTH, top=5)
-    provs = [t["provider"] for t in chain]
-    assert provs == ["kilocode", "openrouter"]
-    # kilocode leva o melhor CxB dele (60.0)
-    assert chain[0]["model"] == "inkling:free"
-    assert chain[0]["cxb_score"] == 60.0
-
-
-def test_recommend_order_by_cxb_desc():
-    models = [
-        _free(40.0, "openrouter", "a:free"),
         _free(70.0, "nvidia", "b:free"),
-        _free(55.0, "kilocode", "c:free"),
+        _free(60.0, "kilocode", "c:free"),
+        _free(55.0, "openrouter", "a:free"),
     ]
-    chain = rot.recommend_chain(models, HEALTH, top=5)
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=5)
     assert [t["provider"] for t in chain] == ["nvidia", "kilocode", "openrouter"]
 
 
-def test_recommend_top_limits_chain():
+def test_recommend_sem_dedup_por_provider():
+    # mesmo modelo em 2 providers entra pelos 2 (sem dedup por provider)
+    models = [
+        _free(70.0, "nvidia", "x:free"),
+        _free(65.0, "openrouter", "x:free"),
+    ]
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=5)
+    assert len(chain) == 2
+
+
+def test_recommend_filtro_cxb_maior_que_50():
+    models = [
+        _free(60.0, "nvidia", "a:free"),
+        _free(50.0, "nvidia", "b:free"),
+        _free(49.0, "nvidia", "c:free"),
+    ]
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=5)
+    assert len(chain) == 1
+    assert chain[0]["model"] == "a:free"
+
+
+def test_recommend_filtro_com_aa():
+    # sem aa_index → fica de fora
+    models = [_free(99.0, "nvidia", "sem_aa:free")]
+    models[0]["aa_index"] = None
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=5)
+    assert chain == []
+
+
+def test_recommend_somente_vivos():
+    # liveness não ok → fica de fora
+    chain = rot.recommend_chain(
+        [_free(99.0, "nvidia", "morto:free")],
+        HEALTH, {"morto:free": LIVENESS["morto:free"]}, top=5,
+    )
+    assert chain == []
+    # status unverified (sem TTFT) também não conta como vivo
+    chain = rot.recommend_chain(
+        [_free(99.0, "nvidia", "nao_ok:free")],
+        HEALTH, {"nao_ok:free": LIVENESS["nao_ok:free"]}, top=5,
+    )
+    assert chain == []
+
+
+def test_recommend_top_limita_chain():
     models = [
         _free(70.0, "nvidia", "a:free"),
         _free(60.0, "kilocode", "b:free"),
-        _free(50.0, "openrouter", "c:free"),
+        _free(55.0, "openrouter", "c:free"),
     ]
-    assert len(rot.recommend_chain(models, HEALTH, top=2)) == 2
+    assert len(rot.recommend_chain(models, HEALTH, LIVENESS, top=2)) == 2
 
 
-def test_recommend_no_health_filter():
-    # provider com health RUIM (novita 0%) NÃO é excluído — só informativo
+def test_recommend_health_nao_filtra_recomendacao():
+    # provider com health ruim (novita 0%) não exclui da recomendação (só informativo)
     models = [_free(99.0, "novita", "ling:free")]
-    chain = rot.recommend_chain(models, HEALTH, top=3)
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=3)
     assert len(chain) == 1
     assert chain[0]["provider"] == "novita"
-    assert chain[0]["uptime_pct"] == 0.0  # health anexado, não filtra
 
 
 def test_recommend_excluded_providers_skipped():
     models = [
         _free(99.0, "local-localhost-8080", "local:free"),
-        _free(50.0, "openrouter", "a:free"),
+        _free(60.0, "openrouter", "a:free"),
     ]
-    chain = rot.recommend_chain(models, HEALTH, top=5)
+    chain = rot.recommend_chain(models, HEALTH, LIVENESS, top=5)
     assert [t["provider"] for t in chain] == ["openrouter"]
+
+
+def test_recommend_liveness_ausente_fica_de_fora():
+    # sem dado de liveness → não é provado vivo → fica de fora
+    chain = rot.recommend_chain(
+        [_free(99.0, "nvidia", "nenhum:free")], HEALTH, {}, top=5
+    )
+    assert chain == []
 
 
 CFG = """model:
@@ -123,11 +179,8 @@ def test_parse_no_block_returns_empty():
 
 
 def test_health_line_marks_bad_health():
-    # novita 0% + last_ok False → ⚠️
     assert rot._health_line("novita", HEALTH).startswith("⚠️")
-    # openrouter 100% → sem ⚠️
     assert not rot._health_line("openrouter", HEALTH).startswith("⚠️")
-    # provider sem health → "sem health"
     assert rot._health_line("desconhecido", HEALTH) == "sem health"
 
 
@@ -141,7 +194,7 @@ def test_build_alert_has_chain_and_reco():
         "recommended": [
             {"provider": "nvidia", "model": "moonshotai/kimi-k3",
              "cxb_score": 68.7, "uptime_pct": 100.0, "p50_ms": 114000.0,
-             "last_ok": True},
+             "last_ok": True, "aa_index": 12.0},
         ],
         "problems": ["kilocode/qwen: health ruim"],
     }
@@ -150,6 +203,7 @@ def test_build_alert_has_chain_and_reco():
     assert "kilocode" in txt and "qwen/qwen3.8-27b:free" in txt
     assert "Recomendação CxB" in txt
     assert "nvidia/moonshotai/kimi-k3" in txt
+    assert "CxB 68.7" in txt and "AA 12.0" in txt
     assert "Atenção" in txt and "health ruim" in txt
 
 
@@ -167,7 +221,6 @@ def test_build_alert_no_problems_omits_section():
 
 
 def test_monitor_readonly(tmp_path, monkeypatch):
-    # monitor não escreve no config: mesmo após monitor(), o config é intacto
     cfg = tmp_path / "config.yaml"
     cfg.write_text(CFG, encoding="utf-8")
     monkeypatch.setattr(rot, "CONFIG_YAML", cfg)
