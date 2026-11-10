@@ -36,12 +36,22 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 logger = logging.getLogger(__name__)
+
+
+def _atomic_write(path: Path, text: str) -> None:
+    """Grava de forma atomica (arquivo temporario + os.replace) para evitar
+    lost update em leitura-escrita do mesmo recurso."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -110,7 +120,7 @@ def fetch_catalog(provider: str, use_cache: bool = False, timeout: int = 30) -> 
 
     try:
         cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+        _atomic_write(cache, json.dumps(items, ensure_ascii=False, indent=2))
     except OSError as e:
         logger.warning("cache %s não gravado: %s", cache, e)
 

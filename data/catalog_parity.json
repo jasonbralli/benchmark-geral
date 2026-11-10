@@ -1,7 +1,7 @@
 {
   "missing": 0,
   "free_mismatch": 0,
-  "extra": 5,
+  "extra": 6,
   "by_provider": {
     "kilocode": {
       "missing": [],
@@ -10,18 +10,20 @@
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 375,
-      "shown_total": 368,
+      "live_total": 377,
+      "shown_total": 370,
       "live_free_total": 13,
       "shown_free_total": 13
     },
     "nous": {
       "missing": [],
       "free_mismatch": [],
-      "extra": [],
-      "live_total": 390,
+      "extra": [
+        "stealth/crouton-alpha"
+      ],
+      "live_total": 393,
       "shown_total": 5,
-      "live_free_total": 5,
+      "live_free_total": 4,
       "shown_free_total": 5
     },
     "nvidia": {
