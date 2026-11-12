@@ -1,25 +1,27 @@
 {
   "missing": 0,
-  "free_mismatch": 0,
+  "free_mismatch": 1,
   "extra": 5,
   "by_provider": {
     "kilocode": {
       "missing": [],
-      "free_mismatch": [],
+      "free_mismatch": [
+        "thinkingmachines/inkling-2-small"
+      ],
       "extra": [
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 381,
-      "shown_total": 374,
+      "live_total": 379,
+      "shown_total": 371,
       "live_free_total": 14,
-      "shown_free_total": 14
+      "shown_free_total": 13
     },
     "nous": {
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 395,
+      "live_total": 393,
       "shown_total": 3,
       "live_free_total": 3,
       "shown_free_total": 3
@@ -32,10 +34,10 @@
         "z-ai/glm-5.2",
         "z-ai/glm-5.3"
       ],
-      "live_total": 84,
-      "shown_total": 86,
+      "live_total": 83,
+      "shown_total": 85,
       "live_free_total": 0,
-      "shown_free_total": 86
+      "shown_free_total": 85
     }
   }
 }
