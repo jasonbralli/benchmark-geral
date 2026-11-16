@@ -1,27 +1,25 @@
 {
   "missing": 0,
-  "free_mismatch": 1,
-  "extra": 5,
+  "free_mismatch": 0,
+  "extra": 7,
   "by_provider": {
     "kilocode": {
       "missing": [],
-      "free_mismatch": [
-        "thinkingmachines/inkling-2-small"
-      ],
+      "free_mismatch": [],
       "extra": [
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 379,
-      "shown_total": 371,
-      "live_free_total": 14,
-      "shown_free_total": 13
+      "live_total": 464,
+      "shown_total": 457,
+      "live_free_total": 17,
+      "shown_free_total": 17
     },
     "nous": {
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 393,
+      "live_total": 397,
       "shown_total": 3,
       "live_free_total": 3,
       "shown_free_total": 3
@@ -31,13 +29,15 @@
       "free_mismatch": [],
       "extra": [
         "minimaxai/minimax-m3",
+        "moonshotai/kimi-k2.6",
+        "nvidia/nemotron-3-super-120b-a12b",
         "z-ai/glm-5.2",
         "z-ai/glm-5.3"
       ],
-      "live_total": 83,
-      "shown_total": 85,
+      "live_total": 33,
+      "shown_total": 37,
       "live_free_total": 0,
-      "shown_free_total": 85
+      "shown_free_total": 37
     }
   }
 }
