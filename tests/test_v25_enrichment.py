@@ -70,7 +70,7 @@ def test_payload_kpis_include_aa_aggregates():
     a = _mk("m/a", speed=50.0, coding=80.0, agentic=40.0)
     b = _mk("m/b", speed=100.0, coding=60.0, agentic=70.0)
     for m in (a, b):
-        m.tool_call = True; m.cxb_score = 10.0
+        m.tool_call = True; m.final_score = 10.0
     payload = _payload([a, b], [])
     kpis = payload["kpis"]
     assert kpis["median_speed_tps"] == 75.0
@@ -82,7 +82,7 @@ def test_payload_kpis_include_aa_aggregates():
 
 def test_payload_kpis_none_safe():
     a = _mk("m/a")
-    a.tool_call = True; a.cxb_score = 5.0
+    a.tool_call = True; a.final_score = 5.0
     payload = _payload([a], [])
     kpis = payload["kpis"]
     assert kpis["median_speed_tps"] is None

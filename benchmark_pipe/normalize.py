@@ -129,6 +129,8 @@ class UnifiedModel:
     is_free: bool = False
     aa_index: float | None = None
     cxb_score: float = 0.0
+    performance_score: float = 0.0
+    final_score: float | None = None
     source: str = "unknown"
     release_date: str | None = None
     # Performance (AA Data API v2 — enrich)
@@ -349,12 +351,21 @@ def normalize_nvidia(items: list[dict[str, Any]], hermes_inventory: dict[str, se
 
 
 def _usd_per_million(tok_price: str | float | None) -> float | None:
-    """OpenRouter devolve preço por TOKEN (string). Converte para USD/1M."""
+    """OpenRouter devolve preço por TOKEN (string). Converte para USD/1M.
+
+    Regra de defesa: sentinelas como "-1", NaN, infinito e qualquer valor
+    menor que zero significam "desconhecido", nunca custo real, gratuidade
+    nem desconto. Retorna None para que o score reflita N/D, jamais um bônus
+    milionário.
+    """
     if tok_price is None:
         return None
     try:
         v = float(tok_price)
     except (TypeError, ValueError):
+        return None
+    import math
+    if not math.isfinite(v) or v < 0:
         return None
     return round(v * 1_000_000, 6)
 

@@ -153,6 +153,8 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "aa_index": m.aa_index,
             "aa_stars": stars,
             "cxb_score": m.cxb_score,
+            "final_score": m.final_score,
+            "performance_score": m.performance_score,
             "source": m.source,
             "release_date": m.release_date,
             # v2.5: métricas AA e capabilities

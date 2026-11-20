@@ -227,6 +227,16 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
             live_free_ids=live_free.get(prov),
         )
 
+    # Precos oficiais do Google (snapshot em data/pricing/google.json) - INJETADO ANTES DO DEDUP
+    # para que o dedup colapse duplicatas usando o preço real como critério de desempate.
+    # Comando para atualizar: python scripts/update_google_pricing.py --force-refresh
+    from benchmark_pipe.google_pricing import fetch_google_pricing, injetar_precos_google
+    try:
+        dados_google = fetch_google_pricing(use_cache=True)
+        all_models = injetar_precos_google(all_models, dados_google)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Injecao de precos Google ignorada (sem impacto no pipeline): %s", e)
+
     # Dedup intra-provider (provider + canonical + variant) antes do enrich
     from benchmark_pipe.normalize import dedup_models
 

@@ -167,6 +167,57 @@ Hermes cron job **`benchmark-geral-nim-semanal`** roda
 `scripts/run_consolidated.py --refresh` toda **segunda-feira às 09:00**,
 com fallback `--use-cache` se rede falhar (local-first).
 
+## Preços oficiais do Google (MVP)
+
+Os preços oficiais da página
+[Gemini Developer API pricing](https://aistudio.google.com/docs/pricing)
+são importados sob demanda e usados para calcular o CxB dos modelos do
+provider `gemini`.
+
+### Arquivos
+
+| Arquivo | Propósito |
+|---------|-----------|
+| `benchmark_pipe/google_pricing.py` | Parser/normalizador + mapa explícito de aliases (`GOOGLE_ALIASES`) |
+| `scripts/update_google_pricing.py` | CLI para atualizar o snapshot (`--force-refresh`, `--show`, `--cache-only`) |
+| `data/pricing/google.json` | Snapshot versionado (URL, data/hora, moeda, preços USD/1M tokens) |
+| `tests/test_google_pricing.py` | Testes determinísticos contra o snapshot salvo (sem internet) |
+
+### Como atualizar
+
+```bash
+# Baixa ao vivo da fonte oficial e salva o snapshot (sob demanda)
+python scripts/update_google_pricing.py --force-refresh
+
+# Apenas exibe o snapshot salvo (sem rede)
+python scripts/update_google_pricing.py --show
+
+# Valida se o snapshot salvo é legível
+python scripts/update_google_pricing.py --cache-only
+```
+
+### Integração no pipeline
+
+Os preços são injetados automaticamente em `scripts/run_consolidated.py`
+após o enriquecimento AA e antes do score CxB:
+
+- Somente modelos com `provider == "gemini"` recebem preço.
+- O mapeamento usa `GOOGLE_ALIASES` (explícito). Não há correspondência
+  aproximada silenciosa: modelo sem mapeamento explícito fica sem preço
+  (`price_in`/`price_out` = `None`, `is_free` = `False`).
+- O preço só substitui se o modelo ainda não tem preço definido, preservando
+  qualquer fonte mais específica.
+- `is_free = True` apenas quando `price_in == 0` e `price_out == 0`.
+
+### Limitações
+
+- Atualização **sob demanda** (não há agendamento automático semanal).
+- Sem novas dependências pesadas (stdlib apenas).
+- Valores são estimativa de tabela pública, não garantia de faturamento.
+- Se a fonte falhar ou estiver incompleta, o snapshot anterior é preservado
+  e o pipeline segue sem preço do Google (sem quebrar o build).
+
+
 ## Scorecard (Top 10 por AA Index — curado)
 
 | AA Rank | Modelo | AA Index | AA ★ |

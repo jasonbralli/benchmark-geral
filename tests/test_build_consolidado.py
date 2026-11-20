@@ -26,7 +26,7 @@ def _sample_ranked():
             multimodal=False,
             is_free=True,
             aa_index=50,
-            cxb_score=62.5,
+            final_score=62.5,
             source="models.dev",
         ),
         UnifiedModel(
@@ -41,7 +41,7 @@ def _sample_ranked():
             price_in=2.5,
             price_out=10.0,
             aa_index=None,
-            cxb_score=8.1,
+            final_score=8.1,
             source="openrouter-api",
         ),
     ]
