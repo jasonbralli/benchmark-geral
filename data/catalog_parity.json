@@ -10,16 +10,16 @@
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 464,
-      "shown_total": 457,
-      "live_free_total": 16,
-      "shown_free_total": 16
+      "live_total": 465,
+      "shown_total": 458,
+      "live_free_total": 17,
+      "shown_free_total": 17
     },
     "nous": {
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 411,
+      "live_total": 408,
       "shown_total": 5,
       "live_free_total": 5,
       "shown_free_total": 5
@@ -34,10 +34,10 @@
         "z-ai/glm-5.2",
         "z-ai/glm-5.3"
       ],
-      "live_total": 33,
-      "shown_total": 37,
+      "live_total": 32,
+      "shown_total": 36,
       "live_free_total": 0,
-      "shown_free_total": 37
+      "shown_free_total": 36
     }
   }
 }
