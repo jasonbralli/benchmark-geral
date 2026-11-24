@@ -10,8 +10,8 @@
         "google/gemini-3-pro-preview",
         "kilo-auto/custom/efficient"
       ],
-      "live_total": 465,
-      "shown_total": 458,
+      "live_total": 461,
+      "shown_total": 454,
       "live_free_total": 17,
       "shown_free_total": 17
     },
@@ -19,10 +19,10 @@
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 408,
-      "shown_total": 5,
-      "live_free_total": 5,
-      "shown_free_total": 5
+      "live_total": 407,
+      "shown_total": 4,
+      "live_free_total": 4,
+      "shown_free_total": 4
     },
     "nvidia": {
       "missing": [],
