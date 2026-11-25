@@ -12,17 +12,17 @@
       ],
       "live_total": 461,
       "shown_total": 454,
-      "live_free_total": 17,
-      "shown_free_total": 17
+      "live_free_total": 16,
+      "shown_free_total": 16
     },
     "nous": {
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 407,
-      "shown_total": 4,
-      "live_free_total": 4,
-      "shown_free_total": 4
+      "live_total": 406,
+      "shown_total": 3,
+      "live_free_total": 3,
+      "shown_free_total": 3
     },
     "nvidia": {
       "missing": [],
@@ -34,10 +34,10 @@
         "z-ai/glm-5.2",
         "z-ai/glm-5.3"
       ],
-      "live_total": 32,
-      "shown_total": 36,
+      "live_total": 30,
+      "shown_total": 34,
       "live_free_total": 0,
-      "shown_free_total": 36
+      "shown_free_total": 34
     }
   }
 }
