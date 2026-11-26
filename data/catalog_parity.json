@@ -1,17 +1,16 @@
 {
   "missing": 0,
   "free_mismatch": 0,
-  "extra": 7,
+  "extra": 6,
   "by_provider": {
     "kilocode": {
       "missing": [],
       "free_mismatch": [],
       "extra": [
-        "google/gemini-3-pro-preview",
-        "kilo-auto/custom/efficient"
+        "google/gemini-3-pro-preview"
       ],
-      "live_total": 461,
-      "shown_total": 454,
+      "live_total": 458,
+      "shown_total": 450,
       "live_free_total": 16,
       "shown_free_total": 16
     },
