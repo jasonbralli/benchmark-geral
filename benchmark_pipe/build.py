@@ -178,6 +178,10 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "ttft_source": ttft_source,
         }
 
+    # v2.5 F3: Melhor CxB = maior final_score (desempenho com desconto de custo),
+    # nao apenas o primeiro do ranked (ordenado por performance_score).
+    _best_cxb = _best(models_ranked, key=lambda m: m.final_score)
+
     return {
         "ranked": [row(m, i + 1) for i, m in enumerate(models_ranked)],
         "non_ranked": [row(m, None) for m in models_nd],
@@ -186,10 +190,8 @@ def _payload(models_ranked: list[UnifiedModel], models_nd: list[UnifiedModel]) -
             "total_ranked": len(models_ranked),
             "total_inventory": len(models_ranked) + len(models_nd),
             "free_ranked": sum(1 for m in models_ranked if m.is_free),
-            "top_cxb": models_ranked[0].cxb_score if models_ranked else 0,
-            "top_model": (models_ranked[0].display_name or models_ranked[0].model_id)
-            if models_ranked
-            else "-",
+            "top_cxb": (_best_cxb["value"] if _best_cxb else 0),
+            "top_model": (_best_cxb["display_name"] if _best_cxb else "-"),
             # v2.5 F3: KPIs agregados das métricas AA
             "median_speed_tps": _median([m.speed_tps for m in models_ranked if m.speed_tps is not None]),
             "median_ttft_s": _median([m.ttft_s for m in models_ranked if m.ttft_s is not None]),

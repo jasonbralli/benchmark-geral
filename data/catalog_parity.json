@@ -9,8 +9,8 @@
       "extra": [
         "google/gemini-3-pro-preview"
       ],
-      "live_total": 458,
-      "shown_total": 450,
+      "live_total": 459,
+      "shown_total": 451,
       "live_free_total": 16,
       "shown_free_total": 16
     },
@@ -18,7 +18,7 @@
       "missing": [],
       "free_mismatch": [],
       "extra": [],
-      "live_total": 406,
+      "live_total": 407,
       "shown_total": 3,
       "live_free_total": 3,
       "shown_free_total": 3

@@ -95,7 +95,12 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
         fetch_nous_metadata,
         resolve_nvidia_family,
     )
-    from benchmark_pipe.normalize import normalize_nvidia, normalize_openrouter
+    from benchmark_pipe.normalize import (
+    normalize_nvidia,
+    normalize_openrouter,
+    _usd_per_million,
+    derive_is_free,
+)
     from benchmark_pipe.reconcile import format_report, reconcile
     from benchmark_pipe.score import score_models
 
@@ -236,6 +241,85 @@ def run(inventory: dict, use_cache: bool, out_json: Path | None):
         all_models = injetar_precos_google(all_models, dados_google)
     except Exception as e:  # noqa: BLE001
         logger.warning("Injecao de precos Google ignorada (sem impacto no pipeline): %s", e)
+
+    # Precos oficiais da Anthropic (snapshot em data/pricing/anthropic.json).
+    # Precedencia oficial sobre OpenRouter: injeta ANTES do dedup e ANTES do
+    # fallback OpenRouter, para que modelos com tabela oficial (ex.: claude-fable-5,
+    # claude-haiku-5-5, claude-sonnet-5-5, claude-opus-5-5) preservem o preco
+    # oficial em vez de ser sobrescrito pelo preco OpenRouter. IDs com hifen no
+    # passthrough (claude-fable-5-2) mapeiam para ids oficiais com ponto (5.2)
+    # via aliases explicitos (nunca substituto generico hifen->ponto).
+    # Valores oficiais ja estao em USD/1M tokens; nao aplicar _usd_per_million.
+    from benchmark_pipe.anthropic_pricing import fetch_anthropic_pricing, injetar_precos_antropico
+    try:
+        dados_antropico = fetch_anthropic_pricing(use_cache=True)
+        injetar_precos_antropico(all_models, dados_antropico)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Injecao de precos oficiais Anthropic ignorada: %s", e)
+
+    # Precos OpenRouter para modelos Anthropic (passthrough sem preco proprio).
+    # OpenRouter expõe preço real por modelo; injetar antes do dedup para que
+    # o dedup colapse duplicatas usando o preço real como critério de desempate
+    # e o sobrevivente preserve o preço válido. Modelos Anthropic sem preço no
+    # OpenRouter permanecem price_in=None (N/D) — nunca trata desconhecido como 0.
+    from benchmark_pipe.normalize import canonicalize
+
+    _OR_PRICING: dict[str, tuple[float | None, float | None]] = {}
+    for m in or_raw:
+        mid = m.get("id") or ""
+        if not mid:
+            continue
+        pricing = m.get("pricing") or {}
+        pin = _usd_per_million(pricing.get("prompt"))
+        pout = _usd_per_million(pricing.get("completion"))
+        _OR_PRICING[mid] = (pin, pout)
+        # indexa tambem sem o prefixo do vendor (ex.: 'anthropic/claude-fable-5'
+        # -> 'claude-fable-5'), pois o passthrough de Anthropic guarda IDs sem
+        # o prefixo do provider.
+        if "/" in mid:
+            _OR_PRICING[mid.split("/", 1)[1]] = (pin, pout)
+        # também indexa por canonical_id para variantes :free/:batch
+        canon, _ = canonicalize(mid)
+        if canon != mid:
+            _OR_PRICING[canon] = (pin, pout)
+
+    def injetar_precos_openrouter_antropico(
+        models: list, or_pricing: dict[str, tuple[float | None, float | None]]
+    ) -> int:
+        """Atribui preço OpenRouter a modelos Anthropic do passthrough.
+
+        Só injeta se o modelo ainda não tem preço (price_in is None), para não
+        sobrescrever a fonte oficial injetada acima. Retorna a quantidade de
+        modelos injetados.
+        """
+        n = 0
+        for m in models:
+            if m.provider != "anthropic":
+                continue
+            if m.price_in is not None:
+                continue
+            pin = pout = None
+            entry = or_pricing.get(m.model_id)
+            if entry is None:
+                canon, _ = canonicalize(m.model_id)
+                entry = or_pricing.get(canon)
+            if entry:
+                pin, pout = entry
+            if pin is None:
+                continue
+            m.price_in = pin
+            m.price_out = pout
+            m.is_free = derive_is_free("anthropic", m.model_id, pin, pout)
+            # Nao sobrecarrega 'source' (procedencia dos metadados); a auditoria
+            # de preco fica no snapshot Anthropic.
+            n += 1
+        logger.info("Precos OpenRouter injetados em %d modelos Anthropic (somente sem preco oficial)", n)
+        return n
+
+    try:
+        injetar_precos_openrouter_antropico(all_models, _OR_PRICING)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Injecao de precos OpenRouter/Anthropic ignorada: %s", e)
 
     # Dedup intra-provider (provider + canonical + variant) antes do enrich
     from benchmark_pipe.normalize import dedup_models
